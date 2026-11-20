@@ -152,6 +152,15 @@
   let wasPausedTV = null, conn = null;
   async function castTV() {
     wasPausedTV = paused;
+    // Innerhalb von claude.ai läuft die Seite in einem abgeschirmten Rahmen, dort darf der Browser keine Fernseher suchen.
+    // Dann die GitHub-Fassung in einem neuen Tab öffnen, dort erscheint der Knopf zum Übertragen sofort.
+    if (!window.MANTODEA_STANDALONE) {
+      setPause(true);
+      tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Diashow auf dem Fernseher</b><button type="button" data-tv="close" aria-label="Schließen">×</button></div>
+        <p class="tv-note">Auf claude.ai darf der Browser aus Sicherheitsgründen keine Fernseher suchen. Die Übertragung startet deshalb auf der GitHub-Fassung der Seite:</p>
+        <p><a class="tv-go" href="${UI.esc(tvUrl().replace("#diashow", "") + "&cast=1")}" target="_blank" rel="noopener">📺 Diashow öffnen und übertragen ↗</a></p>`;
+      tvPanel.hidden = false; return;
+    }
     if (window.PresentationRequest) {
       try {
         const req = new PresentationRequest([tvUrl()]);
@@ -174,7 +183,16 @@
     const q = new URLSearchParams(location.search).get("diashow");
     if (q !== null || location.hash === "#diashow") {
       if (q) F = { ...F0, ...JSON.parse(q) };
-      setTimeout(start, 600);
+      setTimeout(() => {
+        start();
+        if (new URLSearchParams(location.search).get("cast") === "1") {
+          setPause(true);
+          tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Auf den Fernseher übertragen</b><button type="button" data-tv="close" aria-label="Schließen">×</button></div>
+            <p class="tv-note">Antippen, dann den Fernseher in der Liste wählen:</p><p><button type="button" class="tv-go" data-tv="go">📺 Fernseher suchen</button></p>`;
+          tvPanel.hidden = false;
+          tvPanel.querySelector("[data-tv=go]").onclick = (ev) => { ev.stopPropagation(); tvPanel.hidden = true; castTV(); };
+        }
+      }, 600);
     }
   } catch (e) { /* egal */ }
   btn.addEventListener("click", start);
