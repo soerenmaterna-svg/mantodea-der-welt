@@ -195,8 +195,8 @@ ul.lit .cl { display: inline-flex; gap: 8px; font-size: .8rem; white-space: nowr
   .hero { padding-top: 18px; margin-bottom: 12px; }
   .hero h1 { font-size: 1.75rem; }
   .hero .lead { font-size: .9rem; margin: 4px 0 12px; }
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .stats div { min-width: 0; padding: 6px 8px; border-radius: 10px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .stats div { min-width: 0; padding: 6px 5px; border-radius: 10px; }
   .stats b { font-size: 1.05rem; }
   .stats span { font-size: .68rem; line-height: 1.2; display: block; }
   .stats.light { grid-template-columns: repeat(2, 1fr); }

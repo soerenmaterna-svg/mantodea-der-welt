@@ -74,6 +74,8 @@
     [new Set(DATA.map((s) => s.g)).size, "Gattungen"],
     [fams.filter((f) => !f.startsWith("(")).length, "Familien"],
     [DATA.filter((s) => s.p).length, "Arten mit Foto"],
+    // alle eingetragenen Fotos: Galerie (iNaturalist, GBIF, Museen, alte Bücher), Flickr und Titelbilder ohne Galerie
+    [DATA.reduce((n, s) => n + (s.gn || 0) + (s.fn || 0) + (s.p && !s.gn && !s.fn ? 1 : 0), 0), "Fotos"],
   ].map(([n, l]) => `<div><b>${fmt.format(n)}</b><span>${l}</span></div>`).join("");
   if (M.generated) $("generated").textContent = "Datenstand: " + fmtDate(M.generated);
 
