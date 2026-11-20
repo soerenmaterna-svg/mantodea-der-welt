@@ -644,3 +644,22 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .ss-nav button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.45); color: #fff; font-size: 1rem; cursor: pointer; }
 .ss-nav button:hover { background: rgba(255,255,255,.2); }
 @media (max-width: 700px) { .ss-foot { flex-direction: column; align-items: stretch; } .ss-nav { justify-content: center; } .ss-foot .ss-cap b { font-size: 1rem; } }
+.d-occ { margin: 8px 0 0; font-size: .9rem; line-height: 1.45; }
+.d-occ b { font-weight: 600; }
+.credit .fo { color: var(--ink); font-weight: 500; }
+.zoomer .zcap .zfo { color: #d6f0c8; font-weight: 600; }
+.ss-set { position: absolute; right: 12px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 5; width: min(520px, calc(100vw - 24px)); max-height: 75vh; overflow: auto;
+  background: rgba(20,30,18,.94); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 16px; padding: 14px 16px; cursor: default; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.ss-set[hidden] { display: none; }
+.ss-set-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ss-set-head button { background: none; border: 0; color: #fff; font-size: 1.5rem; cursor: pointer; }
+.ss-set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.ss-set-grid label { display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: rgba(255,255,255,.75); }
+.ss-set-grid label.chk { flex-direction: row; align-items: center; gap: 8px; font-size: .9rem; color: #fff; grid-column: 1 / -1; }
+.ss-set-grid select { font: inherit; font-size: .9rem; padding: 7px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; }
+.ss-set-grid select option { color: #000; }
+.ss-set-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.ss-set-foot span { flex: 1; font-size: .82rem; color: #d6f0c8; }
+.ss-set-foot button { font: 600 .9rem system-ui; padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
+.ss-set-foot button.ok { background: #3f7d3a; border-color: #3f7d3a; }
+@media (max-width: 700px) { .ss-set { bottom: calc(120px + env(safe-area-inset-bottom)); } .ss-set-grid { grid-template-columns: 1fr; } }

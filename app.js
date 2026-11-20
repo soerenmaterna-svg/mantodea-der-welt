@@ -100,6 +100,21 @@
   const RM = window.MANTODEA_REMOTE || { u: {} };
   const smallUrl = (u) => !u ? u : u.replace("/large.", "/medium.").replace(/\/1024px-/, "/500px-").replace(/_b\.(jpg|png)$/, "_z.$1");
   const TITEL = window.MANTODEA_TITEL || {};
+  // Fundorte der Fotos (data/fotoorte.js) und Vorkommen je Art
+  let ORTE = null;
+  const loadOrte = () => (ORTE ? Promise.resolve(ORTE) : loadScript("data/fotoorte.js").then(() => (ORTE = window.MANTODEA_ORTE || {})).catch(() => (ORTE = {})));
+  let enNames = null;
+  try { enNames = new Intl.DisplayNames(["en"], { type: "region" }); } catch (e) { /* alter Browser */ }
+  function ortOf(ref) {
+    const v = ORTE && ref && ORTE[ref]; if (!v) return "";
+    const [pl, cc] = v; const land = cc ? cname(cc) : "";
+    const en = cc && enNames ? (enNames.of(cc) || "").toLowerCase() : "";
+    // Hausnummern, Postleitzahlen und das (englische) Land entfernen, höchstens zwei Ortsteile behalten
+    let parts = (pl || "").split(/\s*,\s*/).map((x) => x.trim()).filter((x) => x && !/\d/.test(x))
+      .filter((x) => { const l = x.toLowerCase(); return x.toUpperCase() !== cc && !["méxico", "brasil", "españa", "italia", "deutschland", "france", "中国", "日本"].includes(l) && l !== en && l !== (land || "").toLowerCase() && !["usa", "us", "uk"].includes(l); });
+    parts = parts.slice(-2);
+    return [...parts, land].filter(Boolean).join(", ");
+  }
   const liveTitle = {};
   const titleRef = (k) => liveTitle[k] || TITEL[k] || null;
   const bigOf = (rec) => {
@@ -547,13 +562,14 @@
       items = bundles.flatMap((b) => (gals[b] || {})[s.k] || []);
     }
     const hd = await loadHD(s.k);
+    await loadOrte();
     galItems = items.map((g, i) => ({ src: hdSrc(hd && hd.g && hd.g[i]) || (g.d ? "data:image/jpeg;base64," + g.d : g.u), thumb: SA ? smallUrl(g.u) : null, g }));
     const groups = new Map();
     items.forEach((g, i) => { const n = groupOf(g.a); if (!groups.has(n)) groups.set(n, []); groups.get(n).push(i); });
     const order = GROUPS.map((x) => x[1]).filter((n) => groups.has(n));
     const multi = order.length > 1;
     box.innerHTML = order.map((n) => `${multi ? `<h4 class="g-group">${esc(n)} <small>${groups.get(n).length}</small></h4>` : ""}<div class="gallery">${groups.get(n).map((i) => { const g = items[i];
-      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by)}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>`; }).join("")}</div>`).join("");
+      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>`; }).join("")}</div>`).join("");
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
     applyTitle(s);
   }
@@ -577,7 +593,7 @@
     const i = galItems.findIndex((it) => it.g.ref === ref); if (i < 0) return;
     const it = galItems[i], im = document.querySelector(".d-hero .d-img img");
     if (im) { im.removeAttribute("data-ik"); im.src = it.src; }
-    const cr = document.querySelector(".d-hero .credit"); if (cr) cr.innerHTML = credit({ l: it.g.l, by: it.g.by, src: it.g.src, ref: it.g.ref }, false);
+    const cr = document.querySelector(".d-hero .credit"); if (cr) { const o = ortOf(it.g.ref); cr.innerHTML = credit({ l: it.g.l, by: it.g.by, src: it.g.src, ref: it.g.ref }, false) + (o ? ` · <span class="fo">📍 ${esc(o)}</span>` : ""); }
     const tag = document.querySelector(".d-hero .front-tag"); if (tag) tag.textContent = it.g.a || "gewähltes Hauptbild";
     document.querySelectorAll("#d-gal .gthumb").forEach((b) => b.classList.toggle("is-title", +b.dataset.gi === i));
     s._title = it;
@@ -602,6 +618,7 @@
     return true;
   }
   async function openZoom(s, start) {
+    await loadOrte();
     // Liste: Titelbild (falls vorhanden) + Galerie
     const list = [];
     const hdf = (await loadHD(s.k) || {}).f;
@@ -639,7 +656,8 @@
       z.k = 1; z.x = 0; z.y = 0; apply();
       img.src = it.src;
       const zl = lb.querySelector(".zlink"); if (it.ref) zl.href = it.ref; else zl.removeAttribute("href");
-      lb.querySelector(".zcap").innerHTML = `${it.a ? `<b>${esc(it.a)}</b> · ` : ""}${it.cap}${it.ref ? ` · <a href="${esc(it.ref)}" target="_blank" rel="noopener">Original in voller Größe ↗</a>` : ""}`;
+      const fo = ortOf(it.ref);
+      lb.querySelector(".zcap").innerHTML = `${fo ? `<b class="zfo">📍 ${esc(fo)}</b><br>` : ""}${it.a ? `<b>${esc(it.a)}</b> · ` : ""}${it.cap}${it.ref ? ` · <a href="${esc(it.ref)}" target="_blank" rel="noopener">Original in voller Größe ↗</a>` : ""}`;
       const c = lb.querySelector(".zcount"); if (c) c.textContent = list.length > 1 ? `${idx + 1} / ${list.length}` : "";
       const zs = lb.querySelector(".zset");
       if (zs) { const isT = it.ref && it.ref === (titleRef(s.k) || (s.p && s.p.ref)); zs.hidden = it.gi === undefined; zs.disabled = isT; zs.textContent = isT ? "✓ Ist das Hauptbild" : "🖼️ Als Hauptbild verwenden"; }
@@ -725,6 +743,7 @@
         <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         ${s.u ? `<p class="note small">Diese Art steht nicht im Catalogue of Life. Sie kann neu beschrieben und dort noch nicht erfasst sein, oder der Name ist veraltet bzw. ein Synonym. Gefunden in: ${(s.src || []).map((q) => SRC_NAME[q]).join(", ")}.</p>` : ""}
+        ${s.ct && s.ct.length ? `<p class="d-occ">📍 <b>Vorkommen:</b> ${s.ct.slice(0, 8).map(cname).map(esc).join(", ")}${s.ct.length > 8 ? ` und ${s.ct.length - 8} weitere · <a href="#" data-goto-c="1">alle auf der Karte</a>` : ""}</p>` : `<p class="d-occ muted">📍 Vorkommen: keine Länderangaben bekannt</p>`}
         <p class="d-tax">Mantodea › <a href="#" data-fam="${esc(s.f)}">${esc(s.f)}</a>${s.sf && !s.sf.startsWith("(") ? ` › ${esc(s.sf)}` : ""} › <a href="#" data-gen="${esc(s.g)}" data-genfam="${esc(s.f)}"><i>${esc(s.g)}</i></a></p>
       </section>
       <section class="d-card">
@@ -746,6 +765,7 @@
     $("d-body").scrollTop = 0;
     $("d-body").dataset.k = s.k; s._title = null;
     prefetchSpecies(s.k);
+    loadOrte().then(() => { const o = s.p && ortOf(s.p.ref); const cr = document.querySelector(".d-hero .credit"); if (o && cr && $("d-body").dataset.k == s.k && !cr.querySelector(".fo")) cr.insertAdjacentHTML("beforeend", ` · <span class="fo">📍 ${esc(o)}</span>`); });
     loadHD(s.k).then((hd) => { const im = document.querySelector(".d-hero .d-img img"); if (hd && hd.f && im && $("d-body").dataset.k == s.k) { im.removeAttribute("data-ik"); im.src = hdSrc(hd.f); } });
     fillGallery(s);
     fillLiterature(s);
@@ -927,7 +947,7 @@
     if (location.hash === "#stammbaum") history.replaceState(null, "", "#" + lastTab);
     document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === lastTab));
   });
-  window.MANTODEA_UI = { bigSrc: async (r) => (SA && bigOf(r)) || imgData(r), cname, loadScript, paperHtml, vq, imgData, esc, fmtDate, fmt, DATA, BYKEY, CONT, CONT_ORDER, imgTag, lazy, fill, detail, PLACEHOLDER, credit };
+  window.MANTODEA_UI = { loadOrte, ortOf, bigSrc: async (r) => (SA && bigOf(r)) || imgData(r), cname, loadScript, paperHtml, vq, imgData, esc, fmtDate, fmt, DATA, BYKEY, CONT, CONT_ORDER, imgTag, lazy, fill, detail, PLACEHOLDER, credit };
 
   if (!DATA.length) $("list").innerHTML = `<p class="empty">Die Artendaten (data/species.js) konnten nicht geladen werden.</p>`;
   else render();
