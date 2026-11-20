@@ -721,3 +721,26 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .q-go { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 8px;
   background: var(--accent, #3f7d3a); color: #fff; font-size: 1rem; line-height: 1; cursor: pointer; display: grid; place-items: center; filter: saturate(.9); }
 .q-go:active { transform: translateY(-50%) scale(.94); }
+
+/* Filterdialog übersichtlich: Abschnitte untereinander, volle Höhe */
+.fdlg { height: min(92vh, 900px); }
+.fdlg-body { display: flex; flex-direction: column; gap: 12px; padding: 8px 16px 12px; }
+.fsec { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 12px; background: var(--bg); }
+.fsec h3 { margin: 0 0 8px; font-size: .95rem; color: var(--accent, #3f7d3a); }
+.fsec .flabel { font-size: .8rem; color: var(--muted); margin: 8px 0 4px; }
+.fsec .flabel:first-of-type { margin-top: 0; }
+.fsec .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.fsec .fgrid:first-of-type { margin-top: 0; }
+.fsec .fchecks { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.fsec .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fdlg-foot { justify-content: space-between; align-items: center; gap: 12px; }
+.fdlg-foot .link { white-space: nowrap; }
+.fdlg-foot .primary { min-width: 0; flex: 1; max-width: 420px; }
+@media (max-width: 600px) {
+  .fdlg { height: 100dvh; }
+  .fdlg-body { gap: 9px; padding: 6px 10px 10px; }
+  .fsec { padding: 8px 10px 10px; }
+  .fsec h3 { font-size: .88rem; margin-bottom: 6px; }
+  .fsec .fgrid { gap: 6px 8px; }
+  .fdlg-foot .link { font-size: .82rem; }
+}
