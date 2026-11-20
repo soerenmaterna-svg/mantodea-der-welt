@@ -101,6 +101,12 @@
   const imgTag = (rec, alt) => { RECS.set(String(rec.k), rec); return `<img data-ik="${esc(rec.k)}" alt="${esc(alt)}" decoding="async">`; };
   // ---------- Eigenständige Fassung (außerhalb von claude.ai): Bilder live von der Quelle, mit Vorausladen
   const SA = !!window.MANTODEA_STANDALONE;
+  // Nicht frei lizenzierte Fotos (nur GitHub-Fassung): werden direkt von iNaturalist eingebettet, nie kopiert, mit ©-Hinweis
+  const UF = (SA && window.MANTODEA_UNFREI) || {};
+  let showUF = true; try { showUF = localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) { /* egal */ }
+  const ufOf = (s) => (SA && showUF && UF[s.k] && UF[s.k].length ? UF[s.k] : null);
+  const ufImg = (x, alt) => `<img src="${esc(x.u)}" alt="${esc(alt || "")}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+  const ufCredit = (x) => `© ${esc(x.by || "Fotograf")} · alle Rechte vorbehalten · <a href="${esc(x.ref)}" target="_blank" rel="noopener">iNaturalist ↗</a>`;
   const RM = window.MANTODEA_REMOTE || { u: {} };
   const smallUrl = (u) => !u ? u : u.replace("/large.", "/medium.").replace(/\/1024px-/, "/500px-").replace(/_b\.(jpg|png)$/, "_z.$1");
   const TITEL = window.MANTODEA_TITEL || {};
@@ -259,7 +265,7 @@
     const terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     return DATA.filter((s) =>
       (!state.hideFossil || !s.x) &&
-      (!state.onlyPhoto || s.p) &&
+      (!state.onlyPhoto || s.p || ufOf(s)) &&
       (!state.family || s.f === state.family) &&
       (!state.genus || s.g === state.genus) &&
       (!state.abc || s.n[0].toUpperCase() === state.abc) &&
@@ -318,8 +324,8 @@
 
   function card(s) {
     return `<article class="card" tabindex="0" data-k="${esc(s.k)}">
-      <div class="img">${s.p ? imgTag(s, s.n) : PLACEHOLDER}</div>
-      ${s.p ? `<p class="credit">${credit(s.p, true)}</p>` : ""}
+      <div class="img">${s.p ? imgTag(s, s.n) : ufOf(s) ? ufImg(ufOf(s)[0], s.n) + `<span class="cbadge" title="nicht frei lizenziert">©</span>` : PLACEHOLDER}</div>
+      ${s.p ? `<p class="credit">${credit(s.p, true)}</p>` : ufOf(s) ? `<p class="credit uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       <div class="body">
         <h3><i>${esc(s.n)}</i>${flags(s)}</h3>
         <p class="auth">${esc(s.a)}</p>
@@ -451,7 +457,7 @@
     const by = [state.q.trim() ? "Suche" : "", nf ? (nf === 1 ? "Filter" : `${nf} Filter`) : ""].filter(Boolean).join(" und ");
     // Die Trefferzahl erscheint erst, wenn gesucht oder gefiltert wird
     $("count-text").hidden = !by;
-    const nWith = current.filter((x) => x.p).length, nAll = (() => { const w = state.onlyPhoto; state.onlyPhoto = false; const r = filtered().length; state.onlyPhoto = w; return r; })();
+    const nWith = current.filter((x) => x.p || ufOf(x)).length, nAll = (() => { const w = state.onlyPhoto; state.onlyPhoto = false; const r = filtered().length; state.onlyPhoto = w; return r; })();
     $("count-text").innerHTML = (by ? `Ergebnis für Ihre Filter: <b>${fmt.format(nWith)} ${nWith === 1 ? "Art" : "Arten"}</b> mit Foto / <b>${fmt.format(nAll)} ${nAll === 1 ? "Art" : "Arten"}</b> gesamt`
       : `${state.onlyPhoto ? `${nArt} mit Foto` : `Alle ${nArt}`} · kein Filter gesetzt`) +
       (state.group ? ` in ${fmt.format(groups.length)} ${groups.length === 1 ? "Gruppe" : "Gruppen"}` : "");
@@ -472,7 +478,7 @@
     $("more").hidden = state.shown >= total;
     $("more").textContent = `Weitere Arten anzeigen (${fmt.format(Math.max(0, total - state.shown))} übrig)`;
     { const was = state.onlyPhoto; state.onlyPhoto = false; const base = filtered(); state.onlyPhoto = was;
-      $("ph-all").textContent = fmt.format(base.length); $("ph-with").textContent = fmt.format(base.filter((s) => s.p).length); }
+      $("ph-all").textContent = fmt.format(base.length); $("ph-with").textContent = fmt.format(base.filter((s) => s.p || ufOf(s)).length); }
     const sw = $("photo-switch"); sw.classList.toggle("on", state.onlyPhoto);
     sw.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.ph === "1") === state.onlyPhoto)));
     document.querySelectorAll(".view button").forEach((b) => b.classList.toggle("on", b.dataset.view === state.view));
@@ -626,7 +632,11 @@
   async function fillGallery(s) {
     const box = $("d-gal");
     galItems = [];
-    if (!box || !(s.gb || s.fb)) return;
+    if (!box) return;
+    const ufHtml = () => { const u = ufOf(s); return u ? `<h4 class="g-group uf">Weitere Fotos – nicht frei lizenziert <small>${u.length}</small></h4>
+      <p class="muted small">Diese Fotos werden direkt von iNaturalist angezeigt; die Rechte liegen bei den Fotografen. Antippen öffnet die Beobachtung. In den Filtern lassen sie sich ausblenden.</p>
+      <div class="gallery ufgal">${u.map((x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="© ${esc(x.by)} – alle Rechte vorbehalten">${ufImg(x, s.n)}<span class="cbadge">©</span></a>`).join("")}</div>` : ""; };
+    if (!(s.gb || s.fb)) { box.innerHTML = ufHtml(); return; }
     const bundles = [s.gb, s.fb].filter(Boolean);
     let items;
     if (SA) items = ((RM[s.k] || {}).g || []).map((g) => ({ u: g[0], by: g[1], l: g[2], src: g[3], ref: g[4], a: g[5] }));
@@ -643,7 +653,7 @@
     box.innerHTML = Object.keys(GRP).filter((k) => groups[k].length || can).map((k) => `<h4 class="g-group">${GRP[k]} <small>${groups[k].length}</small></h4>
       <div class="gallery gdrop" data-grp="${k}">${groups[k].map((i) => { const g = items[i];
       return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false"></button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
-      + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "");
+      + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "") + ufHtml();
     if (can) enableDrag(box, s, items);
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
     applyTitle(s);
@@ -866,8 +876,8 @@
     const fact = (label, val) => val ? `<div class="fact"><span>${label}</span><b>${val}</b></div>` : "";
     openDialog(`
       <div class="d-hero"${s.p ? ' data-zoom="front" title="Antippen zum Vergrößern"' : ""}>
-        <div class="d-img">${s.p ? imgTag(s, s.n) : PLACEHOLDER}${s.p && s.p.front ? `<span class="front-tag">♀ adultes Weibchen</span>` : ""}${s.p ? `<span class="zoom-tag">🔍</span>` : ""}</div>
-        ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ""}
+        <div class="d-img">${s.p ? imgTag(s, s.n) : ufOf(s) ? `<a href="${esc(ufOf(s)[0].ref)}" target="_blank" rel="noopener">${ufImg({ u: ufOf(s)[0].big }, s.n)}</a><span class="cbadge big">©</span>` : PLACEHOLDER}${s.p && s.p.front ? `<span class="front-tag">♀ adultes Weibchen</span>` : ""}${s.p ? `<span class="zoom-tag">🔍</span>` : ""}</div>
+        ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
         <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
@@ -878,7 +888,7 @@
       </section>
       <section class="d-card">
         ${s.gb || s.fb ? `<h3 class="d-h">Fotos <small>${(s.gn || 0) + (s.fn || 0)} Fotos${s.fn ? ` (davon ${s.fn} von Flickr)` : ""} · antippen zum Vergrößern</small></h3><div id="d-gal"><p class="muted">Lade Fotos …</p></div>` :
-          `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`}
+          (ufOf(s) ? `<h3 class="d-h">Fotos</h3><div id="d-gal"></div>` : `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`)}
       </section>
       <section class="d-card">
         <h3 class="d-h">Fundorte</h3><div id="d-map" class="d-map"><p class="muted">Lade Karte …</p></div>
@@ -965,6 +975,10 @@
     state.onlyPhoto = b.dataset.ph === "1"; $("onlyPhoto").checked = state.onlyPhoto; render();
   });
   $("hideFossil").addEventListener("change", (e) => { state.hideFossil = e.target.checked; render(); });
+  if (SA && Object.keys(UF).length) {
+    $("showUnfree").checked = showUF; $("showUnfree").closest("label").hidden = false;
+    $("showUnfree").addEventListener("change", (e) => { showUF = e.target.checked; try { localStorage.setItem("mantodea-unfrei", showUF ? "1" : "0"); } catch (err) { /* egal */ } render(); });
+  }
   $("continents").addEventListener("click", (e) => {
     const b = e.target.closest(".chip");
     if (!b) return;

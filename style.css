@@ -908,3 +908,17 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 /* Stammbaum-Suche: Schrift immer schwarz */
 .tree-head input, .tree-head input:focus { color: #111 !important; -webkit-text-fill-color: #111 !important; caret-color: #111; background: #fff !important; }
 .tree-head input::placeholder { color: #6b6b6b !important; -webkit-text-fill-color: #6b6b6b !important; opacity: 1; }
+
+/* Nicht frei lizenzierte Fotos (nur GitHub-Fassung) */
+.cbadge { position: absolute; top: 6px; right: 6px; z-index: 2; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(160,40,30,.88); color: #fff; font: 700 .8rem system-ui; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.cbadge.big { width: 30px; height: 30px; font-size: 1rem; top: 10px; right: 10px; }
+.cbadge.inline { position: static; display: inline-grid; width: 18px; height: 18px; font-size: .7rem; vertical-align: middle; }
+.card .img { position: relative; }
+.card .img img[referrerpolicy] { width: 100%; height: 100%; object-fit: cover; display: block; }
+.credit.uf, .credit.uf a { color: #8a2a20; }
+.gthumb.uf { position: relative; display: block; }
+.gthumb.uf .cbadge { width: 18px; height: 18px; font-size: .66rem; top: 4px; right: 4px; }
+.g-group.uf { color: #8a2a20; }
+.d-img { position: relative; }
+.d-img a img { width: 100%; max-height: 64vh; object-fit: contain; display: block; background: #0d120c; }
+.cbadge.big { right: auto; left: 10px; }
