@@ -389,7 +389,11 @@
     current = filtered().sort(SORTS[state.sort]);
     const groups = grouped(current);
     const total = groups.reduce((n, [, l]) => n + l.length, 0);
-    $("count-text").textContent = `${fmt.format(current.length)} ${current.length === 1 ? "Art" : "Arten"} gefunden` +
+    // Anzahl klar als Ergebnis der gewählten Filter beschreiben
+    const nArt = `<b>${fmt.format(current.length)} ${current.length === 1 ? "Art" : "Arten"}</b>`;
+    const by = [state.q.trim() ? "Suche" : "", nf ? (nf === 1 ? "Filter" : `${nf} Filter`) : ""].filter(Boolean).join(" und ");
+    $("count-text").innerHTML = (by ? `Ergebnis für Ihre ${by}: ${nArt}${state.onlyPhoto ? " mit Foto" : ""}`
+      : `${state.onlyPhoto ? `${nArt} mit Foto` : `Alle ${nArt}`} · kein Filter gesetzt`) +
       (state.group ? ` in ${fmt.format(groups.length)} ${groups.length === 1 ? "Gruppe" : "Gruppen"}` : "");
     let budget = state.shown, html = "";
     for (const [title, list] of groups) {
