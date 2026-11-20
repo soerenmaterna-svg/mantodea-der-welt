@@ -744,3 +744,6 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
   .fsec .fgrid { gap: 6px 8px; }
   .fdlg-foot .link { font-size: .82rem; }
 }
+
+/* Tabelle: Fundzahl als schlichte rechtsbündige Zahl */
+table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 16px; }

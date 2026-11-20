@@ -324,11 +324,10 @@
     return `<tr data-k="${esc(s.k)}" tabindex="0">
       <td class="thumb">${s.p ? imgTag(s, "") : ""}</td>
       <td><i>${esc(s.n)}</i>${flags(s)}<div class="auth">${esc(s.a)}</div></td>
-      <td>${names(s)}</td>
       <td><i>${esc(s.g)}</i></td>
       <td>${esc(s.f)}</td>
       <td>${s.cc.map((c) => CONT[c]).join(", ")}</td>
-      <td class="num">${fmt.format(s.o)}</td>
+      <td class="tnum">${fmt.format(s.o)}</td>
     </tr>`;
   }
 
@@ -453,7 +452,7 @@
       budget -= part.length;
       if (title != null) html += `<h2 class="group">${esc(title)} <small>${fmt.format(list.length)}</small></h2>`;
       if (state.view === "grid") html += `<div class="cards">${part.map(card).join("")}</div>`;
-      else html += `<div class="tablewrap"><table><thead><tr><th></th><th>Art</th><th>Trivialname</th><th>Gattung</th><th>Familie</th><th>Kontinente</th><th class="num">Funde</th></tr></thead><tbody>${part.map(row).join("")}</tbody></table></div>`;
+      else html += `<div class="tablewrap"><table><thead><tr><th></th><th>Art</th><th>Gattung</th><th>Familie</th><th>Kontinente</th><th class="tnum">Funde</th></tr></thead><tbody>${part.map(row).join("")}</tbody></table></div>`;
     }
     if (!current.length) html = `<p class="empty">Keine Art passt zu diesen Filtern.</p>`;
     if (io) io.disconnect();
