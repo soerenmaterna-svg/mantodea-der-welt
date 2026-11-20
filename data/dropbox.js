@@ -1,0 +1,1 @@
+window.MANTODEA_DBX={"ordner":"https://www.dropbox.com/scl/fo/bvj7k39fqvoaj7yqlc07p/AFMI4klCUY1u8sJAy90LkXU?rlkey=kj65w4xi1e5f5bj3jfyarkrw0&dl=0","stand":"","dateien":[],"arten":{},"gattungen":{},"familien":{}};
