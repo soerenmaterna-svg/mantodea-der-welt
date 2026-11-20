@@ -17,6 +17,8 @@
       <datalist id="tr-names"></datalist>
       <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" data-z="info" aria-label="Erklärung">ⓘ</button><button type="button" class="tr-close" aria-label="Schließen">×</button></span>
     </div>
+    <div class="tree-pick" id="tr-pick" role="tablist" aria-label="Stammbaum nach Autor"></div>
+    <div class="tree-src" id="tr-src"></div>
     <div class="tree-info" id="tr-info" hidden>
       <b>So liest man den Baum:</b> Jede Verzweigung ist eine Abspaltung in der Stammesgeschichte. <b>Oben</b> stehen die Linien, die sich <b>früh</b> abgespalten haben und viele <b>ursprüngliche</b> Merkmale zeigen: Chaeteessidae, Mantoididae und Metallyticidae. Je tiefer eine Gruppe verschachtelt ist, desto später hat sie sich abgespalten, man spricht von <b>abgeleiteten</b> Gruppen. Danach teilen sich die Mantiden in die Amerimantodea (Neue Welt) und die Cernomantodea (vor allem Alte Welt). Wie die 20 Familien der Cernomantodea untereinander verwandt sind, ist noch nicht sicher geklärt. Sie stehen deshalb gleichrangig nebeneinander, ebenso die Arten innerhalb einer Gattung.
       <br><b>Quellen:</b> Klassifikation des Mantodea Species File im Catalogue of Life, nach Schwarz &amp; Roy (2019), gestützt auf die Stammbaumstudie von Svenson &amp; Whiting (2009, Cladistics 25: 468–514) und spätere Arbeiten. Die Linienlängen sind keine Zeitangaben.
@@ -31,7 +33,7 @@
   // ---------- Ränge und Spalten
   const RANKS = ["order", "suborder", "infraorder", "parvorder", "nanorder", "superfamily", "family", "subfamily", "tribe", "subtribe", "genus", "species"];
   const RI = Object.fromEntries(RANKS.map((r, i) => [r, i]));
-  const RDE = { order: "Ordnung", suborder: "Unterordnung", infraorder: "Teilordnung", parvorder: "Teilordnung", nanorder: "Teilordnung", superfamily: "Überfamilie", family: "Familie", subfamily: "Unterfamilie", tribe: "Tribus", subtribe: "Subtribus", genus: "Gattung" };
+  const RDE = { clade: "Gruppe", order: "Ordnung", suborder: "Unterordnung", infraorder: "Teilordnung", parvorder: "Teilordnung", nanorder: "Teilordnung", superfamily: "Überfamilie", family: "Familie", subfamily: "Unterfamilie", tribe: "Tribus", subtribe: "Subtribus", genus: "Gattung" };
   const NOTE = { Chaeteessidae: "ursprünglichste Linie", Mantoididae: "sehr ursprünglich", Spinomantodea: "sehr ursprünglich", Metallyticidae: "ursprünglich", Amerimantodea: "Neue Welt", Cernomantodea: "v. a. Alte Welt", Eumantodea: "alle heutigen außer Chaeteessidae" };
 
   // ---------- Daten
@@ -39,8 +41,14 @@
   let rootNode = null, ROWS = 0, byName = new Map(), FAMS = [];
   const coll = new Intl.Collator("de");
   const best = (list) => list.filter((s) => s.p).sort((a, b) => (b.p.front ? 1 : 0) - (a.p.front ? 1 : 0) || (b.io || 0) - (a.io || 0))[0] || null;
+  let curTree = "katalog";
+  try { curTree = localStorage.getItem("mantodea-tree") || "katalog"; } catch (e) { /* egal */ }
+  const PHYLOS = () => window.MANTODEA_PHYLOS || [{ id: "katalog", titel: "Katalog" }];
   function build() {
-    const PH = window.MANTODEA_PHYLO;
+    const meta = PHYLOS().find((p) => p.id === curTree) || PHYLOS()[0];
+    curTree = meta.id;
+    const PH = meta.tree || window.MANTODEA_PHYLO;
+    nodes.length = 0; imgsReset();
     const T = (window.MANTODEA_TAXA || { g: {} }).g;
     const live = DATA.filter((s) => !s.x);
     const byGenus = new Map();
@@ -49,7 +57,7 @@
     const famColor = new Map();
     let fi = 0;
     function make(src, parent, fam) {
-      const n = { name: src.n, rank: src.r, ri: RI[src.r] ?? 10, parent, kids: [], fam };
+      const n = { name: src.n, rank: src.r, ri: RI[src.r] ?? (src.r === "clade" ? 1 : 10), parent, kids: [], fam, age: src.age, note: src.note, last: !!src.last };
       if (src.r === "family") { n.fam = n; famColor.set(n, `hsl(${Math.round((fi++ * 137.5) % 360)} 52% 34%)`); }
       if (src.r === "genus") {
         const sp = byGenus.get(src.n);
@@ -66,6 +74,14 @@
       return n.kids.length ? n : null;
     }
     rootNode = make(PH, null, null);
+    // Autoren-Bäume: Verzweigungen oberhalb der Familie nach ihrer Tiefe auf die Spalten verteilen
+    if (meta.tree) {
+      let dMax = 1;
+      const depth = (n, d) => { n.d = d; if (n.rank === "family") dMax = Math.max(dMax, d); else if (n.ri < RI.family) n.kids.forEach((k) => depth(k, d + 1)); };
+      depth(rootNode, 0);
+      const setRi = (n) => { if (n.ri < RI.family || n.rank === "clade") { n.ri = (n.d / dMax) * (RI.family - 0.5); n.kids.forEach(setRi); } };
+      setRi(rootNode);
+    }
     const rest = [...byGenus.keys()].filter((g) => !used.has(g));
     if (rest.length) {
       const extra = { name: "ohne genaue Einordnung", rank: "family", ri: RI.family, parent: rootNode, kids: [] };
@@ -88,6 +104,7 @@
       if (allGen) n.kids.sort((a, b) => (a.year || 9999) - (b.year || 9999) || coll.compare(a.name, b.name));
       else if (n.kids.length > 3) n.kids.sort((a, b) => (a.rank === "genus") - (b.rank === "genus") || coll.compare(a.name, b.name));
       else n.kids.sort((a, b) => a.n - b.n);
+      n.kids.sort((a, b) => (a.last ? 1 : 0) - (b.last ? 1 : 0));
       n.kids.forEach(order);
     };
     order(rootNode);
@@ -110,6 +127,7 @@
     segments();
     built = true;
   }
+  function imgsReset() { if (typeof imgsResetImpl === "function") imgsResetImpl(); }
   const shortName = (n) => { const p = n.split(" "); return p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(" ")}` : n; };
   const lineage = (n) => { const a = []; for (let x = n; x; x = x.parent) a.unshift(x); return a; };
 
@@ -163,7 +181,7 @@
     const w = RANKS.slice(0, RI.genus).map((r, i) => (i < RI.family ? wHi : 1));
     const tot = w.reduce((a, b) => a + b, 0), cum = [0];
     for (const v of w) cum.push(cum[cum.length - 1] + v);
-    colX = (ri) => x0 + (cum[Math.min(ri, RI.genus)] / tot) * (genX - x0);
+    colX = (ri) => { ri = Math.max(0, Math.min(ri, RI.genus)); const i = Math.floor(ri), f = ri - i; const c = cum[i] + (i < cum.length - 1 ? f * (cum[i + 1] - cum[i]) : 0); return x0 + (c / tot) * (genX - x0); };
     spX = genX + (narrow ? 118 : 190);
   }
   function resize() {
@@ -191,6 +209,7 @@
 
   // ---------- Zeichnen
   const imgs = new Map(), loading = new Set();
+  function imgsResetImpl() { /* Fotos bleiben im Speicher, sie gelten für alle Bäume */ }
   let queue = 0;
   function getImg(rec) {
     if (!rec) return null;
@@ -297,18 +316,29 @@
       if (famPhoto) photo(n.rep, x, y, Math.min(span * 0.8, 30), n.color);
       else { ctx.beginPath(); ctx.arc(x, y, n.ri <= RI.family ? 4 : 3, 0, Math.PI * 2); ctx.fillStyle = n.fam ? n.color : "#2e5d27"; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.stroke(); }
       const fs = n.rank === "genus" ? Math.max(11, Math.min(15, 10 + rh * 0.12)) : isFam ? Math.max(11, Math.min(15, 10 + span * 0.02)) : 11.5;
-      if (lastY[n.ri] !== undefined && Math.abs(y - lastY[n.ri]) < fs * 2) continue;
+      const lk = Math.round(n.ri * 2);
+      if (lastY[lk] !== undefined && Math.abs(y - lastY[lk]) < fs * 2) continue;
       if (n.rank === "genus" && span < 9 && rh < 6) continue;
       const mid = n.ri > RI.family && n.ri < RI.genus;
       if (mid && (span < (narrow ? 34 : 22) || colX(n.ri + 1) - x < (narrow ? 16 : 10))) continue;
       const lx = x + (famPhoto ? Math.min(span * 0.4, 15) + 4 : 6);
       // Platz: Gattung bis zu den Arten, sonst bis zur Spalte der Gattungen (Namen dürfen über Äste laufen)
       const limit = n.rank === "genus" ? (rh >= 7 ? spX - 6 : W + view.x - 6) : Math.max(colX(n.ri + 2), colX(RI.genus) - 8);
-      const shown = label(n.name, lx, y - 2, fs, n.fam ? n.color : "#1b3a12", n.ri <= RI.family ? 700 : 600, n.rank === "genus", limit - lx, "bottom");
+      const nm = n.name || (n.age ? `${n.age} Mio. J.` : "");
+      if (!nm) continue;
+      // Verzweigungen ohne Rang (Autoren-Bäume): nur beschriften, wenn genug Platz ist
+      if (n.rank === "clade" || (n.ri < RI.family && n.ri % 1)) {
+        if (span < (narrow ? 70 : 30)) continue;
+        const room = Math.min(...n.kids.map(xOf)) - x;
+        if (narrow && room < 46 && span < 140) continue;
+      }
+      const shown = label(nm, lx, y - 2, fs, n.fam ? n.color : "#1b3a12", n.ri <= RI.family ? 700 : 600, n.rank === "genus", limit - lx, "bottom");
       if (!shown) continue;
-      lastY[n.ri] = y;
-      const info = n.rank === "genus" ? `${n.year || "?"} · ${n.n} ${n.n === 1 ? "Art" : "Arten"}` : NOTE[n.name] || ((RDE[n.rank] || "") + ` · ${fmt.format(n.n)} Arten`);
-      if (span >= 22 || NOTE[n.name]) label(info, lx, y + 2, fs * 0.78, NOTE[n.name] ? "#a0522d" : "#5b6b55", NOTE[n.name] ? 600 : 400, false, limit - lx, "top");
+      lastY[lk] = y;
+      const hint = n.note || NOTE[n.name];
+      const info = n.rank === "genus" ? `${n.year || "?"} · ${n.n} ${n.n === 1 ? "Art" : "Arten"}` : hint ? hint + (n.age && n.name ? ` · vor ${n.age} Mio. J.` : "")
+        : n.age && n.name ? `vor ${n.age} Mio. J. · ${fmt.format(n.n)} Arten` : !n.name ? "" : ((RDE[n.rank] || "") + ` · ${fmt.format(n.n)} Arten`);
+      if (info && (span >= 22 || hint)) label(info, lx, y + 2, fs * 0.78, hint ? "#a0522d" : "#5b6b55", hint ? 600 : 400, false, limit - lx, "top");
     }
     // Pfad oben: Abstammungslinie des Bereichs in der Bildmitte
     const yc = yOf(H / 2);
@@ -410,12 +440,22 @@
   });
   new ResizeObserver(() => { if (dlg.open) resize(); }).observe(cv.parentElement);
 
+  function drawPick() {
+    const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P[0];
+    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><b>${esc(p.titel)}</b><small>${esc(p.kurz || p.art || "")}</small></button>`).join("");
+    document.getElementById("tr-src").innerHTML = m.zitat ? `<span class="tag ${esc(m.art === "genetisch" ? "gen" : m.art === "morphologisch" ? "mor" : "kat")}">${esc(m.art)}</span> ${esc(m.text || "")} <a href="${esc(m.url)}" target="_blank" rel="noopener">Quelle ↗</a>${m.daten ? ` · <a href="${esc(m.daten)}" target="_blank" rel="noopener">Daten ↗</a>` : ""}<br><span class="cite">${esc(m.zitat)}</span>` : "";
+  }
+  document.getElementById("tr-pick").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tree]"); if (!b || b.dataset.tree === curTree) return;
+    curTree = b.dataset.tree; try { localStorage.setItem("mantodea-tree", curTree); } catch (err) { /* egal */ }
+    build(); started = false; drawPick(); setTimeout(resize, 20);
+  });
   async function open() {
     if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
     if (!built) {
-      try { await Promise.all([loadScript("data/stammbaum.js"), loadScript("data/gattungen.js").catch(() => null)]); }
+      try { await Promise.all([loadScript("data/stammbaum.js"), loadScript("data/stammbaeume.js").catch(() => null), loadScript("data/gattungen.js").catch(() => null)]); }
       catch (e) { document.getElementById("tr-path").textContent = "Stammbaum konnte nicht geladen werden."; return; }
-      build(); started = false;
+      build(); started = false; drawPick();
     }
     setTimeout(resize, 20);
   }

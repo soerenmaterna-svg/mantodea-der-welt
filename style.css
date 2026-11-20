@@ -747,3 +747,18 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 
 /* Tabelle: Fundzahl als schlichte rechtsbündige Zahl */
 table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 16px; }
+
+/* Stammbaum: Auswahl nach Autor und Quellenangabe */
+.tree-pick { display: flex; gap: 6px; padding: 8px 10px 4px; overflow-x: auto; background: var(--bg); scrollbar-width: none; }
+.tree-pick button { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 0; font: inherit; text-align: left; border: 1px solid var(--line); border-radius: 10px; background: var(--card, #fff); color: var(--ink); padding: 5px 12px; cursor: pointer; line-height: 1.2; }
+.tree-pick button b { font-size: .86rem; }
+.tree-pick button small { font-size: .72rem; color: var(--muted); }
+.tree-pick button[aria-selected="true"] { background: var(--accent, #3f7d3a); border-color: var(--accent, #3f7d3a); color: #fff; }
+.tree-pick button[aria-selected="true"] small { color: rgba(255,255,255,.85); }
+.tree-src { padding: 2px 12px 8px; font-size: .78rem; color: var(--muted); background: var(--bg); border-bottom: 1px solid var(--line); line-height: 1.4; }
+.tree-src:empty { display: none; }
+.tree-src a { color: var(--accent, #3f7d3a); font-weight: 600; white-space: nowrap; }
+.tree-src .cite { font-style: italic; opacity: .85; }
+.tree-src .tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: 0 7px; border-radius: 999px; color: #fff; margin-right: 4px; }
+.tree-src .tag.gen { background: #2f6fa3; } .tree-src .tag.mor { background: #a0522d; } .tree-src .tag.kat { background: #5b6b55; }
+@media (max-width: 600px) { .tree-src { font-size: .72rem; max-height: 6.2em; overflow: auto; } }
