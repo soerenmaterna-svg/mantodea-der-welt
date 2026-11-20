@@ -886,3 +886,11 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .hand li { margin: 3px 0; }
 .copyline { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
 .copyline code { flex: 1 1 260px; display: block; padding: 8px 10px; border-radius: 8px; background: #fff; border: 1px solid var(--line); font-size: .85rem; white-space: normal; user-select: all; }
+
+/* Länderauswahl: erst Buchstaben, dann Länder */
+.cd-abc { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; padding: 6px 2px; }
+.cd-abc button { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 8px 2px !important; border: 1px solid var(--line) !important; border-radius: 10px; background: var(--bg); cursor: pointer; }
+.cd-abc button b { font-size: 1.25rem; }
+.cd-abc button small { font-size: .66rem; color: var(--muted); }
+.cd-abc button:hover { border-color: var(--accent) !important; background: var(--accent-soft); }
+.cd-back { font-weight: 600; color: var(--accent) !important; }

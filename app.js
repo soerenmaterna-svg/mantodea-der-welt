@@ -58,7 +58,7 @@
   const BYKEY = new Map(DATA.map((s) => [String(s.k), s]));
 
   const state = {
-    q: "", abc: "", sort: "name", group: "", family: "", genus: "", license: "", status: "", country: "", corder: "cont",
+    q: "", abc: "", sort: "name", group: "", family: "", genus: "", license: "", status: "", country: "", corder: "alpha", cletter: "",
     conts: new Set(), onlyPhoto: true, hideFossil: true, view: "grid", shown: PAGE,
   };
   try {
@@ -207,13 +207,20 @@
     const byName = (a, b) => coll.compare(cname(a), cname(b));
     const item = (c) => `<button type="button" data-cc="${c}" class="${c === state.country ? "on" : ""}"><span>${esc(cname(c))}</span><small>${fmt.format(ctCount[c])}</small></button>`;
     let html = q ? "" : `<button type="button" data-cc="" class="all ${state.country ? "" : "on"}"><span>alle Länder</span><small>${fmt.format(Object.keys(ctCount).length)}</small></button>`;
-    if (state.corder === "alpha") {
-      let last = "";
-      for (const c of codes.sort(byName)) {
-        const l = cname(c)[0].toUpperCase();
-        if (l !== last) { html += `<h3>${esc(l)}</h3>`; last = l; }
-        html += item(c);
+    if (state.corder === "alpha" && !q) {
+      // erst die Buchstaben, nach Antippen die Länder mit diesem Anfangsbuchstaben
+      const letters = {};
+      const L0 = (c) => cname(c).normalize("NFD")[0].toUpperCase();
+      for (const c of codes) { const l = L0(c); letters[l] = (letters[l] || 0) + 1; }
+      if (!state.cletter && state.country) state.cletter = L0(state.country);
+      if (!state.cletter) {
+        html += `<div class="cd-abc">${Object.keys(letters).sort(coll.compare).map((l) => `<button type="button" data-l="${esc(l)}"><b>${esc(l)}</b><small>${letters[l]} ${letters[l] === 1 ? "Land" : "Länder"}</small></button>`).join("")}</div>`;
+      } else {
+        html += `<button type="button" class="cd-back" data-l=""><span>‹ alle Buchstaben</span><small>${esc(state.cletter)}</small></button><h3>${esc(state.cletter)}</h3>`;
+        html += codes.filter((c) => L0(c) === state.cletter).sort(byName).map(item).join("");
       }
+    } else if (state.corder === "alpha") {
+      html += codes.sort(byName).map(item).join("");
     } else if (state.corder === "count") {
       html += codes.sort((a, b) => ctCount[b] - ctCount[a] || byName(a, b)).map(item).join("");
     } else {
@@ -226,7 +233,7 @@
     $("cd-order").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.o === state.corder)));
   }
   $("country-btn").addEventListener("click", () => {
-    $("cd-q").value = ""; drawCountryList();
+    $("cd-q").value = ""; state.cletter = ""; drawCountryList();
     const d = $("country-dlg"); if (d.showModal) d.showModal(); else d.setAttribute("open", "");
     const on = $("cd-list").querySelector(".on:not(.all)"); if (on) on.scrollIntoView({ block: "center" });
   });
@@ -235,6 +242,8 @@
   $("cd-order").addEventListener("click", (e) => { const b = e.target.closest("button[data-o]"); if (!b) return; state.corder = b.dataset.o; drawCountryList(); $("cd-list").scrollTop = 0; });
   $("cd-q").addEventListener("input", drawCountryList);
   $("cd-list").addEventListener("click", (e) => {
+    const lb = e.target.closest("button[data-l]");
+    if (lb) { state.cletter = lb.dataset.l; drawCountryList(); $("cd-list").scrollTop = 0; return; }
     const b = e.target.closest("button[data-cc]"); if (!b) return;
     state.country = b.dataset.cc; fillCountries(); $("country-dlg").close(); render();
   });
