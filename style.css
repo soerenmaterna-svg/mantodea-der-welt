@@ -676,3 +676,14 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .ss, .ss * { cursor: none !important; }
 .ss.show-cursor, .ss.show-cursor * { cursor: default !important; }
 .ss.show-cursor button, .ss.show-cursor select, .ss.show-cursor label { cursor: pointer !important; }
+
+/* Schalter alle / mit Foto: Anzahl alle – Schieberegler – mit Foto Anzahl */
+.phs { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.phs button { border: 0; background: none; padding: 2px 2px; font: inherit; font-size: .9rem; color: var(--muted, #667); cursor: pointer; }
+.phs button b { color: inherit; font-weight: 700; }
+.phs:not(.on) .phs-l, .phs.on .phs-r { color: var(--ink, #1d2a1f); font-weight: 600; }
+.phs .phs-t { position: relative; width: 42px; height: 24px; border-radius: 12px; background: #c9d3c6; transition: background .2s; padding: 0; flex: none; }
+.phs .phs-t i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+.phs.on .phs-t { background: var(--accent, #2f7d3a); }
+.phs.on .phs-t i { transform: translateX(18px); }
+@media (max-width: 600px) { .phs button { font-size: .8rem; } .phs { gap: 4px; } }

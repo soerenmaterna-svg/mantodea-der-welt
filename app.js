@@ -407,7 +407,10 @@
     $("fd-count").textContent = `${fmt.format(current.length)} ${current.length === 1 ? "Art" : "Arten"} anzeigen`;
     $("more").hidden = state.shown >= total;
     $("more").textContent = `Weitere Arten anzeigen (${fmt.format(Math.max(0, total - state.shown))} übrig)`;
-    $("photo-switch").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.ph === "1") === state.onlyPhoto)));
+    { const was = state.onlyPhoto; state.onlyPhoto = false; const base = filtered(); state.onlyPhoto = was;
+      $("ph-all").textContent = fmt.format(base.length); $("ph-with").textContent = fmt.format(base.filter((s) => s.p).length); }
+    const sw = $("photo-switch"); sw.classList.toggle("on", state.onlyPhoto);
+    sw.querySelector(".phs-t").setAttribute("aria-checked", String(state.onlyPhoto));
     document.querySelectorAll(".view button").forEach((b) => b.classList.toggle("on", b.dataset.view === state.view));
   }
 
@@ -891,7 +894,7 @@
   $("onlyPhoto").addEventListener("change", (e) => { state.onlyPhoto = e.target.checked; render(); });
   $("photo-switch").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-ph]"); if (!b) return;
-    state.onlyPhoto = b.dataset.ph === "1"; $("onlyPhoto").checked = state.onlyPhoto; render();
+    state.onlyPhoto = b.dataset.ph === "t" ? !state.onlyPhoto : b.dataset.ph === "1"; $("onlyPhoto").checked = state.onlyPhoto; render();
   });
   $("hideFossil").addEventListener("change", (e) => { state.hideFossil = e.target.checked; render(); });
   $("continents").addEventListener("click", (e) => {
