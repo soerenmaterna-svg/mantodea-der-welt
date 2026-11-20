@@ -67,6 +67,8 @@
   } catch (e) { /* egal */ }
   const save = () => { try { localStorage.setItem("mantodea-state", JSON.stringify({ sort: state.sort, group: state.group, view: state.view })); } catch (e) { /* egal */ } };
 
+  // kurzer Platzhalter im schmalen Suchfeld auf dem Handy
+  if (matchMedia("(max-width: 600px)").matches) $("q").placeholder = "Suchen …";
   // ---------- Kopfzeile
   const fams = [...new Set(DATA.map((s) => s.f))].sort(coll.compare);
   $("stats").innerHTML = [
@@ -392,6 +394,8 @@
     // Anzahl klar als Ergebnis der gewählten Filter beschreiben
     const nArt = `<b>${fmt.format(current.length)} ${current.length === 1 ? "Art" : "Arten"}</b>`;
     const by = [state.q.trim() ? "Suche" : "", nf ? (nf === 1 ? "Filter" : `${nf} Filter`) : ""].filter(Boolean).join(" und ");
+    // Die Trefferzahl erscheint erst, wenn gesucht oder gefiltert wird
+    $("count-text").hidden = !by;
     $("count-text").innerHTML = (by ? `Ergebnis für Ihre ${by}: ${nArt}${state.onlyPhoto ? " mit Foto" : ""}`
       : `${state.onlyPhoto ? `${nArt} mit Foto` : `Alle ${nArt}`} · kein Filter gesetzt`) +
       (state.group ? ` in ${fmt.format(groups.length)} ${groups.length === 1 ? "Gruppe" : "Gruppen"}` : "");
