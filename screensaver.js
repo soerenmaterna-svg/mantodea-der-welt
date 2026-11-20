@@ -139,12 +139,12 @@
   function tvHelp(msg) {
     tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Diashow auf dem Fernseher</b><button type="button" data-tv="close" aria-label="Schließen">×</button></div>
       ${msg ? `<p class="tv-msg">${UI.esc(msg)}</p>` : ""}
+      <p class="tv-note">Am Fernseher muss nichts installiert werden – es genügt eine Funktion, die die meisten Smart-TVs schon eingebaut haben:</p>
       <ul class="tv-list">
-        <li><b>Chromecast / Google TV:</b> in Chrome oder Edge oben rechts ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
-        <li><b>iPhone / iPad / Mac:</b> Kontrollzentrum → <i>Bildschirmsynchronisierung</i> (AirPlay) → Apple TV oder AirPlay-Fernseher.</li>
-        <li><b>Android:</b> Schnelleinstellungen → <i>Bildschirm übertragen</i> bzw. <i>Smart View</i>.</li>
-        <li><b>Windows:</b> <kbd>Win</kbd> + <kbd>K</kbd> → Fernseher wählen (Miracast).</li>
-        <li><b>Smart-TV mit Browser:</b> diese Adresse öffnen, die Diashow startet von selbst:<br><a href="${UI.esc(tvUrl())}" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL)}?diashow</a></li>
+        <li><b>Chromecast eingebaut</b> (Google TV, Android TV, viele Sony, Philips, TCL, Hisense): in Chrome oder Edge ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
+        <li><b>AirPlay eingebaut</b> (Apple TV, viele Samsung, LG, Sony, Philips ab 2019): iPhone/iPad/Mac → Kontrollzentrum → <i>Bildschirmsynchronisierung</i>.</li>
+        <li><b>Bildschirmspiegelung / Miracast</b> (fast alle Smart-TVs, z. B. Samsung „Smart View“, LG „Screen Share“): Android → <i>Bildschirm übertragen</i>, Windows → <kbd>Win</kbd> + <kbd>K</kbd>.</li>
+        <li><b>Browser des Fernsehers</b> (vorinstalliert): diese Adresse öffnen, die Diashow startet von selbst:<br><a href="${UI.esc(tvUrl())}" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL)}?diashow</a></li>
       </ul>`;
     tvPanel.hidden = false;
   }

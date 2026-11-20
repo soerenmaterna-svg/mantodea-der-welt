@@ -930,3 +930,4 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .ss-tv .tv-url { color: #bfe3b4; word-break: break-all; }
 .ss-tv .tv-msg { margin: 6px 0; color: #ffd9a0; }
 .ss-tv kbd { background: rgba(255,255,255,.15); border-radius: 4px; padding: 0 5px; font: inherit; font-size: .85em; }
+.ss-tv .tv-note { margin: 6px 0 0; font-size: .9rem; opacity: .9; }
