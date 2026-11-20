@@ -175,7 +175,7 @@
       ` · Lizenz: <a href="${url}" target="_blank" rel="noopener license">${esc(lab)}</a>` +
       ` · Quelle: <a href="${esc(ref)}" target="_blank" rel="noopener">${esc(src)}</a>`;
   }
-  const PLACEHOLDER = `<div class="ph"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M40 10c3 0 5 2 5 5s-2 4-4 4l-4 8 6 4-2 2-6-3-3 7 9 16-3 1-9-14-4 6 2 10h-3l-2-11 5-9-8-6-8 4-1-3 9-5 7 4 4-8-4-6-6 2-1-3 8-2 5 6 4-7c-1-1-1-2-1-3 0-3 2-5 5-5z" fill="currentColor"/></svg><span>Kein frei lizenziertes Foto verfügbar</span></div>`;
+  const PLACEHOLDER = `<div class="ph"><svg class="mt" viewBox="10 15 120 85" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M18 70 C30 66 46 64 60 63" stroke-width="7"/><path d="M60 63 L92 50" stroke-width="4.5"/><path d="M92 50 L101 43 L104 49 Z" fill="currentColor" stroke-width="2"/><path d="M101 44 Q112 30 118 24 M101 44 Q114 36 122 33" stroke-width="1.2"/><path d="M86 52 L80 66 L94 61" stroke-width="3"/><path d="M94 61 L101 56" stroke-width="2"/><path d="M80 54 L74 68 L87 66" stroke-width="2.6"/><path d="M58 64 L52 80 L48 92 M56 64 L66 80 L72 92 M44 66 L36 82 L30 94 M42 66 L50 84 L56 94" stroke-width="1.8"/><path d="M22 66 C34 56 50 55 62 60" stroke-width="1.5" opacity=".6"/></g></svg><span>Noch kein Foto</span></div>`;
 
   // ---------- Bedienelemente
   $("family").insertAdjacentHTML("beforeend", fams.map((f) => `<option>${esc(f)}</option>`).join(""));

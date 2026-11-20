@@ -898,3 +898,9 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 /* Bildschirmschoner: Artname anklickbar */
 #ss-name { cursor: pointer; }
 #ss-name:hover i { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Arten ohne Foto: Blatt-Grün mit Silhouette */
+.ph { background: radial-gradient(circle at 50% 40%, #eef6e6, #cfe3c2); color: #3f7d3a; gap: 4px; }
+.ph svg, .ph svg.mt { width: 62% !important; max-width: 150px; height: auto !important; opacity: .55; }
+.ph span { color: #3f6b36; font-weight: 600; }
+@media (max-width: 600px) { #list .ph span, #k-res .ph span { display: block; font-size: .62rem; } #list .ph svg, #k-res .ph svg { width: 70% !important; } }
