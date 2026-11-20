@@ -904,3 +904,7 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .ph svg, .ph svg.mt { width: 62% !important; max-width: 150px; height: auto !important; opacity: .55; }
 .ph span { color: #3f6b36; font-weight: 600; }
 @media (max-width: 600px) { #list .ph span, #k-res .ph span { display: block; font-size: .62rem; } #list .ph svg, #k-res .ph svg { width: 70% !important; } }
+
+/* Stammbaum-Suche: Schrift immer schwarz */
+.tree-head input, .tree-head input:focus { color: #111 !important; -webkit-text-fill-color: #111 !important; caret-color: #111; background: #fff !important; }
+.tree-head input::placeholder { color: #6b6b6b !important; -webkit-text-fill-color: #6b6b6b !important; opacity: 1; }

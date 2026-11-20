@@ -347,8 +347,14 @@
         const lx = spX + (spPhoto ? d + 6 : 7), fs = Math.max(10, Math.min(15, rh * 0.42)), room = W + view.x - lx - 6;
         ctx.font = `italic 500 ${fs}px system-ui`;
         const t = ctx.measureText(n.name).width <= room ? n.name : shortName(n.name);
-        const sub = rh >= 34 ? [n.s.de || n.s.en, n.year].filter(Boolean).join(" · ") : "";
-        label(t, lx, y - (sub ? fs * 0.45 : 0), fs, "#1b2a17", 500, true, room);
+        // wissenschaftlicher Name mit Autor und Jahr der Beschreibung, z. B. Mantis religiosa (Linnaeus, 1758)
+        const au = n.s.a || "", tw = ctx.measureText(t).width;
+        ctx.font = `400 ${fs * 0.88}px system-ui`;
+        const inline = au && tw + 5 + ctx.measureText(au).width <= room;
+        const sub = [inline ? "" : (rh >= 24 ? au : ""), rh >= 34 ? n.s.de || n.s.en : ""].filter(Boolean).join(" · ");
+        const yy = y - (sub ? fs * 0.45 : 0);
+        label(t, lx, yy, fs, "#1b2a17", 500, true, room);
+        if (inline) label(au, lx + tw + 5, yy, fs * 0.88, "#4a5a44", 400, false, room - tw - 5);
         if (sub) label(sub, lx, y + fs * 0.7, fs * 0.78, "#5b6b55", 400, false, room);
       }
     }
