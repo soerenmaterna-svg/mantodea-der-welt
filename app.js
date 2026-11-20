@@ -58,7 +58,7 @@
   const BYKEY = new Map(DATA.map((s) => [String(s.k), s]));
 
   const state = {
-    q: "", sort: "name", group: "", family: "", genus: "", license: "", status: "", country: "", corder: "cont",
+    q: "", abc: "", sort: "name", group: "", family: "", genus: "", license: "", status: "", country: "", corder: "cont",
     conts: new Set(), onlyPhoto: true, hideFossil: true, view: "grid", shown: PAGE,
   };
   try {
@@ -253,6 +253,7 @@
       (!state.onlyPhoto || s.p) &&
       (!state.family || s.f === state.family) &&
       (!state.genus || s.g === state.genus) &&
+      (!state.abc || s.n[0].toUpperCase() === state.abc) &&
       (!state.license || isCommercial(s.p)) &&
       (!state.status || (state.status === "sicher" ? !s.u : state.status === "unsicher" ? s.u : NEW.has(s.n))) &&
       (!state.conts.size || s.cc.some((c) => state.conts.has(c))) &&
@@ -339,6 +340,50 @@
   fdlg.addEventListener("click", (e) => { if (e.target === fdlg) closeFilters(); });
   fdlg.addEventListener("close", () => $("count").scrollIntoView({ block: "nearest" }));
 
+  // ---------- Schnellfilter: A–Z, Länder, Gattungen direkt; "mehr" öffnet die übrigen Filter
+  let pickMode = "";
+  function basePick(skip) { const keep = state[skip]; state[skip] = ""; const r = filtered(); state[skip] = keep; return r; }
+  function drawPick() {
+    const q = $("pk-q").value.trim().toLowerCase(), L = $("pk-list");
+    if (pickMode === "abc") {
+      const cnt = {}; basePick("abc").forEach((s) => { const l = s.n[0].toUpperCase(); cnt[l] = (cnt[l] || 0) + 1; });
+      L.innerHTML = `<div class="pk-abc"><button type="button" data-v="" class="all ${state.abc ? "" : "on"}">alle</button>` +
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l) => `<button type="button" data-v="${l}" class="${l === state.abc ? "on" : ""}"${cnt[l] ? "" : " disabled"}><b>${l}</b><small>${fmt.format(cnt[l] || 0)}</small></button>`).join("") + `</div>`;
+    } else {
+      const cnt = {}; basePick("genus").forEach((s) => { cnt[s.g] = (cnt[s.g] || 0) + 1; });
+      const gs = Object.keys(cnt).filter((g) => !q || g.toLowerCase().includes(q)).sort(coll.compare);
+      let html = q ? "" : `<button type="button" data-v="" class="all ${state.genus ? "" : "on"}"><span>alle Gattungen</span><small>${fmt.format(Object.keys(cnt).length)}</small></button>`, last = "";
+      for (const g of gs) { if (!q && g[0] !== last) { html += `<h3>${esc(g[0])}</h3>`; last = g[0]; }
+        html += `<button type="button" data-v="${esc(g)}" class="${g === state.genus ? "on" : ""}"><span><i>${esc(g)}</i></span><small>${fmt.format(cnt[g])}</small></button>`; }
+      L.innerHTML = html || `<p class="muted">Keine Gattung gefunden.</p>`;
+    }
+  }
+  function openPick(mode) {
+    pickMode = mode; $("pk-title").textContent = mode === "abc" ? "Anfangsbuchstabe der Art" : "Gattung wählen";
+    $("pk-q").value = ""; $("pk-q").parentElement.hidden = mode === "abc"; drawPick();
+    const d = $("pick-dlg"); if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+    const on = $("pk-list").querySelector(".on:not(.all)"); if (on) on.scrollIntoView({ block: "center" });
+  }
+  function drawQuick() {
+    $("qf-abc").textContent = state.abc ? `A–Z: ${state.abc}` : "A–Z";
+    $("qf-land").textContent = state.country ? cname(state.country) : "Länder";
+    $("qf-gen").innerHTML = state.genus ? `<i>${esc(state.genus)}</i>` : "Gattungen";
+    document.querySelectorAll(".qf-b[data-qf]").forEach((b) => b.classList.toggle("set", !!{ abc: state.abc, land: state.country, gen: state.genus }[b.dataset.qf]));
+  }
+  document.querySelector(".qf").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-qf]"); if (!b) return;
+    if (b.dataset.qf === "land") $("country-btn").click(); else openPick(b.dataset.qf);
+  });
+  $("pk-q").addEventListener("input", drawPick);
+  $("pk-close").addEventListener("click", () => $("pick-dlg").close());
+  $("pick-dlg").addEventListener("click", (e) => { if (e.target === $("pick-dlg")) $("pick-dlg").close(); });
+  $("pk-list").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]"); if (!b) return;
+    if (pickMode === "abc") state.abc = b.dataset.v;
+    else { state.genus = b.dataset.v; $("genus").value = state.genus; }
+    $("pick-dlg").close(); render();
+  });
+
   // Aktive Auswahl als entfernbare Chips über der Artenliste
   const optText = (id) => { const o = $(id).selectedOptions[0]; return o ? o.textContent.replace(/\s*\(\d[\d.]*\)\s*$/, "") : ""; };
   function activeChips() {
@@ -346,6 +391,7 @@
     if (state.sort !== "name") c.push(["sort", "Sortierung", optText("sort")]);
     if (state.group) c.push(["group", "Gruppiert", optText("group")]);
     if (state.family) c.push(["family", "Familie", state.family]);
+    if (state.abc) c.push(["abc", "Anfangsbuchstabe", state.abc]);
     if (state.genus) c.push(["genus", "Gattung", state.genus]);
     if (state.country) c.push(["country", "Land", cname(state.country)]);
     for (const k of state.conts) c.push(["cont:" + k, "Kontinent", CONT[k]]);
@@ -367,6 +413,7 @@
     else if (k === "group") { state.group = ""; $("group").value = ""; save(); }
     else if (k === "family") { state.family = ""; state.genus = ""; $("family").value = ""; fillGenus(); }
     else if (k === "genus") { state.genus = ""; $("genus").value = ""; }
+    else if (k === "abc") { state.abc = ""; }
     else if (k === "country") { state.country = ""; fillCountries(); }
     else if (k === "status") { state.status = ""; $("status").value = ""; }
     else if (k === "license") { state.license = ""; $("license").value = ""; }
@@ -380,13 +427,13 @@
     const b = e.target.closest("[data-af]"); if (b) clearOne(b.dataset.af);
   });
   function activeFilters() {
-    return [state.family, state.genus, state.license, state.status, state.country, !state.hideFossil].filter(Boolean).length + state.conts.size;
+    return [state.abc, state.family, state.genus, state.license, state.status, state.country, !state.hideFossil].filter(Boolean).length + state.conts.size;
   }
   let current = [];
   function render(resetShown = true) {
     const nf = activeFilters();
     $("filter-badge").textContent = nf ? String(nf) : "";
-    drawActive();
+    drawActive(); drawQuick();
     if (resetShown) state.shown = PAGE;
     current = filtered().sort(SORTS[state.sort]);
     const groups = grouped(current);
@@ -918,7 +965,7 @@
     if (b) { state.view = b.dataset.view; save(); render(false); }
   });
   $("reset").addEventListener("click", () => {
-    Object.assign(state, { q: "", family: "", genus: "", license: "", status: "", country: "", onlyPhoto: true, hideFossil: true });
+    Object.assign(state, { q: "", abc: "", family: "", genus: "", license: "", status: "", country: "", onlyPhoto: true, hideFossil: true });
     state.conts.clear();
     for (const id of ["q", "family", "license", "status", "country"]) $(id).value = "";
     $("onlyPhoto").checked = true; $("hideFossil").checked = true;
