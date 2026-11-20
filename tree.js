@@ -495,7 +495,7 @@
     document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life" : p.titel)}</span></button>`).join("");
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span>${diffCount ? `<span class="diffnote" title="Familien, deren nächste Verwandte sich unterscheiden">◯ ${diffCount} Familien anders als bei ${esc(diffWith)}</span>` : ""}</summary>
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
       <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }

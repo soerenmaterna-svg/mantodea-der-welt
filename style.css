@@ -838,3 +838,7 @@ table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space
 .tree-src .diffnote { margin-left: auto; }
 @media (max-width: 700px) { .tree-src .short { font-size: .72rem; } .tree-src summary { flex-wrap: wrap; row-gap: 3px; } .tree-src .diffnote { margin-left: 0; } }
 @media (max-width: 700px) { .tree-src .short { flex: 1 1 0; white-space: normal; line-height: 1.25; } .tree-src .diffnote { flex-basis: 100%; } }
+
+/* Quellenzeile immer genau eine Zeile */
+.tree-src summary { flex-wrap: nowrap !important; white-space: nowrap; }
+.tree-src .short { flex: 0 1 auto !important; white-space: nowrap !important; overflow: hidden; text-overflow: ellipsis; }
