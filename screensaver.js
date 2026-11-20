@@ -144,7 +144,7 @@
         <li><b>Chromecast eingebaut</b> (Google TV, Android TV, viele Sony, Philips, TCL, Hisense): in Chrome oder Edge ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
         <li><b>AirPlay eingebaut</b> (Apple TV, viele Samsung, LG, Sony, Philips ab 2019): iPhone/iPad/Mac → Kontrollzentrum → <i>Bildschirmsynchronisierung</i>.</li>
         <li><b>Bildschirmspiegelung / Miracast</b> (fast alle Smart-TVs, z. B. Samsung „Smart View“, LG „Screen Share“): Android → <i>Bildschirm übertragen</i>, Windows → <kbd>Win</kbd> + <kbd>K</kbd>.</li>
-        <li><b>Browser des Fernsehers</b> (vorinstalliert): diese Adresse öffnen, die Diashow startet von selbst:<br><a href="${UI.esc(tvUrl())}" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL)}?diashow</a></li>
+        <li><b>Browser des Fernsehers</b> (vorinstalliert, geht mit jedem Smart-TV): diese kurze Adresse eintippen und als Lesezeichen speichern – die Diashow startet von selbst:<br><a href="${UI.esc(TV_URL)}tv" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL.replace("https://", ""))}tv</a></li>
       </ul>`;
     tvPanel.hidden = false;
   }
