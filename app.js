@@ -100,6 +100,8 @@
   const RM = window.MANTODEA_REMOTE || { u: {} };
   const smallUrl = (u) => !u ? u : u.replace("/large.", "/medium.").replace(/\/1024px-/, "/500px-").replace(/_b\.(jpg|png)$/, "_z.$1");
   const TITEL = window.MANTODEA_TITEL || {};
+  const liveTitle = {};
+  const titleRef = (k) => liveTitle[k] || TITEL[k] || null;
   const bigOf = (rec) => {
     if (!rec || !rec.k) return null;
     if (String(rec.k).startsWith("u")) return RM.u[rec.k] || null;
@@ -131,6 +133,8 @@
       }
     }
     try {
+      const ts = rec.p && !String(rec.k).startsWith("u") ? await titleSrcFor(rec) : null;
+      if (ts) { img.src = ts; return; }
       await loadChunk(rec.p.b);
       img.src = "data:image/jpeg;base64," + chunks[rec.p.b][rec.k];
     } catch (e) {
@@ -549,16 +553,12 @@
     const order = GROUPS.map((x) => x[1]).filter((n) => groups.has(n));
     const multi = order.length > 1;
     box.innerHTML = order.map((n) => `${multi ? `<h4 class="g-group">${esc(n)} <small>${groups.get(n).length}</small></h4>` : ""}<div class="gallery">${groups.get(n).map((i) => { const g = items[i];
-      return `<div class="gcell"><button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by)}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>${titleWritable ? `<button type="button" class="gstar" data-star="${i}" title="Als Hauptbild verwenden" aria-label="Als Hauptbild verwenden">★</button>` : ""}</div>`; }).join("")}</div>`).join("");
-    box.onclick = (e) => {
-      const st = e.target.closest(".gstar"); if (st) { e.stopPropagation(); setTitle(s, +st.dataset.star); return; }
-      const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1);
-    };
+      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by)}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>`; }).join("")}</div>`).join("");
+    box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
     applyTitle(s);
   }
   // ---------- Hauptbild wählen (gespeichert in der Datenbank "titelbilder"; nächtlicher Lauf übernimmt es fest)
   let titleDb = null, titleWritable = false;
-  const liveTitle = {};
   (async () => {
     const use = (n) => (window.claude && window.claude.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null));
     const [db, user] = await Promise.all([use("db"), use("user")]);
@@ -566,11 +566,12 @@
     titleDb = db;
     try { titleWritable = user && user.can ? (await user.can("data.write")) !== false : true; } catch (e) { titleWritable = false; }
     db.collection("titelbilder").orderBy("zeit", "asc").limit(5000).onSnapshot((snap) => {
-      snap.docs.forEach((d) => { const v = d.data(); if (v.art_key) liveTitle[v.art_key] = v.ref; });
+      const changed = [];
+      snap.docs.forEach((d) => { const v = d.data(); if (v.art_key && liveTitle[v.art_key] !== v.ref) { liveTitle[v.art_key] = v.ref; changed.push(v.art_key); } });
+      changed.forEach(refreshCards);
       const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (s && $("detail").open) applyTitle(s);
     }, () => {});
   })();
-  const titleRef = (k) => liveTitle[k] || TITEL[k] || null;
   function applyTitle(s) {
     const ref = titleRef(s.k); if (!ref || !galItems.length) return;
     const i = galItems.findIndex((it) => it.g.ref === ref); if (i < 0) return;
@@ -578,14 +579,27 @@
     if (im) { im.removeAttribute("data-ik"); im.src = it.src; }
     const cr = document.querySelector(".d-hero .credit"); if (cr) cr.innerHTML = credit({ l: it.g.l, by: it.g.by, src: it.g.src, ref: it.g.ref }, false);
     const tag = document.querySelector(".d-hero .front-tag"); if (tag) tag.textContent = it.g.a || "gewähltes Hauptbild";
-    document.querySelectorAll("#d-gal .gstar").forEach((b) => b.classList.toggle("on", +b.dataset.star === i));
+    document.querySelectorAll("#d-gal .gthumb").forEach((b) => b.classList.toggle("is-title", +b.dataset.gi === i));
     s._title = it;
+  }
+  // Kacheln einer Art neu befüllen (gewähltes Hauptbild)
+  function refreshCards(k) {
+    const s = BYKEY.get(String(k)); if (!s) return;
+    document.querySelectorAll(`[data-k="${CSS.escape(String(k))}"] .img img`).forEach((im) => { im.dataset.ik = s.k; RECS.set(String(s.k), s); fill(im); });
+  }
+  async function titleSrcFor(rec) {
+    const ref = titleRef(rec.k); if (!ref || SA) return null;
+    const bundles = [rec.gb, rec.fb].filter(Boolean);
+    try { await Promise.all(bundles.map((b) => loadScript(`data/img/${b}.js`))); } catch (e) { return null; }
+    const g = bundles.flatMap((b) => (gals[b] || {})[rec.k] || []).find((x) => x.ref === ref);
+    return g ? "data:image/jpeg;base64," + g.d : null;
   }
   async function setTitle(s, i) {
     const it = galItems[i]; if (!it || !titleDb) return;
-    liveTitle[s.k] = it.g.ref; applyTitle(s);
+    liveTitle[s.k] = it.g.ref; applyTitle(s); refreshCards(s.k);
     try { await titleDb.collection("titelbilder").add({ art_key: String(s.k), art: s.n, ref: it.g.ref, zeit: new Date().toISOString() }); }
-    catch (e) { const b = document.querySelector(`#d-gal .gstar[data-star="${i}"]`); if (b) b.title = "Speichern nicht erlaubt"; }
+    catch (e) { return false; }
+    return true;
   }
   async function openZoom(s, start) {
     // Liste: Titelbild (falls vorhanden) + Galerie
@@ -594,15 +608,15 @@
     if (s._title && s._title.g.ref === titleRef(s.k)) list.push({ src: s._title.src, cap: credit({ l: s._title.g.l, by: s._title.g.by, src: s._title.g.src, ref: s._title.g.ref }, false), ref: s._title.g.ref, a: s._title.g.a });
     else if (s.p) { try { list.push({ src: hdSrc(hdf) || await imgData(s), cap: credit(s.p, false), ref: s.p.ref, a: s.p.front ? "♀ adultes Weibchen" : "" }); } catch (e) { /* ohne Titelbild */ } }
     else start = Math.max(0, start - 1);
-    for (const it of galItems) { const g = it.g, [lab, lurl] = LICS[g.l] || [g.l, "#"];
-      list.push({ src: it.src, a: g.a, ref: g.ref, cap: `Foto: ${esc(g.by || "siehe Quelle")} · <a href="${lurl}" target="_blank" rel="noopener license">${esc(lab)}</a> · ${esc(g.src)}` }); }
+    for (const [gi, it] of galItems.entries()) { const g = it.g, [lab, lurl] = LICS[g.l] || [g.l, "#"];
+      list.push({ gi, src: it.src, a: g.a, ref: g.ref, cap: `Foto: ${esc(g.by || "siehe Quelle")} · <a href="${lurl}" target="_blank" rel="noopener license">${esc(lab)}</a> · ${esc(g.src)}` }); }
     if (!list.length) return;
     let idx = Math.min(start, list.length - 1);
     const lb = $("lightbox");
     lb.innerHTML = `<button type="button" class="close" aria-label="Schließen">×</button>
       <div class="zstage"><a class="zlink" target="_blank" rel="noopener"><img alt="${esc(s.n)}" draggable="false"></a></div>
       ${list.length > 1 ? `<button type="button" class="znav prev" aria-label="Vorheriges Foto">‹</button><button type="button" class="znav next" aria-label="Nächstes Foto">›</button>` : ""}
-      <div class="ztools"><button type="button" data-zz="out" aria-label="Verkleinern">－</button><button type="button" data-zz="reset" aria-label="Zurücksetzen">1:1</button><button type="button" data-zz="in" aria-label="Vergrößern">＋</button><span class="zcount"></span></div>
+      <div class="ztools"><button type="button" data-zz="out" aria-label="Verkleinern">－</button><button type="button" data-zz="reset" aria-label="Zurücksetzen">1:1</button><button type="button" data-zz="in" aria-label="Vergrößern">＋</button><span class="zcount"></span>${titleWritable ? `<button type="button" class="zset" hidden>🖼️ Als Hauptbild verwenden</button>` : ""}</div>
       <p class="zhint">Foto antippen: Original in voller Auflösung öffnen · zwei Finger oder ＋/－: zoomen</p>
       <p class="zcap"></p>`;
     lb.hidden = false;
@@ -627,6 +641,8 @@
       const zl = lb.querySelector(".zlink"); if (it.ref) zl.href = it.ref; else zl.removeAttribute("href");
       lb.querySelector(".zcap").innerHTML = `${it.a ? `<b>${esc(it.a)}</b> · ` : ""}${it.cap}${it.ref ? ` · <a href="${esc(it.ref)}" target="_blank" rel="noopener">Original in voller Größe ↗</a>` : ""}`;
       const c = lb.querySelector(".zcount"); if (c) c.textContent = list.length > 1 ? `${idx + 1} / ${list.length}` : "";
+      const zs = lb.querySelector(".zset");
+      if (zs) { const isT = it.ref && it.ref === (titleRef(s.k) || (s.p && s.p.ref)); zs.hidden = it.gi === undefined; zs.disabled = isT; zs.textContent = isT ? "✓ Ist das Hauptbild" : "🖼️ Als Hauptbild verwenden"; }
     };
     show(idx);
     stage.onwheel = (e) => { e.preventDefault(); zoomAt(e.clientX, e.clientY, Math.exp(-Math.max(-100, Math.min(100, e.deltaY)) * 0.004)); };
@@ -654,6 +670,8 @@
     lb.onclick = (e) => {
       if (e.target.closest(".close")) { lb.hidden = true; return; }
       if (e.target.closest(".prev")) return show(idx - 1);
+      const zs = e.target.closest(".zset");
+      if (zs && list[idx].gi !== undefined) { zs.disabled = true; setTitle(s, list[idx].gi).then((ok) => { zs.textContent = ok ? "✓ Ist jetzt das Hauptbild" : "Speichern nicht erlaubt"; }); return; }
       if (e.target.closest(".next")) return show(idx + 1);
       const t = e.target.closest("[data-zz]");
       if (t) { const r = stage.getBoundingClientRect(); if (t.dataset.zz === "reset") { z.k = 1; z.x = z.y = 0; apply(); } else zoomAt(r.left + r.width / 2, r.top + r.height / 2, t.dataset.zz === "in" ? 1.6 : 1 / 1.6); }

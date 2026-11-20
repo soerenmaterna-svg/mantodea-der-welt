@@ -623,3 +623,11 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .gstar { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 15px; line-height: 28px; padding: 0; cursor: pointer; }
 .gstar:hover { background: rgba(0,0,0,.7); }
 .gstar.on { background: #f2b600; color: #3a2a00; }
+.zoomer .ztools .zset { width: auto; padding: 0 12px; margin-left: 8px; background: #3f7d3a; border-color: #3f7d3a; font-weight: 600; }
+.zoomer .ztools .zset[disabled] { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.3); opacity: 1; }
+.zoomer .ztools .zset[hidden] { display: none; }
+.gthumb.is-title { outline: 3px solid #3f7d3a; outline-offset: -3px; }
+.zoomer .ztools { flex-wrap: wrap; justify-content: center; }
+@media (max-width: 700px) {
+  .zoomer .ztools .zset { order: -1; flex-basis: calc(100% - 70px); margin: 0 60px 6px 0; height: 40px; white-space: nowrap; }
+}
