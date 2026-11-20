@@ -827,3 +827,14 @@ table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space
 .tree-pick button .lg { font-size: .88rem; }
 @media (max-width: 700px) { .tree-pick button { white-space: normal; text-align: center; padding: 5px 6px; } .tree-pick button .lg { display: inline; font-size: .76rem; line-height: 1.2; } }
 .tree-pick button[aria-selected="true"]::after { display: none !important; }
+
+/* Quellenzeile: Kurztext und rundes i zum Aufklappen */
+.tree-src .short { color: var(--ink); font-size: .8rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-src .ibtn { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font: italic 700 .85rem Georgia, serif; color: #fff; background: #5b6b55; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .15s; }
+.tree-dlg[data-tree="schwarzroy2019"] .tree-src .ibtn { background: #a24e1c; }
+.tree-dlg[data-tree="casadei2026"] .tree-src .ibtn { background: #1f5f97; }
+.tree-src[open] .ibtn { transform: scale(1.12); box-shadow: 0 0 0 3px rgba(0,0,0,.08); }
+.tree-src summary:hover .ibtn { transform: scale(1.1); }
+.tree-src .diffnote { margin-left: auto; }
+@media (max-width: 700px) { .tree-src .short { font-size: .72rem; } .tree-src summary { flex-wrap: wrap; row-gap: 3px; } .tree-src .diffnote { margin-left: 0; } }
+@media (max-width: 700px) { .tree-src .short { flex: 1 1 0; white-space: normal; line-height: 1.25; } .tree-src .diffnote { flex-basis: 100%; } }
