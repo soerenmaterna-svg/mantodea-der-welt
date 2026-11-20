@@ -939,6 +939,10 @@
   // ---------- Ereignisse
   let t;
   $("q").addEventListener("input", (e) => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 150); });
+  // Lupe oder Eingabetaste: sofort suchen, Tastatur schließen, zu den Ergebnissen
+  function goSearch() { clearTimeout(t); state.q = $("q").value; render(); $("q").blur(); if (document.activeElement) document.activeElement.blur(); $("count").scrollIntoView({ behavior: "smooth", block: "start" }); }
+  $("q-go").addEventListener("click", (e) => { e.preventDefault(); goSearch(); });
+  $("q").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); goSearch(); } });
   $("sort").addEventListener("change", (e) => { state.sort = e.target.value; save(); render(); });
   $("group").addEventListener("change", (e) => { state.group = e.target.value; save(); render(); });
   $("family").addEventListener("change", (e) => { state.family = e.target.value; fillGenus(); render(); });
