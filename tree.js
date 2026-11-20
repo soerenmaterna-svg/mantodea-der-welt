@@ -13,12 +13,12 @@
   <dialog id="tree-dlg" class="tree-dlg" aria-labelledby="tr-title">
     <div class="tree-head">
       <h2 id="tr-title">🌳 Stammbaum</h2>
-      <input type="search" id="tr-q" list="tr-names" placeholder="Gruppe, Gattung oder Art …" autocomplete="off">
+      <div class="tree-pick" id="tr-pick" role="tablist" aria-label="Stammbaum nach Autor"></div>
+      <input type="search" id="tr-q" list="tr-names" placeholder="🔍 Gruppe, Gattung, Art" autocomplete="off">
       <datalist id="tr-names"></datalist>
       <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" data-z="info" aria-label="Erklärung">ⓘ</button><button type="button" class="tr-close" aria-label="Schließen">×</button></span>
     </div>
-    <div class="tree-pick" id="tr-pick" role="tablist" aria-label="Stammbaum nach Autor"></div>
-    <div class="tree-src" id="tr-src"></div>
+    <details class="tree-src" id="tr-src"></details>
     <div class="tree-info" id="tr-info" hidden>
       <b>So liest man den Baum:</b> Jede Verzweigung ist eine Abspaltung in der Stammesgeschichte. <b>Oben</b> stehen die Linien, die sich <b>früh</b> abgespalten haben und viele <b>ursprüngliche</b> Merkmale zeigen: Chaeteessidae, Mantoididae und Metallyticidae. Je tiefer eine Gruppe verschachtelt ist, desto später hat sie sich abgespalten, man spricht von <b>abgeleiteten</b> Gruppen. Danach teilen sich die Mantiden in die Amerimantodea (Neue Welt) und die Cernomantodea (vor allem Alte Welt). Wie die 20 Familien der Cernomantodea untereinander verwandt sind, ist noch nicht sicher geklärt. Sie stehen deshalb gleichrangig nebeneinander, ebenso die Arten innerhalb einer Gattung.
       <br><b>Quellen:</b> Klassifikation des Mantodea Species File im Catalogue of Life, nach Schwarz &amp; Roy (2019), gestützt auf die Stammbaumstudie von Svenson &amp; Whiting (2009, Cladistics 25: 468–514) und spätere Arbeiten. Die Linienlängen sind keine Zeitangaben.
@@ -442,8 +442,12 @@
 
   function drawPick() {
     const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P[0];
-    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><b>${esc(p.titel)}</b><small>${esc(p.kurz || p.art || "")}</small></button>`).join("");
-    document.getElementById("tr-src").innerHTML = m.zitat ? `<span class="tag ${esc(m.art === "genetisch" ? "gen" : m.art === "morphologisch" ? "mor" : "kat")}">${esc(m.art)}</span> ${esc(m.text || "")} <a href="${esc(m.url)}" target="_blank" rel="noopener">Quelle ↗</a>${m.daten ? ` · <a href="${esc(m.daten)}" target="_blank" rel="noopener">Daten ↗</a>` : ""}<br><span class="cite">${esc(m.zitat)}</span>` : "";
+    const cls = (p) => (p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
+    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><i></i><span class="lg">${esc(p.titel)}</span><span class="sh">${esc(p.titel.replace(/ u\. a\./, "").replace("-Ferreira", "").replace(" & Roy", ""))}</span></button>`).join("");
+    const src = document.getElementById("tr-src"), wasOpen = src.open;
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="who">${esc(m.titel)}</span><span class="more">Worauf beruht der Baum?</span></summary>
+      <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
+    src.open = wasOpen;
   }
   document.getElementById("tr-pick").addEventListener("click", (e) => {
     const b = e.target.closest("[data-tree]"); if (!b || b.dataset.tree === curTree) return;

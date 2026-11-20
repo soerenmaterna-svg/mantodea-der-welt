@@ -748,17 +748,46 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 /* Tabelle: Fundzahl als schlichte rechtsbündige Zahl */
 table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 16px; }
 
-/* Stammbaum: Auswahl nach Autor und Quellenangabe */
-.tree-pick { display: flex; gap: 6px; padding: 8px 10px 4px; overflow-x: auto; background: var(--bg); scrollbar-width: none; }
-.tree-pick button { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 0; font: inherit; text-align: left; border: 1px solid var(--line); border-radius: 10px; background: var(--card, #fff); color: var(--ink); padding: 5px 12px; cursor: pointer; line-height: 1.2; }
-.tree-pick button b { font-size: .86rem; }
-.tree-pick button small { font-size: .72rem; color: var(--muted); }
-.tree-pick button[aria-selected="true"] { background: var(--accent, #3f7d3a); border-color: var(--accent, #3f7d3a); color: #fff; }
-.tree-pick button[aria-selected="true"] small { color: rgba(255,255,255,.85); }
-.tree-src { padding: 2px 12px 8px; font-size: .78rem; color: var(--muted); background: var(--bg); border-bottom: 1px solid var(--line); line-height: 1.4; }
+/* Stammbaum: Kopfleiste mit Auswahl nach Autor und aufklappbarer Quelle */
+.tree-head { gap: 10px; padding: 8px 12px; background: linear-gradient(180deg, #fff, #f4f8ef); box-shadow: 0 1px 0 var(--line); }
+.tree-head h2 { font: 700 1.05rem Georgia, "Times New Roman", serif; color: #1f4d1d; }
+.tree-pick { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: #e7efe1; border: 1px solid #d4e1cb; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.tree-pick::-webkit-scrollbar { display: none; }
+.tree-pick button { flex: none; display: inline-flex; align-items: center; gap: 6px; font: 600 .84rem system-ui, sans-serif; border: 0; border-radius: 999px; background: transparent; color: #33502f; padding: 6px 13px; cursor: pointer; white-space: nowrap; transition: background .2s, color .2s, box-shadow .2s; }
+.tree-pick button i { width: 8px; height: 8px; border-radius: 50%; background: #5b6b55; }
+.tree-pick button.gen i { background: #2f6fa3; } .tree-pick button.mor i { background: #b5652e; }
+.tree-pick button:hover { background: rgba(255,255,255,.6); }
+.tree-pick button[aria-selected="true"] { background: #fff; color: #173d16; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+.tree-head input { flex: 1 1 160px; max-width: 280px; border-radius: 999px; padding: 7px 14px; background: #fff; }
+.tree-head .tree-btns { margin-left: auto; gap: 2px; padding: 3px; border-radius: 999px; background: #e7efe1; border: 1px solid #d4e1cb; }
+.tree-head .tree-btns button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; font-size: 1rem; color: #33502f; }
+.tree-head .tree-btns button:hover { background: #fff; }
+.tree-head .tree-btns .tr-close { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.tree-src { background: #f8fbf5; border-bottom: 1px solid var(--line); font-size: .8rem; color: var(--muted); }
 .tree-src:empty { display: none; }
-.tree-src a { color: var(--accent, #3f7d3a); font-weight: 600; white-space: nowrap; }
-.tree-src .cite { font-style: italic; opacity: .85; }
-.tree-src .tag { display: inline-block; font-size: .7rem; font-weight: 700; padding: 0 7px; border-radius: 999px; color: #fff; margin-right: 4px; }
-.tree-src .tag.gen { background: #2f6fa3; } .tree-src .tag.mor { background: #a0522d; } .tree-src .tag.kat { background: #5b6b55; }
-@media (max-width: 600px) { .tree-src { font-size: .72rem; max-height: 6.2em; overflow: auto; } }
+.tree-src summary { display: flex; align-items: center; gap: 8px; padding: 5px 12px; cursor: pointer; list-style: none; }
+.tree-src summary::-webkit-details-marker { display: none; }
+.tree-src .who { color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tree-src .more { margin-left: auto; color: var(--accent, #3f7d3a); font-weight: 600; white-space: nowrap; }
+.tree-src .more::after { content: " ▾"; }
+.tree-src[open] .more::after { content: " ▴"; }
+.tree-src .tag { flex: none; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 1px 8px; border-radius: 999px; color: #fff; background: #5b6b55; }
+.tree-src .tag.gen { background: #2f6fa3; } .tree-src .tag.mor { background: #b5652e; }
+.tree-src .src-body { padding: 2px 12px 10px; max-width: 980px; line-height: 1.45; }
+.tree-src .src-body p { margin: 4px 0; }
+.tree-src .cite { font-style: italic; }
+.tree-src .links { display: flex; flex-wrap: wrap; gap: 8px; }
+.tree-src .links a { color: #fff; background: var(--accent, #3f7d3a); padding: 4px 12px; border-radius: 999px; font-weight: 600; text-decoration: none; }
+@media (max-width: 700px) {
+  .tree-head { gap: 6px; padding: 6px 8px; }
+  .tree-pick { order: 3; width: 100%; }
+  .tree-pick button { flex: 1 0 auto; justify-content: center; padding: 6px 10px; font-size: .78rem; }
+  .tree-head input { order: 1; max-width: none; }
+  .tree-head .tree-btns { order: 2; margin-left: 0; }
+  .tree-head .tree-btns button { width: 30px; height: 30px; }
+  .tree-src .more { font-size: .74rem; }
+  .tree-src .who { font-size: .76rem; }
+}
+
+.tree-pick .sh { display: none; }
+@media (max-width: 700px) { .tree-pick .lg { display: none; } .tree-pick .sh { display: inline; } .tree-pick button { padding: 6px 8px; } }
