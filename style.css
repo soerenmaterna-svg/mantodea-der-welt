@@ -821,3 +821,9 @@ table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space
 .tree-pick button[aria-selected="true"]::after { top: 3px; right: 6px; font-size: .7rem; }
 @media (max-width: 700px) { .tree-pick { gap: 5px; } .tree-pick button { flex: 1 1 0; align-items: center; padding: 3px 4px 4px; min-width: 0; } .tree-pick button .kind { font-size: .6rem; } }
 @media (max-width: 700px) { .tree-pick button[aria-selected="true"]::after { display: none; } }
+
+/* Baumauswahl: nur die vollständigen Namen */
+.tree-pick button { justify-content: center; padding: 7px 14px; }
+.tree-pick button .lg { font-size: .88rem; }
+@media (max-width: 700px) { .tree-pick button { white-space: normal; text-align: center; padding: 5px 6px; } .tree-pick button .lg { display: inline; font-size: .76rem; line-height: 1.2; } }
+.tree-pick button[aria-selected="true"]::after { display: none !important; }
