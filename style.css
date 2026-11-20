@@ -802,3 +802,22 @@ table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space
 .tree-src .diffnote { flex: none; font-size: .74rem; font-weight: 700; color: #b8650a; white-space: nowrap; }
 @media (max-width: 700px) { .tree-src .diffnote { font-size: .68rem; } .tree-src .more { display: none; } }
 @media (max-width: 700px) { .tree-src .who { display: none; } }
+
+/* Baumauswahl: drei klar getrennte Karten in den Farben der Bäume */
+.tree-pick { background: none; border: 0; padding: 0; gap: 8px; border-radius: 0; }
+.tree-pick button { flex-direction: column; align-items: flex-start; gap: 0; border-radius: 10px; padding: 4px 12px 5px; border: 2px solid; line-height: 1.15; box-shadow: none; }
+.tree-pick button .kind { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; opacity: .9; }
+.tree-pick button .lg, .tree-pick button .sh { font-size: .84rem; font-weight: 700; }
+.tree-pick button.kat { border-color: #8aa483; background: #f1f6ee; color: #2e5d27; }
+.tree-pick button.mor { border-color: #d39a72; background: #fbf1e8; color: #8a3f12; }
+.tree-pick button.gen { border-color: #86acd2; background: #edf4fb; color: #174f80; }
+.tree-pick button:hover { filter: brightness(.97); background-image: none; }
+.tree-pick button[aria-selected="true"] { color: #fff !important; box-shadow: 0 2px 8px rgba(0,0,0,.2) !important; transform: translateY(-1px); }
+.tree-pick button.kat[aria-selected="true"] { background: #2e5d27; border-color: #2e5d27; }
+.tree-pick button.mor[aria-selected="true"] { background: #a24e1c; border-color: #a24e1c; }
+.tree-pick button.gen[aria-selected="true"] { background: #1f5f97; border-color: #1f5f97; }
+.tree-pick button[aria-selected="true"]::after { content: "✓"; position: absolute; }
+.tree-pick button { position: relative; }
+.tree-pick button[aria-selected="true"]::after { top: 3px; right: 6px; font-size: .7rem; }
+@media (max-width: 700px) { .tree-pick { gap: 5px; } .tree-pick button { flex: 1 1 0; align-items: center; padding: 3px 4px 4px; min-width: 0; } .tree-pick button .kind { font-size: .6rem; } }
+@media (max-width: 700px) { .tree-pick button[aria-selected="true"]::after { display: none; } }
