@@ -90,6 +90,9 @@
     const meta = PHYLOS().find((p) => p.id === curTree) || PHYLOS()[0];
     curTree = meta.id; dlg.dataset.tree = curTree;
     const PH = meta.tree || window.MANTODEA_PHYLO;
+    // in der Studie untersuchte Arten (bzw. Gattungen bei Proben, die nur bis zur Gattung bestimmt sind)
+    const ST = meta.studie || { arten: [], gattungen: [], hinweis: {} };
+    const sA = new Set(ST.arten), sG = new Set(ST.gattungen);
     nodes.length = 0; imgsReset();
     const T = (window.MANTODEA_TAXA || { g: {} }).g;
     const live = DATA.filter((s) => !s.x);
@@ -107,7 +110,8 @@
         used.add(src.n);
         n.year = T[src.n] ? T[src.n][0] : null; n.auth = T[src.n] ? T[src.n][1] : "";
         n.kids = sp.sort((a, b) => (a.y || 9999) - (b.y || 9999) || coll.compare(a.n, b.n))
-          .map((s) => ({ name: s.n, rank: "species", ri: RI.species, s, parent: n, kids: [], rep: s.p ? s : null, year: s.y, fam: n.fam }));
+          .map((s) => ({ name: s.n, rank: "species", ri: RI.species, s, parent: n, kids: [], rep: s.p ? s : null, year: s.y, fam: n.fam, studied: sA.has(s.n), hint: (ST.hinweis || {})[s.n] }));
+        n.studied = sG.has(src.n);
         n.rep = best(sp);
         return n;
       }
@@ -141,6 +145,8 @@
     // ungeklärte Verwandtschaft (viele gleichrangige Gruppen) alphabetisch, Gattungen nach Beschreibungsjahr
     const size = (n) => (n.rank === "species" ? 1 : (n.n = n.kids.reduce((a, k) => a + size(k), 0)));
     size(rootNode);
+    const stud = (n) => (n.rank === "species" ? (n.studied ? 1 : 0) : (n.nst = n.kids.reduce((a, k) => a + stud(k), 0) + (n.studied ? 1 : 0)));
+    stud(rootNode);
     const order = (n) => {
       if (n.rank === "genus") return;
       const allGen = n.kids.every((k) => k.rank === "genus");
@@ -342,18 +348,20 @@
       const y = posOf(n); if (y < -40 || y > H + 40) continue;
       const spPhoto = rh >= 18, d = Math.min(rh * 0.95, 60);
       if (spPhoto) photo(n.rep, spX + d / 2, y, d, n.color);
-      else { ctx.beginPath(); ctx.arc(spX + 2, y, Math.max(1.5, rh * 0.18), 0, Math.PI * 2); ctx.fillStyle = n.color; ctx.fill(); }
+      else { ctx.beginPath(); ctx.arc(spX + 2, y, Math.max(n.studied ? 3 : 1.5, rh * 0.18), 0, Math.PI * 2); ctx.fillStyle = n.studied ? "#e8890c" : n.color; ctx.fill(); }
       if (rh >= 10) {
         const lx = spX + (spPhoto ? d + 6 : 7), fs = Math.max(10, Math.min(15, rh * 0.42)), room = W + view.x - lx - 6;
         ctx.font = `italic 500 ${fs}px system-ui`;
         const t = ctx.measureText(n.name).width <= room ? n.name : shortName(n.name);
         // wissenschaftlicher Name mit Autor und Jahr der Beschreibung, z. B. Mantis religiosa (Linnaeus, 1758)
-        const au = n.s.a || "", tw = ctx.measureText(t).width;
+        if (n.studied) ctx.font = `italic 700 ${fs}px system-ui, sans-serif`;
+        const au = n.s.a || "", tw = ctx.measureText((n.studied ? "★ " : "") + t).width;
         ctx.font = `400 ${fs * 0.88}px system-ui`;
         const inline = au && tw + 5 + ctx.measureText(au).width <= room;
-        const sub = [inline ? "" : (rh >= 24 ? au : ""), rh >= 34 ? n.s.de || n.s.en : ""].filter(Boolean).join(" · ");
+        const sub = [inline ? "" : (rh >= 24 ? au : ""), n.studied && rh >= 24 ? "in der Studie untersucht" + (n.hint ? ` (${n.hint})` : "") : "", rh >= 34 ? n.s.de || n.s.en : ""].filter(Boolean).join(" · ");
         const yy = y - (sub ? fs * 0.45 : 0);
-        label(t, lx, yy, fs, "#1b2a17", 500, true, room);
+        if (n.studied) { ctx.beginPath(); ctx.arc(spPhoto ? spX + d / 2 : spX + 2, y, spPhoto ? d / 2 + 2.5 : Math.max(3, rh * 0.25), 0, Math.PI * 2); ctx.lineWidth = 3; ctx.strokeStyle = "#e8890c"; ctx.stroke(); }
+        label((n.studied ? "★ " : "") + t, lx, yy, fs, n.studied ? "#b35c00" : "#1b2a17", n.studied ? 700 : 500, true, room);
         if (inline) label(au, lx + tw + 5, yy, fs * 0.88, "#4a5a44", 400, false, room - tw - 5);
         if (sub) label(sub, lx, y + fs * 0.7, fs * 0.78, "#5b6b55", 400, false, room);
       }
@@ -387,11 +395,11 @@
         const room = Math.min(...n.kids.map(xOf)) - x;
         if (narrow && room < 46 && span < 140) continue;
       }
-      const shown = label(nm, lx, y - 2, fs, n.fam ? n.color : "#1b3a12", n.ri <= RI.family ? 700 : 600, n.rank === "genus", limit - lx, "bottom");
+      const shown = label((n.rank === "genus" && (n.studied || n.nst) ? "★ " : "") + nm, lx, y - 2, fs, n.fam ? n.color : "#1b3a12", n.ri <= RI.family ? 700 : 600, n.rank === "genus", limit - lx, "bottom");
       if (!shown) continue;
       lastY[lk] = y;
       const hint = n.note || (n.diff ? `Stellung anders als bei ${diffWith}` : "") || NOTE[n.name];
-      const info = n.rank === "genus" ? `${n.year || "?"} · ${n.n} ${n.n === 1 ? "Art" : "Arten"}` : hint ? hint + (n.age && n.name ? ` · vor ${n.age} Mio. J.` : "")
+      const info = n.rank === "genus" ? `${n.year || "?"} · ${n.n} ${n.n === 1 ? "Art" : "Arten"}${n.studied ? " · ★ Probe (Art unbestimmt) in der Studie" : n.nst ? ` · ★ ${n.nst} untersucht` : ""}` : n.nst && n.rank === "family" ? `${RDE.family} · ${fmt.format(n.n)} Arten · ★ ${n.nst} untersucht` : hint ? hint + (n.age && n.name ? ` · vor ${n.age} Mio. J.` : "")
         : n.age && n.name ? `vor ${n.age} Mio. J. · ${fmt.format(n.n)} Arten` : !n.name ? "" : ((RDE[n.rank] || "") + ` · ${fmt.format(n.n)} Arten`);
       if (info && (span >= 22 || hint)) label(info, lx, y + 2, fs * 0.78, hint ? "#a0522d" : "#5b6b55", hint ? 600 : 400, false, limit - lx, "top");
     }
