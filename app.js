@@ -927,7 +927,7 @@
     if (location.hash === "#stammbaum") history.replaceState(null, "", "#" + lastTab);
     document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === lastTab));
   });
-  window.MANTODEA_UI = { cname, loadScript, paperHtml, vq, imgData, esc, fmtDate, fmt, DATA, BYKEY, CONT, CONT_ORDER, imgTag, lazy, fill, detail, PLACEHOLDER, credit };
+  window.MANTODEA_UI = { bigSrc: async (r) => (SA && bigOf(r)) || imgData(r), cname, loadScript, paperHtml, vq, imgData, esc, fmtDate, fmt, DATA, BYKEY, CONT, CONT_ORDER, imgTag, lazy, fill, detail, PLACEHOLDER, credit };
 
   if (!DATA.length) $("list").innerHTML = `<p class="empty">Die Artendaten (data/species.js) konnten nicht geladen werden.</p>`;
   else render();
