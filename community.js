@@ -16,8 +16,18 @@
   try { if (user && user.can) canWrite = await user.can("data.write"); } catch (e) { canWrite = null; }
   const readOnly = () => canWrite === false;
 
+  // Sofort per Hand starten: Anleitung und Satz zum Kopieren (funktioniert überall, auch auf der GitHub-Seite)
+  $("search-now").addEventListener("click", () => { const h = $("search-hand"); h.hidden = !h.hidden; $("search-now").setAttribute("aria-expanded", String(!h.hidden)); });
+  $("search-copy").addEventListener("click", async () => {
+    const t = $("search-cmd").textContent;
+    try { await navigator.clipboard.writeText(t); $("search-copy").textContent = "✓ Kopiert"; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($("search-cmd")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); $("search-copy").textContent = "markiert – jetzt kopieren"; }
+    setTimeout(() => ($("search-copy").textContent = "📋 Kopieren"), 2500);
+  });
   if (!db) {
-    $("search-msg").innerHTML = OFFLINE;
+    $("search-msg").innerHTML = window.MANTODEA_STANDALONE
+      ? `<p class="note small">Suchaufträge für die Nacht lassen sich nur auf der <a href="https://claude.ai/artifact/RKGNiBi8KevB2sjg3HsSF6#mitmachen" target="_blank" rel="noopener">Seite bei claude.ai</a> speichern. Sofort starten geht über „Sofort per Hand starten“.</p>`
+      : OFFLINE;
     $("search-btn").disabled = true;
     $("src-form").insertAdjacentHTML("beforebegin", OFFLINE);
     $("src-form").querySelector("button").disabled = true;
@@ -37,7 +47,7 @@
     const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     openJob = docs.some((d) => d.status === "offen" || d.status === "laeuft");
     $("search-btn").disabled = openJob || readOnly();
-    if (openJob) $("search-msg").textContent = "Ein Suchauftrag liegt vor und wird beim nächsten täglichen Lauf ausgeführt.";
+    if (openJob) $("search-msg").textContent = "Ein Suchauftrag liegt vor und wird heute Nacht um 2:47 Uhr ausgeführt. Sofort geht es über „Sofort per Hand starten“.";
     sl.innerHTML = docs.map((d) => `<li>${badge(d.status)} Auftrag vom ${esc(when(d.zeit))}${d.ergebnis ? ` – ${esc(d.ergebnis)}` : ""}</li>`).join("") ||
       `<li class="muted">Noch keine Aufträge.</li>`;
   }, () => { clearTimeout(t1); sl.innerHTML = `<li class="muted">Aufträge konnten nicht geladen werden.</li>`; });
@@ -47,7 +57,7 @@
     $("search-btn").disabled = true;
     try {
       await db.collection("suchauftraege").add({ zeit: new Date().toISOString(), status: "offen" });
-      $("search-msg").textContent = "Suchauftrag gespeichert. Er wird beim nächsten täglichen Lauf ausgeführt.";
+      $("search-msg").textContent = "Suchauftrag gespeichert. Er wird heute Nacht um 2:47 Uhr ausgeführt. Sofort geht es über „Sofort per Hand starten“.";
     } catch (e) { $("search-msg").textContent = failMsg(e); $("search-btn").disabled = false; }
   });
 
