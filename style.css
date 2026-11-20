@@ -791,3 +791,14 @@ table .tnum { text-align: right; font-variant-numeric: tabular-nums; white-space
 
 .tree-pick .sh { display: none; }
 @media (max-width: 700px) { .tree-pick .lg { display: none; } .tree-pick .sh { display: inline; } .tree-pick button { padding: 6px 8px; } }
+
+/* Stammbäume optisch unterscheiden */
+.tree-dlg[data-tree="schwarzroy2019"] .tree-head { background: linear-gradient(180deg, #fff, #fbefe4); }
+.tree-dlg[data-tree="schwarzroy2019"] .tree-src { background: #fdf6ee; border-bottom-color: #ecd3bd; }
+.tree-dlg[data-tree="casadei2026"] .tree-head { background: linear-gradient(180deg, #fff, #e6f0fa); }
+.tree-dlg[data-tree="casadei2026"] .tree-src { background: #f0f6fd; border-bottom-color: #c9dbee; }
+.tree-dlg[data-tree="schwarzroy2019"] .tree-pick button[aria-selected="true"] { color: #8a3f12; box-shadow: 0 0 0 2px #b5652e inset, 0 1px 4px rgba(0,0,0,.15); }
+.tree-dlg[data-tree="casadei2026"] .tree-pick button[aria-selected="true"] { color: #174f80; box-shadow: 0 0 0 2px #2f6fa3 inset, 0 1px 4px rgba(0,0,0,.15); }
+.tree-src .diffnote { flex: none; font-size: .74rem; font-weight: 700; color: #b8650a; white-space: nowrap; }
+@media (max-width: 700px) { .tree-src .diffnote { font-size: .68rem; } .tree-src .more { display: none; } }
+@media (max-width: 700px) { .tree-src .who { display: none; } }

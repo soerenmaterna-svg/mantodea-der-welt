@@ -41,12 +41,54 @@
   let rootNode = null, ROWS = 0, byName = new Map(), FAMS = [];
   const coll = new Intl.Collator("de");
   const best = (list) => list.filter((s) => s.p).sort((a, b) => (b.p.front ? 1 : 0) - (a.p.front ? 1 : 0) || (b.io || 0) - (a.io || 0))[0] || null;
-  let curTree = "katalog";
+  // Jeder Baum hat eine eigene Farbe für Stamm und Äste oberhalb der Familien, Hintergrund und Wasserzeichen
+  const THEME = { katalog: { line: "#2e5d27", bg: "#fbfdf7", mark: "Katalog · Klassifikation" },
+    schwarzroy2019: { line: "#a24e1c", bg: "#fdf8f2", mark: "Morphologie · Schwarz & Roy 2019" },
+    casadei2026: { line: "#1f5f97", bg: "#f4f8fd", mark: "Genetik · Casadei-Ferreira u. a. 2026" } };
+  const TH = () => THEME[curTree] || THEME.katalog;
+  let curTree = "katalog", diffCount = 0, diffWith = "";
   try { curTree = localStorage.getItem("mantodea-tree") || "katalog"; } catch (e) { /* egal */ }
   const PHYLOS = () => window.MANTODEA_PHYLOS || [{ id: "katalog", titel: "Katalog" }];
+  // ---------- Unterschiede: nächste Verwandte (Schwestergruppe) jeder Familie im Vergleich zu einem anderen Baum
+  function sisterMap(tree) {
+    const out = new Map(), skip = new Set();
+    const famsOf = (n) => n.r === "family" ? [n.n] : (n.c || []).flatMap(famsOf);
+    const walk = (n, chain) => {
+      if (n.last) { famsOf(n).forEach((f) => skip.add(f)); return; }
+      if (n.r === "family") {
+        for (let i = chain.length - 1; i >= 0; i--) {
+          const [anc, child] = chain[i]; const all = famsOf(anc), mine = new Set(famsOf(child));
+          const sis = all.filter((f) => !mine.has(f));
+          if (sis.length) { out.set(n.n, new Set(sis)); return; }
+        }
+        return;
+      }
+      for (const c of n.c || []) walk(c, [...chain, [n, c]]);
+    };
+    walk(tree, []);
+    skip.forEach((f) => out.delete(f));
+    return out;
+  }
+  function markDiffs(meta) {
+    diffCount = 0; diffWith = "";
+    if (!meta.tree) return;   // der Katalog kennt die Verzweigungen zwischen vielen Familien nicht, ein Vergleich wäre irreführend
+    const P = PHYLOS(), other = meta.id === "schwarzroy2019" ? P.find((p) => p.id === "casadei2026") : P.find((p) => p.id === "schwarzroy2019");
+    if (!other || !other.tree) return;
+    const mine = sisterMap(meta.tree || window.MANTODEA_PHYLO), theirs = sisterMap(other.tree);
+    const common = new Set([...mine.keys()].filter((f) => theirs.has(f)));
+    diffWith = other.titel;
+    const visit = (n) => {
+      if (n.rank === "family" && common.has(n.name)) {
+        const a = [...mine.get(n.name)].filter((f) => common.has(f)).sort().join(), b = [...theirs.get(n.name)].filter((f) => common.has(f)).sort().join();
+        if (a !== b) { n.diff = true; diffCount++; }
+      }
+      if (n.rank !== "genus") n.kids.forEach(visit);
+    };
+    visit(rootNode);
+  }
   function build() {
     const meta = PHYLOS().find((p) => p.id === curTree) || PHYLOS()[0];
-    curTree = meta.id;
+    curTree = meta.id; dlg.dataset.tree = curTree;
     const PH = meta.tree || window.MANTODEA_PHYLO;
     nodes.length = 0; imgsReset();
     const T = (window.MANTODEA_TAXA || { g: {} }).g;
@@ -74,6 +116,7 @@
       return n.kids.length ? n : null;
     }
     rootNode = make(PH, null, null);
+    markDiffs(meta);
     // Autoren-Bäume: Verzweigungen oberhalb der Familie nach ihrer Tiefe auf die Spalten verteilen
     if (meta.tree) {
       let dMax = 1;
@@ -257,6 +300,10 @@
     columns();
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = TH().bg; ctx.fillRect(0, 0, W, H);
+    // Wasserzeichen unten rechts: welcher Baum gerade gezeigt wird
+    ctx.save(); ctx.font = `700 ${narrow ? 15 : 22}px Georgia, serif`; ctx.fillStyle = TH().line; ctx.globalAlpha = 0.28; ctx.textAlign = "right"; ctx.textBaseline = "top";
+    ctx.fillText(TH().mark, W - 14, narrow ? 30 : 12); ctx.restore();
     ctx.translate(-view.x, 0);
     ctx.lineCap = "round"; ctx.lineJoin = "round";
     const yMin = yOf(-60), yMax = yOf(H + 60);
@@ -276,7 +323,7 @@
       if (!kids.length) return;
       const minKX = Math.min(...kids.map(xOf));
       const bx = Math.max(x0 + 2, minKX - Math.min(10, (minKX - x0) * 0.4));
-      ctx.strokeStyle = n.fam ? n.color : "#2e5d27";
+      ctx.strokeStyle = n.fam ? n.color : TH().line;
       ctx.lineWidth = n.ri < RI.family ? 2.2 : n.rank === "genus" ? Math.max(0.8, Math.min(1.6, kOf(n) * 0.08)) : 1.5;
       ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(bx, y0);
       const ys = kids.map((k) => Math.max(-500, Math.min(H + 500, posOf(k))));
@@ -314,7 +361,9 @@
       const rh = kOf(n), span = (n.y1 - n.y0 + 1) * rh;
       const isFam = n.rank === "family", famPhoto = isFam && span >= 16 && rh < 7;
       if (famPhoto) photo(n.rep, x, y, Math.min(span * 0.8, 30), n.color);
-      else { ctx.beginPath(); ctx.arc(x, y, n.ri <= RI.family ? 4 : 3, 0, Math.PI * 2); ctx.fillStyle = n.fam ? n.color : "#2e5d27"; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+      else { ctx.beginPath(); ctx.arc(x, y, n.ri <= RI.family ? 4 : 3, 0, Math.PI * 2); ctx.fillStyle = n.fam ? n.color : TH().line; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.stroke(); }
+      // Familie steht anders als im Vergleichsbaum: oranger Ring
+      if (n.diff) { ctx.beginPath(); ctx.arc(x, y, famPhoto ? Math.min(span * 0.4, 15) + 4 : 8, 0, Math.PI * 2); ctx.lineWidth = 2.5; ctx.strokeStyle = "#e8890c"; ctx.stroke(); }
       const fs = n.rank === "genus" ? Math.max(11, Math.min(15, 10 + rh * 0.12)) : isFam ? Math.max(11, Math.min(15, 10 + span * 0.02)) : 11.5;
       const lk = Math.round(n.ri * 2);
       if (lastY[lk] !== undefined && Math.abs(y - lastY[lk]) < fs * 2) continue;
@@ -335,7 +384,7 @@
       const shown = label(nm, lx, y - 2, fs, n.fam ? n.color : "#1b3a12", n.ri <= RI.family ? 700 : 600, n.rank === "genus", limit - lx, "bottom");
       if (!shown) continue;
       lastY[lk] = y;
-      const hint = n.note || NOTE[n.name];
+      const hint = n.note || (n.diff ? `Stellung anders als bei ${diffWith}` : "") || NOTE[n.name];
       const info = n.rank === "genus" ? `${n.year || "?"} · ${n.n} ${n.n === 1 ? "Art" : "Arten"}` : hint ? hint + (n.age && n.name ? ` · vor ${n.age} Mio. J.` : "")
         : n.age && n.name ? `vor ${n.age} Mio. J. · ${fmt.format(n.n)} Arten` : !n.name ? "" : ((RDE[n.rank] || "") + ` · ${fmt.format(n.n)} Arten`);
       if (info && (span >= 22 || hint)) label(info, lx, y + 2, fs * 0.78, hint ? "#a0522d" : "#5b6b55", hint ? 600 : 400, false, limit - lx, "top");
@@ -445,7 +494,7 @@
     const cls = (p) => (p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
     document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><i></i><span class="lg">${esc(p.titel)}</span><span class="sh">${esc(p.titel.replace(/ u\. a\./, "").replace("-Ferreira", "").replace(" & Roy", ""))}</span></button>`).join("");
     const src = document.getElementById("tr-src"), wasOpen = src.open;
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="who">${esc(m.titel)}</span><span class="more">Worauf beruht der Baum?</span></summary>
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="who">${esc(m.titel)}</span>${diffCount ? `<span class="diffnote" title="Familien, deren nächste Verwandte sich unterscheiden">◯ ${diffCount} Familien anders als bei ${esc(diffWith)}</span>` : ""}<span class="more">Worauf beruht der Baum?</span></summary>
       <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }
