@@ -1,3 +1,68 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Mantodea der Welt – Diashow</title>
-<meta http-equiv="refresh" content="0; url=../?diashow=#diashow"><script>location.replace("../?diashow=#diashow");</script></head>
-<body style="background:#000;color:#fff;font-family:sans-serif;text-align:center;padding-top:20vh">Diashow startet …</body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mantodea der Welt – Diashow</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; cursor: none; font-family: Arial, Helvetica, sans-serif; }
+  .bild { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: #000; background-repeat: no-repeat; background-position: center center;
+          -webkit-background-size: contain; background-size: contain; opacity: 0; -webkit-transition: opacity 1.2s; transition: opacity 1.2s; }
+  .bild.an { opacity: 1; }
+  #unten { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 28px; color: #fff;
+           background: rgba(0,0,0,0.55); font-size: 26px; line-height: 1.3; }
+  #unten i { font-weight: bold; }
+  #unten small { display: block; font-size: 15px; color: #ccc; margin-top: 4px; }
+  #start { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: #fff; font-size: 30px; }
+</style>
+</head>
+<body>
+<div class="bild" id="b0"></div>
+<div class="bild" id="b1"></div>
+<div id="start">Diashow wird geladen …</div>
+<div id="unten" style="display:none"><i id="name"></i> <span id="auth"></span><small id="credit"></small></div>
+<script src="../data/species.js"></script>
+<script src="../data/remote.js"></script>
+<script>
+// Bewusst sehr einfacher, alter JavaScript-Stil (ES5): läuft auch in den Browsern älterer Fernseher.
+(function () {
+  var M = window.MANTODEA || { species: [] }, R = window.MANTODEA_REMOTE || {};
+  var LIZ = { "cc0": "CC0", "pd": "gemeinfrei", "cc-by": "CC BY", "cc-by-sa": "CC BY-SA", "cc-by-nd": "CC BY-ND", "cc-by-nc": "CC BY-NC", "cc-by-nc-sa": "CC BY-NC-SA", "cc-by-nc-nd": "CC BY-NC-ND" };
+  var liste = [], i, s, r;
+  for (i = 0; i < M.species.length; i++) {
+    s = M.species[i]; r = R[s.k];
+    if (s.x || !s.p || !r || !r.f) continue;
+    liste.push({ n: s.n, a: s.a || "", u: r.f, by: s.p.by || "", l: LIZ[s.p.l] || s.p.l || "", q: s.p.src || "iNaturalist", w: (s.p.front ? 3 : 1) + Math.random() * 3 });
+  }
+  // gemischt, schöne Titelbilder (adulte Weibchen) bevorzugt
+  liste.sort(function (x, y) { return y.w * Math.random() - x.w * Math.random(); });
+  var pos = -1, cur = 0, dauer = 9000;
+  var b = [document.getElementById("b0"), document.getElementById("b1")];
+  function zeige() {
+    if (!liste.length) { document.getElementById("start").innerHTML = "Keine Fotos gefunden."; return; }
+    pos = (pos + 1) % liste.length;
+    var e = liste[pos], img = new Image(), fertig = false;
+    var weiter = function () { if (fertig) return; fertig = true; setTimeout(zeige, 300); };
+    img.onload = function () {
+      if (fertig) return; fertig = true;
+      cur = 1 - cur;
+      b[cur].style.backgroundImage = "url('" + e.u.replace(/'/g, "%27") + "')";
+      b[cur].className = "bild an"; b[1 - cur].className = "bild";
+      document.getElementById("start").style.display = "none";
+      document.getElementById("unten").style.display = "block";
+      document.getElementById("name").innerHTML = e.n;
+      document.getElementById("auth").innerHTML = e.a;
+      document.getElementById("credit").innerHTML = "Foto: " + e.by + " · " + e.l + " · " + e.q + " · Mantodea der Welt";
+      // nächstes Bild schon vorladen
+      var n = liste[(pos + 1) % liste.length]; if (n) { var v = new Image(); v.src = n.u; }
+      setTimeout(zeige, dauer);
+    };
+    img.onerror = weiter;
+    setTimeout(weiter, 15000);   // hängt ein Bild, nach 15 Sekunden das nächste
+    img.src = e.u;
+  }
+  zeige();
+})();
+</script>
+</body>
+</html>
