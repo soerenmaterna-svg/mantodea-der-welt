@@ -442,7 +442,8 @@
     const by = [state.q.trim() ? "Suche" : "", nf ? (nf === 1 ? "Filter" : `${nf} Filter`) : ""].filter(Boolean).join(" und ");
     // Die Trefferzahl erscheint erst, wenn gesucht oder gefiltert wird
     $("count-text").hidden = !by;
-    $("count-text").innerHTML = (by ? `Ergebnis für Ihre ${by}: ${nArt}${state.onlyPhoto ? " mit Foto" : ""}`
+    const nWith = current.filter((x) => x.p).length, nAll = (() => { const w = state.onlyPhoto; state.onlyPhoto = false; const r = filtered().length; state.onlyPhoto = w; return r; })();
+    $("count-text").innerHTML = (by ? `Ergebnis für Ihre Filter: <b>${fmt.format(nWith)} ${nWith === 1 ? "Art" : "Arten"}</b> mit Foto / <b>${fmt.format(nAll)} ${nAll === 1 ? "Art" : "Arten"}</b> gesamt`
       : `${state.onlyPhoto ? `${nArt} mit Foto` : `Alle ${nArt}`} · kein Filter gesetzt`) +
       (state.group ? ` in ${fmt.format(groups.length)} ${groups.length === 1 ? "Gruppe" : "Gruppen"}` : "");
     let budget = state.shown, html = "";
