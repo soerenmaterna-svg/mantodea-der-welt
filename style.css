@@ -618,3 +618,8 @@ ul.lit .cl { display: inline-flex; gap: 8px; font-size: .8rem; white-space: nowr
 img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-align: -0.35em; }
 .hab .ico img.mantis-ico { width: 1.9em; height: 1.9em; }
 .zoomer .zlink { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; }
+.gcell { position: relative; }
+.gcell .gthumb { width: 100%; }
+.gstar { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 15px; line-height: 28px; padding: 0; cursor: pointer; }
+.gstar:hover { background: rgba(0,0,0,.7); }
+.gstar.on { background: #f2b600; color: #3a2a00; }

@@ -99,7 +99,14 @@
   const SA = !!window.MANTODEA_STANDALONE;
   const RM = window.MANTODEA_REMOTE || { u: {} };
   const smallUrl = (u) => !u ? u : u.replace("/large.", "/medium.").replace(/\/1024px-/, "/500px-").replace(/_b\.(jpg|png)$/, "_z.$1");
-  const bigOf = (rec) => (rec && rec.k && (String(rec.k).startsWith("u") ? RM.u[rec.k] : (RM[rec.k] || {}).f)) || null;
+  const TITEL = window.MANTODEA_TITEL || {};
+  const bigOf = (rec) => {
+    if (!rec || !rec.k) return null;
+    if (String(rec.k).startsWith("u")) return RM.u[rec.k] || null;
+    const r = RM[rec.k] || {}, t = TITEL[rec.k];
+    if (t) { const g = (r.g || []).find((x) => x[4] === t); if (g && g[0]) return g[0]; }
+    return r.f || null;
+  };
   const pre = new Set();
   function prefetch(u) { if (!SA || !u || pre.has(u) || pre.size > 400) return; pre.add(u); const im = new Image(); im.decoding = "async"; im.src = u; }
   function prefetchSpecies(k) {
@@ -532,14 +539,50 @@
     const order = GROUPS.map((x) => x[1]).filter((n) => groups.has(n));
     const multi = order.length > 1;
     box.innerHTML = order.map((n) => `${multi ? `<h4 class="g-group">${esc(n)} <small>${groups.get(n).length}</small></h4>` : ""}<div class="gallery">${groups.get(n).map((i) => { const g = items[i];
-      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by)}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>`; }).join("")}</div>`).join("");
-    box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
+      return `<div class="gcell"><button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by)}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>${titleWritable ? `<button type="button" class="gstar" data-star="${i}" title="Als Hauptbild verwenden" aria-label="Als Hauptbild verwenden">★</button>` : ""}</div>`; }).join("")}</div>`).join("");
+    box.onclick = (e) => {
+      const st = e.target.closest(".gstar"); if (st) { e.stopPropagation(); setTitle(s, +st.dataset.star); return; }
+      const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1);
+    };
+    applyTitle(s);
+  }
+  // ---------- Hauptbild wählen (gespeichert in der Datenbank "titelbilder"; nächtlicher Lauf übernimmt es fest)
+  let titleDb = null, titleWritable = false;
+  const liveTitle = {};
+  (async () => {
+    const use = (n) => (window.claude && window.claude.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null));
+    const [db, user] = await Promise.all([use("db"), use("user")]);
+    if (!db) return;
+    titleDb = db;
+    try { titleWritable = user && user.can ? (await user.can("data.write")) !== false : true; } catch (e) { titleWritable = false; }
+    db.collection("titelbilder").orderBy("zeit", "asc").limit(5000).onSnapshot((snap) => {
+      snap.docs.forEach((d) => { const v = d.data(); if (v.art_key) liveTitle[v.art_key] = v.ref; });
+      const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (s && $("detail").open) applyTitle(s);
+    }, () => {});
+  })();
+  const titleRef = (k) => liveTitle[k] || TITEL[k] || null;
+  function applyTitle(s) {
+    const ref = titleRef(s.k); if (!ref || !galItems.length) return;
+    const i = galItems.findIndex((it) => it.g.ref === ref); if (i < 0) return;
+    const it = galItems[i], im = document.querySelector(".d-hero .d-img img");
+    if (im) { im.removeAttribute("data-ik"); im.src = it.src; }
+    const cr = document.querySelector(".d-hero .credit"); if (cr) cr.innerHTML = credit({ l: it.g.l, by: it.g.by, src: it.g.src, ref: it.g.ref }, false);
+    const tag = document.querySelector(".d-hero .front-tag"); if (tag) tag.textContent = it.g.a || "gewähltes Hauptbild";
+    document.querySelectorAll("#d-gal .gstar").forEach((b) => b.classList.toggle("on", +b.dataset.star === i));
+    s._title = it;
+  }
+  async function setTitle(s, i) {
+    const it = galItems[i]; if (!it || !titleDb) return;
+    liveTitle[s.k] = it.g.ref; applyTitle(s);
+    try { await titleDb.collection("titelbilder").add({ art_key: String(s.k), art: s.n, ref: it.g.ref, zeit: new Date().toISOString() }); }
+    catch (e) { const b = document.querySelector(`#d-gal .gstar[data-star="${i}"]`); if (b) b.title = "Speichern nicht erlaubt"; }
   }
   async function openZoom(s, start) {
     // Liste: Titelbild (falls vorhanden) + Galerie
     const list = [];
     const hdf = (await loadHD(s.k) || {}).f;
-    if (s.p) { try { list.push({ src: hdSrc(hdf) || await imgData(s), cap: credit(s.p, false), ref: s.p.ref, a: s.p.front ? "♀ adultes Weibchen" : "" }); } catch (e) { /* ohne Titelbild */ } }
+    if (s._title && s._title.g.ref === titleRef(s.k)) list.push({ src: s._title.src, cap: credit({ l: s._title.g.l, by: s._title.g.by, src: s._title.g.src, ref: s._title.g.ref }, false), ref: s._title.g.ref, a: s._title.g.a });
+    else if (s.p) { try { list.push({ src: hdSrc(hdf) || await imgData(s), cap: credit(s.p, false), ref: s.p.ref, a: s.p.front ? "♀ adultes Weibchen" : "" }); } catch (e) { /* ohne Titelbild */ } }
     else start = Math.max(0, start - 1);
     for (const it of galItems) { const g = it.g, [lab, lurl] = LICS[g.l] || [g.l, "#"];
       list.push({ src: it.src, a: g.a, ref: g.ref, cap: `Foto: ${esc(g.by || "siehe Quelle")} · <a href="${lurl}" target="_blank" rel="noopener license">${esc(lab)}</a> · ${esc(g.src)}` }); }
@@ -673,7 +716,7 @@
       <p class="links d-sources"><span class="muted">Datenquellen:</span> ${srcs.join("")}</p>
       <div id="lightbox" class="lightbox zoomer" hidden></div>`);
     $("d-body").scrollTop = 0;
-    $("d-body").dataset.k = s.k;
+    $("d-body").dataset.k = s.k; s._title = null;
     prefetchSpecies(s.k);
     loadHD(s.k).then((hd) => { const im = document.querySelector(".d-hero .d-img img"); if (hd && hd.f && im && $("d-body").dataset.k == s.k) { im.removeAttribute("data-ik"); im.src = hdSrc(hd.f); } });
     fillGallery(s);
