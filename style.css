@@ -932,3 +932,4 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .ss-tv kbd { background: rgba(255,255,255,.15); border-radius: 4px; padding: 0 5px; font: inherit; font-size: .85em; }
 .ss-tv .tv-note { margin: 6px 0 0; font-size: .9rem; opacity: .9; }
 .ss-tv .tv-go { display: inline-block; margin: 6px 0; padding: 10px 18px; border-radius: 999px; background: #3f7d3a; color: #fff !important; font: 700 1rem system-ui; border: 0; text-decoration: none; cursor: pointer; }
+.ss-tv .tv-best { background: rgba(63,125,58,.35); border-radius: 8px; padding: 6px 8px; list-style: none; margin-left: -18px; }

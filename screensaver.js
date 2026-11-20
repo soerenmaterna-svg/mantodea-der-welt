@@ -141,10 +141,11 @@
       ${msg ? `<p class="tv-msg">${UI.esc(msg)}</p>` : ""}
       <p class="tv-note">Am Fernseher muss nichts installiert werden – es genügt eine Funktion, die die meisten Smart-TVs schon eingebaut haben:</p>
       <ul class="tv-list">
+        <li class="tv-best"><b>Am einfachsten – Browser des Fernsehers</b> (vorinstalliert, geht mit jedem Smart-TV): diese kurze Adresse eintippen und als Lesezeichen speichern – die Diashow startet von selbst:<br><a href="${UI.esc(TV_URL)}tv" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL.replace("https://", ""))}tv</a></li>
         <li><b>Chromecast eingebaut</b> (Google TV, Android TV, viele Sony, Philips, TCL, Hisense): in Chrome oder Edge ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
         <li><b>AirPlay eingebaut</b> (Apple TV, viele Samsung, LG, Sony, Philips ab 2019): iPhone/iPad/Mac → Kontrollzentrum → <i>Bildschirmsynchronisierung</i>.</li>
         <li><b>Bildschirmspiegelung / Miracast</b> (fast alle Smart-TVs, z. B. Samsung „Smart View“, LG „Screen Share“): Android → <i>Bildschirm übertragen</i>, Windows → <kbd>Win</kbd> + <kbd>K</kbd>.</li>
-        <li><b>Browser des Fernsehers</b> (vorinstalliert, geht mit jedem Smart-TV): diese kurze Adresse eintippen und als Lesezeichen speichern – die Diashow startet von selbst:<br><a href="${UI.esc(TV_URL)}tv" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL.replace("https://", ""))}tv</a></li>
+
       </ul>`;
     tvPanel.hidden = false;
   }
@@ -164,6 +165,10 @@
     if (window.PresentationRequest) {
       try {
         const req = new PresentationRequest([tvUrl()]);
+        // erst prüfen, ob überhaupt ein Fernseher erreichbar ist – sonst nicht das leere Chrome-Fenster zeigen
+        let avail = null;
+        try { avail = await Promise.race([req.getAvailability(), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch (e) { avail = null; }
+        if (!avail || !avail.value) { setPause(true); tvHelp("In Ihrem WLAN wurde kein Fernseher gefunden, an den der Browser direkt senden kann. So geht es trotzdem – am einfachsten mit dem Browser des Fernsehers:"); return; }
         conn = await req.start();      // öffnet die Geräteauswahl des Browsers
         setPause(true);
         tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Läuft auf dem Fernseher</b><button type="button" data-tv="stop">Übertragung beenden</button></div>`;
