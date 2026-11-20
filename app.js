@@ -59,7 +59,7 @@
 
   const state = {
     q: "", sort: "name", group: "", family: "", genus: "", license: "", status: "", country: "", corder: "cont",
-    conts: new Set(), onlyPhoto: false, hideFossil: true, view: "grid", shown: PAGE,
+    conts: new Set(), onlyPhoto: true, hideFossil: true, view: "grid", shown: PAGE,
   };
   try {
     const saved = JSON.parse(localStorage.getItem("mantodea-state") || "{}");
@@ -410,7 +410,7 @@
     { const was = state.onlyPhoto; state.onlyPhoto = false; const base = filtered(); state.onlyPhoto = was;
       $("ph-all").textContent = fmt.format(base.length); $("ph-with").textContent = fmt.format(base.filter((s) => s.p).length); }
     const sw = $("photo-switch"); sw.classList.toggle("on", state.onlyPhoto);
-    sw.querySelector(".phs-t").setAttribute("aria-checked", String(state.onlyPhoto));
+    sw.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.ph === "1") === state.onlyPhoto)));
     document.querySelectorAll(".view button").forEach((b) => b.classList.toggle("on", b.dataset.view === state.view));
   }
 
@@ -894,7 +894,7 @@
   $("onlyPhoto").addEventListener("change", (e) => { state.onlyPhoto = e.target.checked; render(); });
   $("photo-switch").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-ph]"); if (!b) return;
-    state.onlyPhoto = b.dataset.ph === "t" ? !state.onlyPhoto : b.dataset.ph === "1"; $("onlyPhoto").checked = state.onlyPhoto; render();
+    state.onlyPhoto = b.dataset.ph === "1"; $("onlyPhoto").checked = state.onlyPhoto; render();
   });
   $("hideFossil").addEventListener("change", (e) => { state.hideFossil = e.target.checked; render(); });
   $("continents").addEventListener("click", (e) => {
@@ -910,10 +910,10 @@
     if (b) { state.view = b.dataset.view; save(); render(false); }
   });
   $("reset").addEventListener("click", () => {
-    Object.assign(state, { q: "", family: "", genus: "", license: "", status: "", country: "", onlyPhoto: false, hideFossil: true });
+    Object.assign(state, { q: "", family: "", genus: "", license: "", status: "", country: "", onlyPhoto: true, hideFossil: true });
     state.conts.clear();
     for (const id of ["q", "family", "license", "status", "country"]) $(id).value = "";
-    $("onlyPhoto").checked = false; $("hideFossil").checked = true;
+    $("onlyPhoto").checked = true; $("hideFossil").checked = true;
     fillCountries();
     document.querySelectorAll(".chip").forEach((b) => b.setAttribute("aria-pressed", "false"));
     fillGenus();
