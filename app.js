@@ -118,7 +118,17 @@
     img.removeAttribute("data-ik");
     if (SA) {
       const u = bigOf(rec);
-      if (u) { img.src = smallUrl(u); img.onerror = () => { img.onerror = null; img.src = u; }; return; }
+      if (u) {
+        // Reihenfolge: mittlere Größe -> große Größe -> gespeichertes kleines Foto
+        const tries = [smallUrl(u), u];
+        img.onerror = async () => {
+          const next = tries.shift();
+          if (next) { img.src = next; return; }
+          img.onerror = null;
+          try { await loadChunk(rec.p.b); img.src = "data:image/jpeg;base64," + chunks[rec.p.b][rec.k]; } catch (e) { img.replaceWith(Object.assign(document.createElement("div"), { className: "ph", textContent: "Foto konnte nicht geladen werden" })); }
+        };
+        img.src = tries.shift(); return;
+      }
     }
     try {
       await loadChunk(rec.p.b);
