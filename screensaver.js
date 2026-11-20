@@ -120,6 +120,15 @@
   // Mauszeiger: beim Bewegen sichtbar, nach 2 Sekunden Ruhe wieder ausgeblendet
   let curT = null;
   box.addEventListener("mousemove", () => { box.classList.add("show-cursor"); clearTimeout(curT); curT = setTimeout(() => box.classList.remove("show-cursor"), 2000); });
+  // Klick auf den Artnamen unten: Diashow beenden und den Steckbrief der Art öffnen
+  const nameEl = document.getElementById("ss-name");
+  nameEl.style.cursor = "pointer"; nameEl.title = "Steckbrief dieser Art öffnen";
+  nameEl.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const s = order[pos]; if (!s) return;
+    stop();
+    setTimeout(() => UI.detail(s.k), 150);
+  });
   btn.addEventListener("click", start);
   box.querySelector(".ss-nav").addEventListener("click", (e) => {
     e.stopPropagation();

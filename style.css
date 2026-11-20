@@ -894,3 +894,7 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .cd-abc button small { font-size: .66rem; color: var(--muted); }
 .cd-abc button:hover { border-color: var(--accent) !important; background: var(--accent-soft); }
 .cd-back { font-weight: 600; color: var(--accent) !important; }
+
+/* Bildschirmschoner: Artname anklickbar */
+#ss-name { cursor: pointer; }
+#ss-name:hover i { text-decoration: underline; text-underline-offset: 3px; }
