@@ -673,3 +673,6 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .gghost img { width: 100%; height: 100%; object-fit: cover; }
 .gthumb { touch-action: pan-y; -webkit-touch-callout: none; user-select: none; }
 .ghint { margin-top: 8px; }
+.ss, .ss * { cursor: none !important; }
+.ss.show-cursor, .ss.show-cursor * { cursor: default !important; }
+.ss.show-cursor button, .ss.show-cursor select, .ss.show-cursor label { cursor: pointer !important; }

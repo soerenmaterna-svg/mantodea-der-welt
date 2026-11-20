@@ -117,6 +117,9 @@
     layers.forEach((l) => { l.classList.remove("on", "zoom"); l.querySelectorAll("div").forEach((d) => (d.style.backgroundImage = "")); });
     try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) { /* egal */ }
   }
+  // Mauszeiger: beim Bewegen sichtbar, nach 2 Sekunden Ruhe wieder ausgeblendet
+  let curT = null;
+  box.addEventListener("mousemove", () => { box.classList.add("show-cursor"); clearTimeout(curT); curT = setTimeout(() => box.classList.remove("show-cursor"), 2000); });
   btn.addEventListener("click", start);
   box.querySelector(".ss-nav").addEventListener("click", (e) => {
     e.stopPropagation();
