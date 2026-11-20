@@ -922,3 +922,11 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .d-img { position: relative; }
 .d-img a img { width: 100%; max-height: 64vh; object-fit: contain; display: block; background: #0d120c; }
 .cbadge.big { right: auto; left: 10px; }
+
+/* Bildschirmschoner: Fernseher */
+.ss-tv { max-width: 560px; }
+.ss-tv .tv-list { margin: 8px 0 4px; padding-left: 18px; line-height: 1.5; font-size: .92rem; }
+.ss-tv .tv-list li { margin: 6px 0; }
+.ss-tv .tv-url { color: #bfe3b4; word-break: break-all; }
+.ss-tv .tv-msg { margin: 6px 0; color: #ffd9a0; }
+.ss-tv kbd { background: rgba(255,255,255,.15); border-radius: 4px; padding: 0 5px; font: inherit; font-size: .85em; }

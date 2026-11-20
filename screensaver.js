@@ -129,11 +129,60 @@
     stop();
     setTimeout(() => UI.detail(s.k), 150);
   });
+  // ---------- Auf den Fernseher übertragen
+  // Chrome/Edge: Präsentations-Schnittstelle (Chromecast, Google TV) – der Fernseher lädt die GitHub-Seite und startet
+  // die Diashow mit denselben Einstellungen. Sonst: kurze Anleitung zur Bildschirmspiegelung (AirPlay, Miracast, Chrome „Streamen“).
+  const TV_URL = "https://soerenmaterna-svg.github.io/mantodea-der-welt/";
+  const tvUrl = () => TV_URL + "?diashow=" + encodeURIComponent(JSON.stringify(F)) + "#diashow";
+  const tvPanel = document.createElement("div");
+  tvPanel.className = "ss-set ss-tv"; tvPanel.hidden = true; box.appendChild(tvPanel);
+  function tvHelp(msg) {
+    tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Diashow auf dem Fernseher</b><button type="button" data-tv="close" aria-label="Schließen">×</button></div>
+      ${msg ? `<p class="tv-msg">${UI.esc(msg)}</p>` : ""}
+      <ul class="tv-list">
+        <li><b>Chromecast / Google TV:</b> in Chrome oder Edge oben rechts ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
+        <li><b>iPhone / iPad / Mac:</b> Kontrollzentrum → <i>Bildschirmsynchronisierung</i> (AirPlay) → Apple TV oder AirPlay-Fernseher.</li>
+        <li><b>Android:</b> Schnelleinstellungen → <i>Bildschirm übertragen</i> bzw. <i>Smart View</i>.</li>
+        <li><b>Windows:</b> <kbd>Win</kbd> + <kbd>K</kbd> → Fernseher wählen (Miracast).</li>
+        <li><b>Smart-TV mit Browser:</b> diese Adresse öffnen, die Diashow startet von selbst:<br><a href="${UI.esc(tvUrl())}" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL)}?diashow</a></li>
+      </ul>`;
+    tvPanel.hidden = false;
+  }
+  tvPanel.addEventListener("click", (e) => { e.stopPropagation(); if (e.target.closest("[data-tv=close]")) { tvPanel.hidden = true; if (wasPausedTV === false) setPause(false); } });
+  let wasPausedTV = null, conn = null;
+  async function castTV() {
+    wasPausedTV = paused;
+    if (window.PresentationRequest) {
+      try {
+        const req = new PresentationRequest([tvUrl()]);
+        conn = await req.start();      // öffnet die Geräteauswahl des Browsers
+        setPause(true);
+        tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Läuft auf dem Fernseher</b><button type="button" data-tv="stop">Übertragung beenden</button></div>`;
+        tvPanel.hidden = false;
+        tvPanel.querySelector("[data-tv=stop]").onclick = (ev) => { ev.stopPropagation(); try { conn.terminate(); } catch (err) { /* egal */ } tvPanel.hidden = true; setPause(false); };
+        conn.onterminate = conn.onclose = () => { tvPanel.hidden = true; };
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return;   // Auswahl abgebrochen
+        setPause(true); tvHelp("Kein Fernseher gefunden oder Übertragung hier nicht möglich. So geht es trotzdem:"); return;
+      }
+    }
+    setPause(true); tvHelp("");
+  }
+  // Empfangsseite: ?diashow=… startet die Diashow sofort mit den übergebenen Einstellungen (z. B. auf dem Fernseher)
+  try {
+    const q = new URLSearchParams(location.search).get("diashow");
+    if (q !== null || location.hash === "#diashow") {
+      if (q) F = { ...F0, ...JSON.parse(q) };
+      setTimeout(start, 600);
+    }
+  } catch (e) { /* egal */ }
   btn.addEventListener("click", start);
   box.querySelector(".ss-nav").addEventListener("click", (e) => {
     e.stopPropagation();
     const b = e.target.closest("[data-ss]"); if (!b) return;
     if (b.dataset.ss === "stop") stop();
+    if (b.dataset.ss === "tv") { castTV(); return; }
     if (b.dataset.ss === "set") { wasPaused = paused; setPause(true); drawPanel(); panel.hidden = false; return; }
     if (b.dataset.ss === "pause") setPause(!paused);
     if (b.dataset.ss === "next") { clearTimeout(timer); show(pos + 1); }
