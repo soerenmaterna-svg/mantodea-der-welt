@@ -548,8 +548,12 @@
     return HD[file] && HD[file][k] && !HD[k] ? (HD[k] = HD[file][k]) : HD[k] || null;
   }
   const hdSrc = (b) => (!b ? null : /^https?:/.test(b) ? b : "data:image/jpeg;base64," + b);
-  const GROUPS = [["♀", "Weibchen"], ["♂", "Männchen"], ["adult", "Erwachsene, Geschlecht unbestimmt"], ["nymph|juvenil|larv", "Nymphen"], ["ootheke|ootheca", "Ootheken"], ["beleg", "Museumsbelege"], ["", "Weitere Fotos"]];
-  const groupOf = (a) => { a = (a || "").toLowerCase(); for (const [re, name] of GROUPS) if (re && new RegExp(re).test(a)) return name; return "Weitere Fotos"; };
+  // Drei feste Felder; Zuordnung automatisch aus den iNaturalist-Angaben, von Hand per Drag & Drop korrigierbar
+  const GRP = { w: "Weibchen", m: "Männchen", x: "Weitere Fotos" };
+  const GRUPPE = window.MANTODEA_GRUPPEN || {};     // fest übernommene Korrekturen (aus dem nächtlichen Lauf)
+  const liveGroup = {};                              // Korrekturen aus der Datenbank
+  const autoGroup = (a) => { a = a || ""; return a.includes("♀") ? "w" : a.includes("♂") ? "m" : "x"; };
+  const groupOfItem = (g) => liveGroup[g.ref] || GRUPPE[g.ref] || autoGroup(g.a);
   async function fillGallery(s) {
     const box = $("d-gal");
     galItems = [];
@@ -564,12 +568,14 @@
     const hd = await loadHD(s.k);
     await loadOrte();
     galItems = items.map((g, i) => ({ src: hdSrc(hd && hd.g && hd.g[i]) || (g.d ? "data:image/jpeg;base64," + g.d : g.u), thumb: SA ? smallUrl(g.u) : null, g }));
-    const groups = new Map();
-    items.forEach((g, i) => { const n = groupOf(g.a); if (!groups.has(n)) groups.set(n, []); groups.get(n).push(i); });
-    const order = GROUPS.map((x) => x[1]).filter((n) => groups.has(n));
-    const multi = order.length > 1;
-    box.innerHTML = order.map((n) => `${multi ? `<h4 class="g-group">${esc(n)} <small>${groups.get(n).length}</small></h4>` : ""}<div class="gallery">${groups.get(n).map((i) => { const g = items[i];
-      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy">${g.a && !multi ? `<span>${esc(g.a)}</span>` : ""}</button>`; }).join("")}</div>`).join("");
+    const groups = { w: [], m: [], x: [] };
+    items.forEach((g, i) => groups[groupOfItem(g)].push(i));
+    const can = titleWritable;
+    box.innerHTML = Object.keys(GRP).filter((k) => groups[k].length || can).map((k) => `<h4 class="g-group">${GRP[k]} <small>${groups[k].length}</small></h4>
+      <div class="gallery gdrop" data-grp="${k}">${groups[k].map((i) => { const g = items[i];
+      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false"></button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
+      + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "");
+    if (can) enableDrag(box, s, items);
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
     applyTitle(s);
   }
@@ -581,6 +587,12 @@
     if (!db) return;
     titleDb = db;
     try { titleWritable = user && user.can ? (await user.can("data.write")) !== false : true; } catch (e) { titleWritable = false; }
+    { const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (titleWritable && s && $("detail").open) fillGallery(s); }
+    db.collection("fotogruppen").orderBy("zeit", "asc").limit(20000).onSnapshot((snap) => {
+      let ch = false;
+      snap.docs.forEach((d) => { const v = d.data(); if (v.ref && liveGroup[v.ref] !== v.gruppe) { liveGroup[v.ref] = v.gruppe; ch = true; } });
+      const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (ch && s && $("detail").open && !document.querySelector(".gghost")) fillGallery(s);
+    }, () => {});
     db.collection("titelbilder").orderBy("zeit", "asc").limit(5000).onSnapshot((snap) => {
       const changed = [];
       snap.docs.forEach((d) => { const v = d.data(); if (v.art_key && liveTitle[v.art_key] !== v.ref) { liveTitle[v.art_key] = v.ref; changed.push(v.art_key); } });
@@ -617,6 +629,55 @@
     catch (e) { return false; }
     return true;
   }
+  // ---------- Drag & Drop zwischen Weibchen / Männchen / Weitere Fotos (Maus und Touch)
+  function enableDrag(box, s, items) {
+    let drag = null, holdT = null;
+    const start = (e, btn) => {
+      const r = btn.getBoundingClientRect();
+      const ghost = btn.cloneNode(true); ghost.className = "gthumb gghost";
+      Object.assign(ghost.style, { width: r.width + "px", height: r.height + "px", left: r.left + "px", top: r.top + "px" });
+      document.body.appendChild(ghost);
+      drag = { btn, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, from: btn.closest(".gdrop").dataset.grp };
+      btn.classList.add("gdragging"); box.classList.add("dragging");
+      if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) { /* egal */ }
+    };
+    const target = (x, y) => { const el = document.elementFromPoint(x, y); return el && el.closest && el.closest(".gdrop"); };
+    box.addEventListener("pointerdown", (e) => {
+      const btn = e.target.closest(".gthumb"); if (!btn || e.button > 0) return;
+      const sx = e.clientX, sy = e.clientY, touch = e.pointerType !== "mouse";
+      let moved = false;
+      const mv = (ev) => {
+        if (!drag) {
+          const d = Math.hypot(ev.clientX - sx, ev.clientY - sy);
+          if (touch) { if (d > 10) { clearTimeout(holdT); cleanup(); } return; }   // am Handy: erst lange drücken
+          if (d < 6) return;
+          start(ev, btn);
+        }
+        ev.preventDefault(); moved = true;
+        drag.ghost.style.left = ev.clientX - drag.dx + "px"; drag.ghost.style.top = ev.clientY - drag.dy + "px";
+        box.querySelectorAll(".gdrop").forEach((z) => z.classList.toggle("over", z === target(ev.clientX, ev.clientY)));
+      };
+      const up = async (ev) => {
+        clearTimeout(holdT); cleanup();
+        if (!drag) return;
+        const z = target(ev.clientX, ev.clientY), d = drag; drag = null;
+        d.ghost.remove(); d.btn.classList.remove("gdragging"); box.classList.remove("dragging");
+        box.querySelectorAll(".gdrop").forEach((x) => x.classList.remove("over"));
+        const blockClick = (ce) => { ce.stopPropagation(); ce.preventDefault(); };
+        box.addEventListener("click", blockClick, { capture: true, once: true }); setTimeout(() => box.removeEventListener("click", blockClick, true), 50);
+        if (!z || z.dataset.grp === d.from) return;
+        const g = items[+d.btn.dataset.gi]; const grp = z.dataset.grp;
+        liveGroup[g.ref] = grp; fillGallery(s);
+        try { await titleDb.collection("fotogruppen").add({ art_key: String(s.k), ref: g.ref, gruppe: grp, zeit: new Date().toISOString() }); }
+        catch (err) { delete liveGroup[g.ref]; fillGallery(s); alertBox("Speichern nicht erlaubt."); }
+      };
+      const cleanup = () => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); };
+      addEventListener("pointermove", mv, { passive: false }); addEventListener("pointerup", up); addEventListener("pointercancel", up);
+      if (touch) holdT = setTimeout(() => { start(e, btn); }, 380);
+    });
+    box.addEventListener("contextmenu", (e) => { if (e.target.closest(".gthumb")) e.preventDefault(); });
+  }
+  const alertBox = (t) => { const d = $("d-gal"); if (d) d.insertAdjacentHTML("afterbegin", `<p class="note small">${esc(t)}</p>`); };
   async function openZoom(s, start) {
     await loadOrte();
     // Liste: Titelbild (falls vorhanden) + Galerie

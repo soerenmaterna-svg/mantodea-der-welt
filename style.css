@@ -663,3 +663,13 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .ss-set-foot button { font: 600 .9rem system-ui; padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); color: #fff; cursor: pointer; }
 .ss-set-foot button.ok { background: #3f7d3a; border-color: #3f7d3a; }
 @media (max-width: 700px) { .ss-set { bottom: calc(120px + env(safe-area-inset-bottom)); } .ss-set-grid { grid-template-columns: 1fr; } }
+/* Galerie: drei Felder, Drag & Drop */
+.gdrop { min-height: 64px; border-radius: 10px; padding: 3px; transition: background .15s, outline-color .15s; outline: 2px dashed transparent; }
+#d-gal.dragging .gdrop, .dragging .gdrop { outline-color: rgba(63,125,58,.35); }
+.gdrop.over { background: rgba(63,125,58,.12); outline-color: #3f7d3a !important; }
+.gempty { margin: 0; padding: 18px 8px; text-align: center; color: var(--muted); font-size: .8rem; grid-column: 1 / -1; }
+.gthumb.gdragging { opacity: .3; }
+.gghost { position: fixed; z-index: 3000; pointer-events: none; opacity: .9; transform: scale(1.06) rotate(-2deg); box-shadow: 0 10px 28px rgba(0,0,0,.35); border-radius: 8px; overflow: hidden; }
+.gghost img { width: 100%; height: 100%; object-fit: cover; }
+.gthumb { touch-action: pan-y; -webkit-touch-callout: none; user-select: none; }
+.ghint { margin-top: 8px; }
