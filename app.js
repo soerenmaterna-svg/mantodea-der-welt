@@ -181,8 +181,9 @@
     const [lab, url] = LIC[p.l] || [p.l, "#"];
     const src = p.src || "iNaturalist";
     const ref = p.ref || "#";
-    if (short) return `Foto: ${esc(p.by || "unbekannt")} · ${esc(lab)} · ${esc(src.length > 40 ? src.slice(0, 38) + "…" : src)}`;
-    return `Foto: <a href="${esc(ref)}" target="_blank" rel="noopener">${esc(p.by || "Urheber siehe Quelle")}</a>` +
+    const wort = p.src === "Fachliteratur" ? "Abbildung" : "Foto";
+    if (short) return `${wort}: ${esc(p.by || "unbekannt")} · ${esc(lab)} · ${esc(src.length > 40 ? src.slice(0, 38) + "…" : src)}`;
+    return `${wort}: <a href="${esc(ref)}" target="_blank" rel="noopener">${esc(p.by || "Urheber siehe Quelle")}</a>` +
       ` · Lizenz: <a href="${url}" target="_blank" rel="noopener license">${esc(lab)}</a>` +
       ` · Quelle: <a href="${esc(ref)}" target="_blank" rel="noopener">${esc(src)}</a>`;
   }
@@ -783,7 +784,7 @@
     const can = titleWritable;
     box.innerHTML = Object.keys(GRP).filter((k) => groups[k].length || can).map((k) => `<h4 class="g-group">${GRP[k]} <small>${groups[k].length}</small></h4>
       <div class="gallery gdrop" data-grp="${k}">${groups[k].map((i) => { const g = items[i];
-      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + "Foto: " + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false"></button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
+      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + (g.src === "Fachliteratur" ? "Abbildung: " : "Foto: ") + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false"></button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
       + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "") + ufHtml();
     if (can) enableDrag(box, s, items);
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
@@ -897,7 +898,7 @@
     else if (s.p) { try { list.push({ src: hdSrc(hdf) || await imgData(s), cap: credit(s.p, false), ref: s.p.ref, a: s.p.front ? "♀ adultes Weibchen" : "" }); } catch (e) { /* ohne Titelbild */ } }
     else start = Math.max(0, start - 1);
     for (const [gi, it] of galItems.entries()) { const g = it.g, [lab, lurl] = LICS[g.l] || [g.l, "#"];
-      list.push({ gi, src: it.src, a: g.a, ref: g.ref, cap: `Foto: ${esc(g.by || "siehe Quelle")} · <a href="${lurl}" target="_blank" rel="noopener license">${esc(lab)}</a> · ${esc(g.src)}` }); }
+      list.push({ gi, src: it.src, a: g.a, ref: g.ref, cap: `${g.src === "Fachliteratur" ? "Abbildung" : "Foto"}: ${esc(g.by || "siehe Quelle")} · <a href="${lurl}" target="_blank" rel="noopener license">${esc(lab)}</a> · ${esc(g.src)}` }); }
     if (!list.length) return;
     let idx = Math.min(start, list.length - 1);
     const lb = $("lightbox");
