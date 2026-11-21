@@ -512,6 +512,17 @@
       <span class="cl"><a href="${bhlSearch(c.replace(/[().,]/g, " "))}" target="_blank" rel="noopener">BHL ↗</a>
       <a href="${scholar(c + " " + s.n)}" target="_blank" rel="noopener">Scholar ↗</a></span></li>`;
   }
+  // Originalbeschreibung der Art aus der Literatursammlung (Dropbox), als PDF-Knopf unter dem Namen
+  async function fillErst(s) {
+    const box = $("d-erst"); if (!box) return;
+    try { await loadScript("data/erstbeschreibung.js"); } catch (e) { return; }
+    const E = (window.MANTODEA_ERST || {})[s.n];
+    if (!box.isConnected || $("d-body").dataset.k != s.k) return;
+    if (!E) { box.innerHTML = ""; return; }
+    const kurz = E.t.length > 60 ? E.t.slice(0, 57).replace(/\s+\S*$/, "") + " …" : E.t;
+    box.innerHTML = `<a class="erst" href="${esc(E.u)}" target="_blank" rel="noopener" title="${esc(E.j + " – " + E.t)}">
+      <span class="pdf">PDF</span><span class="et"><b>Erstbeschreibung${E.sicher ? "" : " (vermutlich)"}</b><span>${esc(E.j)} · ${esc(kurz)}</span></span><span class="go">↗</span></a>`;
+  }
   async function fillLiterature(s) {
     const box = $("d-lit");
     if (!box) return;
@@ -890,6 +901,7 @@
       <section class="d-card d-head">
         <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
+        <div id="d-erst"></div>
         ${s.u ? `<p class="note small">Diese Art steht nicht im Catalogue of Life. Sie kann neu beschrieben und dort noch nicht erfasst sein, oder der Name ist veraltet bzw. ein Synonym. Gefunden in: ${(s.src || []).map((q) => SRC_NAME[q]).join(", ")}.</p>` : ""}
         ${s.ct && s.ct.length ? `<p class="d-occ">📍 <b>Vorkommen:</b> ${s.ct.slice(0, 8).map(cname).map(esc).join(", ")}${s.ct.length > 8 ? ` und ${s.ct.length - 8} weitere · <a href="#" data-goto-c="1">alle auf der Karte</a>` : ""}</p>` : `<p class="d-occ muted">📍 Vorkommen: keine Länderangaben bekannt</p>`}
         <p class="d-tax">Mantodea › <a href="#" data-fam="${esc(s.f)}">${esc(s.f)}</a>${s.sf && !s.sf.startsWith("(") ? ` › ${esc(s.sf)}` : ""} › <a href="#" data-gen="${esc(s.g)}" data-genfam="${esc(s.f)}"><i>${esc(s.g)}</i></a></p>
@@ -916,6 +928,7 @@
     loadOrte().then(() => { const o = s.p && ortOf(s.p.ref); const cr = document.querySelector(".d-hero .credit"); if (o && cr && $("d-body").dataset.k == s.k && !cr.querySelector(".fo")) cr.insertAdjacentHTML("beforeend", ` · <span class="fo">📍 ${esc(o)}</span>`); });
     loadHD(s.k).then((hd) => { const im = document.querySelector(".d-hero .d-img img"); if (hd && hd.f && im && $("d-body").dataset.k == s.k) { im.removeAttribute("data-ik"); im.src = hdSrc(hd.f); } });
     fillGallery(s);
+    fillErst(s);
     fillLiterature(s);
     fillKeyLit(s);
     fillSyn(s);
