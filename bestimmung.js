@@ -38,7 +38,7 @@
   // Schlüssel einer Art: Artenschlüssel ihrer Gattung bzw. Gattungsschlüssel, je nach Modus
   const ordne = (D, s, ks) => [...new Set(ks)].sort((a, b) =>
     ((D.s[s.k] || []).includes(b) - (D.s[s.k] || []).includes(a)) || (D.k[b].m - D.k[a].m) || (D.k[b].a.length - D.k[a].a.length));
-  const artKs = (D, s) => ordne(D, s, [...(D.ga[s.g] || []), ...(D.s[s.k] || []).filter((i) => D.k[i].typ === "art")]);
+  const artKs = (D, s) => ordne(D, s, D.ga[s.g] || []);   // nur vollständige Schlüssel (alle Arten, keine fremden Gattungen)
   const gattKs = (D, s) => ordne(D, s, D.gg[s.g] || []);
   const quelle = (D, K) => K.aus != null ? `Ausschnitt aus „${D.k[K.aus].t}“ (${D.k[K.aus].q}), ab Paar ${K.ab}` : `${K.q}${K.t ? " · " + K.t : ""}`;
 
@@ -57,7 +57,7 @@
       let boxen = 0;
       for (const i of aK) {
         const K = D.k[i], W = wege(K);
-        if (!(D.s[s.k] || []).includes(i) || boxen >= 2) continue;
+        if (boxen >= 2) continue;
         const end = W.endpunkte(s.k); if (!end.length) continue;
         boxen++;
         const [pi, li] = end[0], pfad = W.weg(pi, li);
@@ -69,9 +69,12 @@
           ${andere.length ? `<p class="bk-ab"><b>Unterschied zu</b> ${andere.map(artLink).join(", ")}: dort ${gegen.map((j) => `<span>„${esc(K.p[pi].l[j].t)}“</span>`).join(" bzw. ")}</p>
             <div class="bk-vergl">${bildName(s.k)}${andere.slice(0, 5).map(bildName).join("")}</div>` : ""}</div>`;
       }
-      if (!boxen) h += `<p class="muted small">Die Art selbst kommt in ${aK.length > 1 ? "diesen Schlüsseln" : "diesem Schlüssel"} nicht vor (z. B. später beschrieben oder aus einem anderen Gebiet); er trennt andere Arten der Gattung.</p>`;
+      for (const i of aK) { const d = (D.k[i].d || []).find((x) => x[0] === s.k);
+        if (d) h += `<p class="small">ℹ️ Laut ${esc(D.k[i].q)} ist <i>${esc(s.n)}</i> ein Synonym von <i>${esc(d[1])}</i> – im Schlüssel unter diesem Namen.</p>`; }
+      h += `<p class="muted small">✔ ${aK.length > 1 ? "Diese Schlüssel enthalten" : "Dieser Schlüssel enthält"} alle ${nArten} heute gültigen Arten der Gattung <i>${esc(s.g)}</i>.</p>`;
     } else {
-      h += `<p class="muted small">${nArten <= 1 ? `Die Gattung <i>${esc(s.g)}</i> enthält nur diese eine Art – innerhalb der Gattung ist keine Bestimmung nötig.` : `Für die ${nArten} Arten der Gattung <i>${esc(s.g)}</i> wurde in der Literatursammlung noch kein Artenschlüssel gefunden. Arbeiten mit Schlüsseln stehen unten bei der Literatur.`}</p>`;
+      const teil = (D.gt[s.g] || []).length;
+      h += `<p class="muted small">${nArten <= 1 ? `Die Gattung <i>${esc(s.g)}</i> enthält nur diese eine Art – innerhalb der Gattung ist keine Bestimmung nötig.` : `Für die ${nArten} Arten der Gattung <i>${esc(s.g)}</i> gibt es in der Literatursammlung noch keinen Schlüssel, der alle Arten enthält.${teil ? ` Vorhandene ältere oder regionale Teilschlüssel (${teil}) decken nur einen Teil der Arten ab und werden deshalb hier nicht gezeigt; sie sind über die Literatur unten erreichbar.` : ""}`}</p>`;
     }
     h += `<h4 class="d-sub bk-gruppe">🧭 Gattung <i>${esc(s.g)}</i> bestimmen</h4>`;
     if (gK.length) {
