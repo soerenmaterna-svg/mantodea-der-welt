@@ -622,24 +622,70 @@
   // ---------- Namensgeschichte: gültiger Name und Synonyme mit Zeitleiste (Catalogue of Life)
   async function fillSyn(s) {
     const box = $("d-syn"); if (!box) return;
-    try { await loadScript("data/synonyme.js"); } catch (e) { return; }
+    try { await Promise.all([loadScript("data/synonyme.js"), loadScript("data/gattungen.js").catch(() => null)]); } catch (e) { return; }
     const D = (window.MANTODEA_SYN || {})[s.k];
     const card = $("d-syn-card");
     if (!D || !D.s.length) { box.innerHTML = ""; if (card) card.hidden = true; return; }
     if (card) card.hidden = false;
-    const Y0 = 1750, Y1 = new Date().getFullYear(), pos = (y) => ((Math.max(Y0, Math.min(Y1, y)) - Y0) / (Y1 - Y0)) * 100;
-    const yv = (s.a.match(/(1[789]\d\d|20\d\d)/) || [])[1];
-    const moved = /^\(/.test((D.a || s.a || "").trim());
-    const row = (name, auth, y, cls, note) => `<li class="syn-row ${cls}">
-        <div class="syn-name"><i>${esc(name)}</i> <span class="muted">${esc(auth)}</span>${note ? `<div class="small muted">${note}</div>` : ""}</div>
-        <div class="syn-bar" title="${y ? "Name seit " + y : "Jahr unbekannt"}">${y ? `<span style="left:${pos(y)}%;width:${100 - pos(y)}%"></span><b style="left:${pos(y)}%">${y}</b>` : ""}</div></li>`;
-    const typ = (t) => t === "homotypisch" ? "frühere Gattungs-Kombination derselben Beschreibung" : "eigene Beschreibung, später als dieselbe Art erkannt";
-    box.innerHTML = `<h3 class="d-h">Namensgeschichte <small>${D.s.length} ${D.s.length === 1 ? "Synonym" : "Synonyme"}</small></h3>
-      <ul class="syn">${row(s.n, s.a, yv ? +yv : null, "valid", "heute gültiger Name" + (moved ? " · ursprünglich in einer anderen Gattung beschrieben (Autor in Klammern)" : ""))}
-      ${D.s.map((r) => row(r[0], r[1], r[2], "old", `${typ(r[3])}${r[4] ? ` · erschienen in: ${esc(r[4])}${r[5] ? ", S. " + esc(r[5]) : ""}` : ""}`)).join("")}</ul>
-      <div class="syn-axis"><span>${Y0}</span><span>1850</span><span>1950</span><span>${Y1}</span></div>
-      <p class="muted small">Die Balken zeigen, seit wann ein Name existiert. Synonyme sind heute ungültig. Wann sie eingezogen wurden, ist in den Daten des Catalogue of Life (Mantodea Species File) nicht angegeben. Nach der Prioritätsregel gilt in der Regel der älteste verfügbare Name.</p>`;
+    const Y1 = new Date().getFullYear();
+    const GJ = Object.assign({ Gryllus: [1758, "Linnaeus"], Mantis: [1758, "Linnaeus"] }, D_g(), ((window.MANTODEA_TAXA || {}).g) || {});
+    const jahr = (a) => { const m = String(a || "").match(/(1[789]\d\d|20\d\d)/); return m ? +m[1] : null; };
+    const gj = (name) => (GJ[name.split(" ")[0]] || [])[0] || null;
+    const beschr = jahr(s.a) || jahr(D.a);
+    // 1) Namenslinie derselben Beschreibung (Originalname + spätere Gattungswechsel). Eine Kombination kann frühestens
+    //    gelten, seit es ihre Gattung gibt – daraus ergibt sich die ungefähre Reihenfolge.
+    const homo = D.s.filter((r) => r[3] === "homotypisch").map((r) => ({ n: r[0], a: r[1], orig: !/^\(/.test((r[1] || "").trim()) }));
+    const gueltig = { n: s.n, a: D.a || s.a, orig: !/^\(/.test((D.a || s.a || "").trim()), jetzt: true };
+    const linie = [...homo, gueltig].map((x) => {
+      const g = gj(x.n);
+      x.ab = x.orig ? beschr : (beschr && g ? Math.max(beschr, g) : g || null);
+      x.ca = !x.orig;                       // Jahr nur abgeleitet (Gattung), nicht belegt
+      return x;
+    });
+    const alt = linie.filter((x) => !x.jetzt).sort((a, b) => (b.orig - a.orig) || ((a.ab || 9999) - (b.ab || 9999)));
+    const reihe = [...alt, gueltig];
+    if (!gueltig.orig && !alt.some((x) => x.orig) && beschr) reihe.unshift({ n: "Originalname", a: "", orig: true, ab: beschr, ca: false, unbekannt: true });
+    reihe.forEach((x, i) => {
+      const nx = reihe.slice(i + 1).find((y) => y.ab);
+      x.bis = x.jetzt ? null : nx && x.ab && nx.ab > x.ab ? nx.ab : null;
+    });
+    const fa = ["#8d6e63", "#c08b3e", "#7b8f3a", "#5f8fa8", "#9b6bb3", "#b5654a"];
+    reihe.forEach((x, i) => { x.farbe = x.jetzt ? "#3f7d3a" : fa[i % fa.length]; });
+    const Y0 = Math.max(1750, Math.min(...[beschr, ...D.s.map((r) => r[2])].filter(Boolean), Y1) - 15);
+    const pos = (y) => ((Math.max(Y0, Math.min(Y1, y)) - Y0) / (Y1 - Y0)) * 100;
+    const zr = (x) => x.jetzt ? (x.ab ? `${x.ca ? "seit ca. " : "seit "}${x.ab}` : "heute")
+      : x.ab && x.bis ? `${x.ca ? "ca. " : ""}${x.ab} – ca. ${x.bis}` : x.ab ? `ab ${x.ca ? "ca. " : ""}${x.ab}, zeitweise` : "Zeitraum unbekannt";
+    const was = (x) => x.jetzt ? "heute gültiger Name" : x.unbekannt ? "Originalname (in den Daten nicht genannt)" : x.orig ? "Originalname der Erstbeschreibung" : "frühere Gattungs-Zuordnung";
+    // Zeitstrahl: farbige Abschnitte nacheinander
+    let strahl = "";
+    reihe.forEach((x) => {
+      if (!x.ab) return;
+      const bis = x.jetzt ? Y1 : (x.bis || Math.min(Y1, x.ab + 10));
+      strahl += `<span class="nz-seg${x.bis || x.jetzt ? "" : " offen"}" style="left:${pos(x.ab)}%;width:${Math.max(.8, pos(bis) - pos(x.ab))}%;background:${x.farbe}" title="${esc(x.n)}: ${zr(x)}"></span>`;
+    });
+    const achse = [Y0, ...[1800, 1850, 1900, 1950, 2000].filter((y) => y > Y0 + 12 && y < Y1 - 12), Y1]
+      .map((y) => `<span style="left:${pos(y)}%">${y}</span>`).join("");
+    const zeile = (x) => `<li class="nz-row${x.jetzt ? " jetzt" : ""}"><span class="nz-dot" style="background:${x.farbe}"></span>
+        <span class="nz-zeit">${zr(x)}</span>
+        <span class="nz-name">${x.unbekannt ? `<span class="muted">${was(x)}</span>` : `<i>${esc(x.n)}</i> <span class="muted">${esc(x.a)}</span>`}
+        ${x.unbekannt ? "" : `<small class="nz-was">${x.jetzt ? "✓ " : ""}${was(x)}</small>`}</span></li>`;
+    // 2) Eigenständige Beschreibungen, die sich als dieselbe Art herausgestellt haben
+    const hetero = D.s.filter((r) => r[3] !== "homotypisch" && !(r[0] === s.n && !r[1]));
+    const status = (r) => !r[2] ? "Jahr unbekannt" : beschr && r[2] > beschr ? `${r[2]} als eigene Art beschrieben – später als dieselbe Art erkannt (jüngerer Name, daher ungültig)`
+      : beschr && r[2] < beschr ? `${r[2]} beschrieben – älter als der gültige Name, aber nicht verwendbar (z. B. unkenntlich oder vergeben)` : `${r[2]} beschrieben – gleich alt, gültiger Name wurde bevorzugt`;
+    const hz = (r) => `<li class="nh-row"><div class="nh-name"><i>${esc(r[0])}</i> <span class="muted">${esc(r[1])}</span>
+        <small>${status(r)}${r[4] ? ` · <span class="muted">${esc(r[4])}${r[5] ? ", S. " + esc(r[5]) : ""}</span>` : ""}</small></div>
+        <div class="nh-bar">${r[2] ? `<span style="left:${pos(r[2])}%;width:${100 - pos(r[2])}%"></span><b style="left:${pos(r[2])}%">${r[2]}</b><em>heute ungültig</em>` : ""}</div></li>`;
+    box.innerHTML = `<h3 class="d-h">Namensgeschichte <small>${reihe.length - 1 + hetero.length} ${reihe.length - 1 + hetero.length === 1 ? "weiterer Name" : "weitere Namen"}</small></h3>
+      ${reihe.length > 1 ? `<h4 class="nz-h">Welcher Name galt wann?</h4>
+      <div class="nz-strahl">${strahl}</div><div class="nz-achse">${achse}</div>
+      <ol class="nz">${reihe.map(zeile).join("")}</ol>` : `<p class="nz-einzig">✓ <i>${esc(s.n)}</i> <span class="muted">${esc(gueltig.a)}</span> gilt seit der Erstbeschreibung${beschr ? " " + beschr : ""} unverändert.</p>`}
+      ${hetero.length ? `<h4 class="nz-h">Andere Beschreibungen derselben Art <small>${hetero.length}</small></h4>
+      <p class="muted small nz-erk">Diese Namen wurden als eigene Arten beschrieben und gelten heute als Synonyme. Der Balken zeigt, seit wann es den Namen gibt; wann er eingezogen wurde, ist in den Daten nicht angegeben.</p>
+      <ul class="nh">${hetero.map(hz).join("")}</ul>` : ""}
+      <p class="muted small">„ca.“: abgeleitet aus dem Jahr, in dem die jeweilige Gattung beschrieben wurde – früher kann die Kombination nicht gegolten haben. Quelle: Catalogue of Life (Mantodea Species File). Nach der Prioritätsregel gilt der älteste verfügbare Name.</p>`;
   }
+  const D_g = () => (window.MANTODEA_SYN || {})._g || {};
 
   // ---------- Galerie, nach Geschlecht/Stadium gruppiert, und zoombare Großansicht
   let galItems = [];
