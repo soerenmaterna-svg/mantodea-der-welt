@@ -625,8 +625,18 @@
     try { await Promise.all([loadScript("data/synonyme.js"), loadScript("data/gattungen.js").catch(() => null)]); } catch (e) { return; }
     const D = (window.MANTODEA_SYN || {})[s.k];
     const card = $("d-syn-card");
-    if (!D || !D.s.length) { box.innerHTML = ""; if (card) card.hidden = true; return; }
     if (card) card.hidden = false;
+    if (!D || !D.s.length) {
+      // keine Synonyme: ausdrücklich sagen, dass nur dieser Name gilt
+      const j = (String(s.a || "").match(/(1[789]\d\d|20\d\d)/) || [])[1];
+      const kl = /^\(/.test(String(s.a || "").trim());
+      box.innerHTML = `<h3 class="d-h">Namensgeschichte <small>keine Synonyme</small></h3>
+        <p class="nz-einzig">✓ <i>${esc(s.n)}</i> <span class="muted">${esc(s.a || "")}</span> – ${kl
+          ? `einziger bekannter Name dieser Art in der heutigen Gattung. Ursprünglich wurde sie${j ? " " + j : ""} in einer anderen Gattung beschrieben (Autor in Klammern); die frühere Kombination ist in den Daten nicht aufgeführt.`
+          : `einziger gültiger Name seit der Erstbeschreibung${j ? " " + j : ""}. Es sind keine anderen Namen (Synonyme) bekannt.`}</p>
+        <p class="muted small">Quelle: Catalogue of Life (Mantodea Species File).</p>`;
+      return;
+    }
     const Y1 = new Date().getFullYear();
     const GJ = Object.assign({ Gryllus: [1758, "Linnaeus"], Mantis: [1758, "Linnaeus"] }, D_g(), ((window.MANTODEA_TAXA || {}).g) || {});
     const jahr = (a) => { const m = String(a || "").match(/(1[789]\d\d|20\d\d)/); return m ? +m[1] : null; };
