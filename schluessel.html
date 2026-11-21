@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bestimmungsschlüssel – Mantodea der Welt</title>
+<link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="schluessel.css">
+</head>
+<body>
+<header class="bk-head">
+  <div class="bk-wrap">
+    <p class="bk-back"><a href="index.html">← Mantodea der Welt</a></p>
+    <h1>Bestimmungsschlüssel der Gottesanbeterinnen</h1>
+    <p class="bk-intro">Bildtafeln von der Ordnung bis zur Art – nach dem Vorbild klassischer Geländeschlüssel. Bei jedem Schritt wählst du zwischen zwei (selten mehr) Beschreibungen; die Zeichnung zeigt, wo du hinschauen musst.</p>
+    <nav class="bk-entry" aria-label="Einstieg">
+      <button type="button" id="e-start" class="bk-btn primary">▶ Von vorn: Ist es eine Gottesanbeterin?</button>
+      <label class="bk-pick">Einstieg bei Familie <select id="e-fam"><option value="">– Familie wählen –</option></select></label>
+      <label class="bk-pick">Einstieg bei Gattung <input id="e-gen" list="e-gen-list" placeholder="Gattung eingeben …" autocomplete="off"><datalist id="e-gen-list"></datalist></label>
+      <label class="bk-pick">Fundort (Land) <select id="e-land"><option value="">– unbekannt –</option></select></label>
+    </nav>
+  </div>
+</header>
+<main class="bk-wrap" id="bk-main">
+  <p class="muted">Lade Schlüssel …</p>
+</main>
+<footer class="bk-wrap bk-foot">
+  <details>
+    <summary>Wie dieser Schlüssel entstanden ist und wo seine Grenzen liegen</summary>
+    <div id="bk-about"></div>
+  </details>
+</footer>
+<script src="schluessel-bilder.js?v=202611212100"></script>
+<script src="data/bestimmung.js?v=202611212100"></script>
+<script src="schluessel.js?v=202611212100"></script>
+</body>
+</html>
