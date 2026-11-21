@@ -958,3 +958,8 @@ a.erst .et b { font-size: .78rem; color: #a0281e; text-transform: uppercase; let
 a.erst .et span { font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 a.erst .go { color: #a0281e; font-weight: 700; }
 @media (max-width: 600px) { a.erst .et span { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; } }
+
+/* Erstbeschreibung: Knopf grün, nur das PDF-Symbol rot */
+a.erst { border-color: #a9cf9a; background: #eef7e9; }
+a.erst:hover { border-color: #3f7d3a; background: #e2f1da; }
+a.erst .et b, a.erst .go { color: #2f6a2a; }

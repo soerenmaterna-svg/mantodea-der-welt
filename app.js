@@ -520,7 +520,9 @@
     if (!box.isConnected || $("d-body").dataset.k != s.k) return;
     if (!E) { box.innerHTML = ""; return; }
     const kurz = E.t.length > 60 ? E.t.slice(0, 57).replace(/\s+\S*$/, "") + " …" : E.t;
-    box.innerHTML = `<a class="erst" href="${esc(E.u)}" target="_blank" rel="noopener" title="${esc(E.j + " – " + E.t)}">
+    // raw=1: der Browser zeigt die PDF direkt an, ohne Dropbox-Vorschau oder Rückfrage
+    const pdfUrl = E.u.replace(/([?&])dl=0/, "$1raw=1");
+    box.innerHTML = `<a class="erst" href="${esc(pdfUrl)}" target="_blank" rel="noopener" title="${esc(E.j + " – " + E.t)}">
       <span class="pdf">PDF</span><span class="et"><b>Erstbeschreibung${E.sicher ? "" : " (vermutlich)"}</b><span>${esc(E.j)} · ${esc(kurz)}</span></span><span class="go">↗</span></a>`;
   }
   async function fillLiterature(s) {
@@ -549,7 +551,7 @@
       await loadScript("data/dropbox.js");
       const D = window.MANTODEA_DBX;
       if (D && D.ordner) {
-        const link = (f) => f.u || (D.ordner + "&preview=" + encodeURIComponent(f.n));
+        const link = (f) => (f.u ? f.u.replace(/([?&])dl=0/, "$1raw=1") : D.ordner + "&preview=" + encodeURIComponent(f.n));
         const A = D.arten[s.n] || [], G = (D.gattungen[s.g] || []).filter((i) => !A.includes(i)), Fm = (D.familien[s.f] || []).filter((i) => !A.includes(i) && !G.includes(i));
         const sortJ = (ids) => ids.map((i) => D.dateien[i]).sort((a, b) => (parseInt((b.j.match(/\d{4}/) || [0])[0]) - parseInt((a.j.match(/\d{4}/) || [0])[0])));
         const li = (f) => `<li><a href="${esc(link(f))}" target="_blank" rel="noopener">📄 ${esc(f.t || f.n)}</a>${f.j ? ` <span class="muted">(${esc(f.j)})</span>` : ""}</li>`;
