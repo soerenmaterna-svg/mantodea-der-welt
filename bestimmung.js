@@ -19,7 +19,7 @@
   const artLink = (k) => `<a href="#" class="bk-art" data-art="${esc(k)}"><i>${esc(name(k))}</i></a>`;
   const bild = (k, cls) => { const s = BYKEY.get(String(k)); return s && s.p ? `<span class="${cls}">${imgTag(s, s.n)}</span>` : ""; };
   const bildName = (k) => { const s = BYKEY.get(String(k)); return s && s.p ? `<figure class="bk-th"><a href="#" data-art="${esc(k)}">${imgTag(s, s.n)}</a><figcaption><i>${esc(s.n)}</i></figcaption></figure>` : ""; };
-  const gName = (K) => K.g ? `zur Gattung <i>${esc(K.g)}</i>` : `zu mehreren Gattungen (${K.gs.map((g) => `<i>${esc(g)}</i>`).join(", ")})`;
+  const gName = (K) => K.g ? `zur Gattung <i>${esc(K.g)}</i>` : K.gs.length <= 4 ? `zu mehreren Gattungen (${K.gs.map((g) => `<i>${esc(g)}</i>`).join(", ")})` : `zu ${K.gs.length} Gattungen`;
   const istArt = (z) => z && typeof z === "object";
 
   // Weg durch den Schlüssel: [Paar-Index, Gegensatz-Index] von der Wurzel bis zum Ziel
@@ -90,6 +90,7 @@
     if (akt.art) W.endpunkte(akt.art).forEach(([i, j]) => W.weg(i, j).forEach(([a, b]) => meinWeg.add(a + ":" + b)));
     const ziel = (z) => typeof z === "number"
       ? (W.nr.has(z) ? `<a href="#" class="bk-geh" data-geh="${z}">→ ${z}</a>` : `<span class="bk-fehlt" title="Dieses Paar konnte aus dem PDF nicht sauber gelesen werden">→ ${z} <small>(siehe PDF)</small></span>`)
+      : istArt(z) && z.f ? `<span class="bk-end"><span class="muted small">Familie</span> <b>${esc(z.f)}</b></span>`
       : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${B.g[z.g] && B.g[z.g].some((x) => akt.ks.includes(x)) ? ` <a href="#" class="bk-geh" data-tab="${akt.ks.findIndex((x) => B.g[z.g].includes(x) && B.k[x].g === z.g)}">→ Artenschlüssel</a>` : ""}</span>`
       : istArt(z) ? (z.k ? `<span class="bk-end">${bild(z.k, "bk-mini")}${artLink(z.k)}</span>` : `<span class="bk-end"><i>${esc(z.n)}</i> <small class="muted" title="Nicht in der Artenliste (z. B. heute Synonym oder Unterart)">(nicht in der Liste)</small></span>`)
       : `<span class="bk-fehlt">(siehe PDF)</span>`;
