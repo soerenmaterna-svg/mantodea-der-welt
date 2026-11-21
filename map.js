@@ -8,6 +8,7 @@
   const S = 5;                                   // Karteneinheiten pro Grad (aus weltkarte.js)
   const WORLD = { x: -180 * S, y: -84 * S, w: 360 * S, h: 142 * S };   // 84° N bis 58° S
   const NS = "http://www.w3.org/2000/svg";
+  let clipNr = 0;
 
   // Rasterzellen -> Mittelpunkte in Karteneinheiten
   function cells(k) {
@@ -117,10 +118,16 @@
       // Übersichtskarte unten links mit Rahmen um den Ausschnitt
       const iw = vb.w * 0.28, ih = iw * WORLD.h / WORLD.w, ix = vb.x + vb.w * 0.015, iy = vb.y + vb.h - ih - vb.h * 0.025, k = iw / WORLD.w;
       const gi = el("g", { class: "inset", transform: `translate(${ix} ${iy}) scale(${k}) translate(${-WORLD.x} ${-WORLD.y})` }, svg);
+      // Inhalt genau auf den Rahmen der Übersichtskarte zuschneiden (sonst ragen Antarktis und Pazifik heraus)
+      const cid = "inset-clip-" + (++clipNr);
+      const cp = el("clipPath", { id: cid, clipPathUnits: "userSpaceOnUse" }, el("defs", {}, gi));
+      el("rect", { x: WORLD.x, y: WORLD.y, width: WORLD.w, height: WORLD.h }, cp);
       el("rect", { x: WORLD.x, y: WORLD.y, width: WORLD.w, height: WORLD.h, class: "isea" }, gi);
-      const gil = el("g", { class: "land" }, gi);
+      const gic = el("g", { "clip-path": `url(#${cid})` }, gi);
+      const gil = el("g", { class: "land" }, gic);
       for (const cc in M.p) el("path", { d: M.p[cc], class: ok.has(cc) ? "ok" : "" }, gil);
-      el("rect", { x: box.x, y: box.y, width: box.w, height: box.h, class: "iframe" }, gi);
+      el("rect", { x: box.x, y: box.y, width: box.w, height: box.h, class: "iframe" }, gic);
+      el("rect", { x: WORLD.x, y: WORLD.y, width: WORLD.w, height: WORLD.h, class: "iborder" }, gi);
     }
     return svg;
   }

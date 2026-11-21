@@ -418,7 +418,8 @@ ul.lit .cl { display: inline-flex; gap: 8px; font-size: .8rem; white-space: nowr
 .wmap .land path.q { fill: #ffe082; stroke: #b28704; }
 .wmap .pts circle { fill: #d84315; fill-opacity: .85; stroke: #fff; stroke-width: .7; vector-effect: non-scaling-stroke; }
 .wmap .lbl text { fill: #1b3a12; font-family: system-ui, sans-serif; font-weight: 600; paint-order: stroke; stroke: rgba(255,255,255,.85); stroke-width: 3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
-.wmap .inset .isea { fill: #b9d4e4; stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.wmap .inset .isea { fill: #b9d4e4; }
+.wmap .inset .iborder { fill: none; stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .wmap .inset .land path { stroke: none; fill: #f4f2ea; }
 .wmap .inset .land path.ok { fill: #689f38; }
 .wmap .inset .iframe { fill: none; stroke: #d84315; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
