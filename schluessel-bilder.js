@@ -283,9 +283,10 @@
       if (o.lappen && i < n - 1) p.push(`<path d="M${120 + w0 + 1} ${y + 3} C${132 + w0} ${y + 2} ${134 + w1} ${y + 13} ${120 + w1 + 1} ${y + 12} M${120 - w0 - 1} ${y + 3} C${108 - w0} ${y + 2} ${106 - w1} ${y + 13} ${120 - w1 - 1} ${y + 12}" ${F}/>`);
     }
     const yb = 8 + n * 14;
+    if (o.platte) p.push(`<path d="M106 ${yb - 2} C108 ${yb + 14} 116 ${yb + 22} 120 ${yb + 24} C124 ${yb + 22} 132 ${yb + 14} 134 ${yb - 2} Z" ${F}/>`);
     if (o.cerciblatt) p.push(`<path d="M114 ${yb} C104 ${yb + 6} 96 ${yb + 16} 100 ${yb + 20} C108 ${yb + 18} 114 ${yb + 10} 116 ${yb} M126 ${yb} C136 ${yb + 6} 144 ${yb + 16} 140 ${yb + 20} C132 ${yb + 18} 126 ${yb + 10} 124 ${yb}" ${F}/>`);
     else { p.push(`<path d="M114 ${yb} C108 ${yb + 8} 100 ${yb + 14} 92 ${yb + 18} M126 ${yb} C132 ${yb + 8} 140 ${yb + 14} 148 ${yb + 18}" ${S} stroke-width="1.6"/>`); for (let i = 1; i < 5; i++) p.push(`<circle cx="${114 - i * 5.4}" cy="${yb + i * 4.4}" r=".9" fill="currentColor"/><circle cx="${126 + i * 5.4}" cy="${yb + i * 4.4}" r=".9" fill="currentColor"/>`); }
-    p.push(arrow(...(o.ar === "cerci" ? [196, 146, 146, yb + 14] : [206, 60, o.breit ? 172 : 160, 60])));
+    p.push(arrow(...(o.ar === "cerci" ? [196, 146, 146, yb + 14] : o.platte ? [190, 146, 128, yb + 10] : [206, 60, o.breit ? 172 : 160, 60])));
     p.push(txt(26, 16, "↑ Brust", 10, "start"));
     return wrap(p.join(""), "0 0 240 152");
   };
@@ -368,7 +369,7 @@
       case "schiene": return fangbeinInnen({ ar: "schiene", schieneOhne: zu === "ohne" });
       case "bein": return beinLaufen({ lappen: zu === "lappen", ring: zu === "ring", dorn: zu === "dorn" });
       case "fluegel": return zu === "kurz" || zu === "fehlt" || zu === "lang" ? habitus({ fluegel: zu === "lang" ? "" : zu, hl: "fluegel" }) : fluegelBild({ augenfleck: zu === "augenfleck", dunkel: zu === "dunkel", binden: zu === "binden", rand: zu === "rand", decke: z2 || (zu === "decke" ? "" : ""), ar: zu === "decke" ? "decke" : "" });
-      case "leib": return leibOben({ lappen: zu === "lappen", breit: zu === "breit", cerciblatt: zu === "cerciblatt", ar: zu === "cerciblatt" || zu === "cerci" ? "cerci" : "" });
+      case "leib": return leibOben({ lappen: zu === "lappen", breit: zu === "breit", cerciblatt: zu === "cerciblatt", platte: zu === "platte", ar: zu === "cerciblatt" || zu === "cerci" ? "cerci" : "" });
       case "fang": return habitus({ laufbein: zu === "nein", hl: "fangbein" });
       case "karte": return karte(zu.split(","));
       case "verwechsler": return verwechsler(zu);
@@ -433,7 +434,13 @@
     [/(Hinterleib|Abdomen)[^.;]*(breit|verbreitert)/i, () => "leib:breit", () => "leib"],
     [/(Cerci|Raife|Hinterleibsanhänge)[^.;]*(blatt|verbreitert|lappig|flach)/i, () => "leib:cerciblatt", () => "leib:cerci"],
     [/(Cerci|Raife)/i, () => "leib:cerci", () => "leib:cerci"],
-    [/(Brust|Unterseite|Vorderbrust|Prosternum)/i, () => "ort:unterseite", () => "ort:unterseite"],
+    [/(Afterdeckplatte|Hinterleibsende|Subgenitalplatte|Supraanalplatte)/i, () => "leib:platte", () => "leib:platte"],
+    [/(Klauenfurche|Scheibendorn|Innendorn|Randdorn|Außendorn|Vorderfemora|Vorderfemur)/i, () => "schenkel:dornen", () => "schenkel:dornen"],
+    [/(Vordercox|Hüftgelenk)/i, () => "huefte", () => "huefte"],
+    [/(Hinterhüften|Mittelhüften|Vorderfüße|Fußglied)/i, () => "bein", () => "bein"],
+    [/(Mittelfeld|Vorderrandfeld|Analfeld|Elytre|Tegmin|Äderchen|Flügelmal|Stigma)/i, () => "fluegel:decke", () => "fluegel:decke"],
+    [/(Gesicht|Kopf)/i, () => "stirn:quer", () => "stirn:quer"],
+    [/(Brust|Unterseite|Vorderbrust|Prosternum|Bauchsegment)/i, () => "ort:unterseite", () => "ort:unterseite"],
     [/(Genital|Phallus|Hinterleibsspitze|Subgenital|Legeröhre|Ovipositor)/i, () => "lupe:%F0%9F%94%AC%20Mikroskop", () => "lupe:%F0%9F%94%AC%20Mikroskop"],
   ];
   function auto(text) {

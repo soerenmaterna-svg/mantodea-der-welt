@@ -64,3 +64,14 @@ main { padding: 16px; }
   body { background: #fff; color: #000; }
   .bk-key { border: 0; }
 }
+.small { font-size: .85rem; }
+@media (max-width: 700px) {
+  .bk-head h1 { font-size: 1.25rem; }
+  .bk-intro { display: none; }
+  .bk-entry { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .bk-entry .bk-btn { grid-column: 1 / -1; padding: 6px 10px; }
+  .bk-pick { font-size: .72rem; }
+  .bk-pick select, .bk-pick input { padding: 5px 8px; font-size: .9rem; }
+  main { padding: 10px 6px; }
+  .bk-key { padding: 10px; }
+}

@@ -97,8 +97,8 @@
     const K = BK.keys[st.key], l = K.c[st.c - 1][i];
     st.path.push({ key: st.key, c: st.c, wahl: i, auto });
     const z = l.z;
-    if (typeof z === "number") { st.c = z; pushHash(); render(); return; }
-    if (z.k) { st.key = z.k; st.c = 1; pushHash(); render(); return; }
+    if (typeof z === "number") { st.c = z; pushHash(); render(); main.scrollIntoView({ block: "start" }); return; }
+    if (z.k) { st.key = z.k; st.c = 1; pushHash(); render(); main.scrollIntoView({ block: "start" }); return; }
     // Ergebnis
     main.innerHTML = crumbs() + `<section class="bk-key"><header class="bk-key-head"><h2>Ergebnis</h2><p class="bk-tools"><button type="button" class="link" id="b-zur">↩ einen Schritt zurück</button></p></header>${result(z, K)}</section>`;
     wire(); main.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -169,10 +169,13 @@
 
   // ---------- Über den Schlüssel
   const S = BK.statistik || {};
+  const W = S.wege || {};
   $("bk-about").innerHTML = `
-    <p>Der Schlüssel wurde aus der Literatursammlung des Projekts zusammengestellt (Stand ${esc(BK.stand)}). Grundlage der Gattungs- und vieler Artschlüssel ist das Gesamtwerk von Giglio-Tos (1927, <i>Das Tierreich</i> 50), dessen Bestimmungstabellen hier vollständig ausgewertet, ins Deutsche übertragen, auf die heute gültigen Namen umgestellt und miteinander verknüpft sind. Dazu kommen Bestimmungstabellen aus neueren Revisionen einzelner Gattungen. Fundortangaben stammen aus Belegdaten, Literaturfundorten, den Fundortzeilen bei Giglio-Tos und den Typusangaben der Erstbeschreibungen.</p>
-    <p><b>Grenzen:</b> Von ${S.arten || "?"} heute gültigen Arten sind ${S.artenLit || "?"} in einem Literaturschlüssel enthalten. Für die übrigen trennt der Schlüssel nur über den Fundort; wo auch das nicht reicht, nennt er alle in Frage kommenden Arten. Viele Arten wurden nach 1927 beschrieben und fehlen in den alten Tabellen – sie werden an den passenden Stellen als „ebenfalls möglich“ angezeigt. Die heutigen Familien (Schwarz & Roy 2019) beruhen zum großen Teil auf Genitalmerkmalen und Erbgutvergleichen; äußerlich sind sie oft nicht scharf zu trennen. Der Weg zur Familie folgt deshalb den äußeren Merkmalen der alten Unterfamilien und führt die heutigen Familien als Ergebnis auf.</p>
-    <p><b>Zeichen:</b> ⚖ = Merkmal verlangt einen Längen- oder Breitenvergleich am Tier selbst · 🔬 = nur mit Mikroskop/Genitalpräparat · 📏 = Messung · FR = noch nicht übersetzt.</p>`;
+    <p>Der Schlüssel wurde aus der Literatursammlung des Projekts zusammengestellt (Stand ${esc(BK.stand)}). Rückgrat ist das Gesamtwerk von Giglio-Tos (1927, <i>Das Tierreich</i> 50): Alle seine Bestimmungstabellen – Unterfamilien, Gruppen, Gattungen und Arten – wurden ausgewertet, von Lesefehlern des Scans bereinigt, ins Deutsche übertragen, laienverständlich formuliert, auf die heute gültigen Namen umgestellt und zu einem durchgehenden Schlüssel verknüpft. Wo neuere Revisionen einzelner Gattungen einen Schlüssel enthalten, wird dieser verwendet, wenn er mehr Arten umfasst. Fundorte stammen aus Belegdaten, Literaturfundorten, den Welt-Checklisten von Patel et al. (2016), den Fundortzeilen bei Giglio-Tos und den Typusangaben der Erstbeschreibungen.</p>
+    <p><b>Wie weit kommt man?</b> Von ${S.arten || "?"} heute gültigen Arten führt der Schlüssel ${W.merkmal || "?"} Arten eindeutig über Merkmale zur Art; ${W.einzig || "?"} weitere gehören zu Gattungen mit nur einer Art; ${W.nurOrt || 0} sind nur über den Fundort eindeutig. ${W.untrennbar || "?"} Arten enden in Gruppen, die die Literatur nicht weiter trennt – dort nennt der Schlüssel alle in Frage kommenden Arten. ${W.auch || "?"} Arten sind in keinem ausgewerteten Schlüssel enthalten (meist nach 1927 beschrieben); sie erscheinen an der passenden Stelle als „ebenfalls möglich“. Eine hundertprozentige Bestimmung aller Arten gibt die Literatur damit nicht her.</p>
+    <p><b>Familien:</b> Die heutigen Familien (Schwarz & Roy 2019) beruhen zum großen Teil auf Genitalmerkmalen und Erbgutvergleichen und sind äußerlich oft nicht scharf zu trennen. Der Weg zur Familie folgt deshalb den äußeren Merkmalen der alten Unterfamilien; eine Familie kann daher an mehreren Stellen des Schlüssels herauskommen.</p>
+    <p><b>Bekannte Lücken:</b> Bei <i>Galepsus</i> fehlt im Scan des Giglio-Tos-Bandes eine Seite mitten in der Tabelle; diese Gattung wird nur über Fundorte und neuere Teilschlüssel aufgeschlüsselt. Einzelne alte Tabellen (u. a. <i>Catasigerpes</i>, <i>Parhierodula</i>) waren im Scan nicht sicher lesbar und wurden nicht übernommen.</p>
+    <p><b>Zeichen:</b> ⚖ = Merkmal verlangt, Längen oder Breiten am Tier selbst zu vergleichen oder Tiere nach Größe/Farbtönung zu vergleichen (nur mit Vergleichsmaterial sicher) · 🔬 = nur mit Mikroskop bzw. Genitalpräparat · 📏 = Messung nötig. Wo die Literatur nichts anderes bietet, blieben solche Merkmale stehen; sie sind markiert.</p>`;
 
   // ---------- Start (auch über #Schlüssel:Paar)
   const hs = decodeURIComponent(location.hash.slice(1));

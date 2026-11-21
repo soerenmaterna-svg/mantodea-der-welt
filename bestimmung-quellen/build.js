@@ -277,6 +277,8 @@ function addNote(t, unc) {
 }
 
 // ---------------- Schlüssel je Gattung (Arten)
+const GT_FOR = {};
+for (const [og, t] of Object.entries(gtSpeciesTree)) for (const id of leaves(t)) { if (!id.startsWith("N:")) continue; const k = speciesKey(id.slice(2)); if (k) { const g = BYK[k].g; (GT_FOR[g] = GT_FOR[g] || new Set()).add(og); } }
 const altTrees = ALT.k.map((k, i) => { try { return altTree(i); } catch (e) { return null; } });
 const altFor = {}; // Gattung -> [{i, tree}]
 altTrees.forEach((t, i) => { if (!t) return; const gs = new Set([...leaves(t)].filter((x) => BYK[x]).map((x) => BYK[x].g)); gs.forEach((g) => (altFor[g] = altFor[g] || []).push(i)); });
@@ -289,8 +291,8 @@ function speciesKeyFor(g) {
   for (const i of altFor[g] || []) { const t = prune(altTrees[i], set); if (t) cands.push({ t, q: "alt" + i, mod: 1 }); }
   if (gtSpeciesTree[g]) { const t = prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); if (t) cands.push({ t, q: "gt", mod: 0 }); }
   for (const gg of genusSyn[g] ? [] : []) void gg;
-  // auch GT-Bäume alter Gattungen, deren Arten heute hier stehen
-  for (const [og, sy] of Object.entries(genusSyn)) if (sy.has(g) && gtSpeciesTree[og] && og !== g) { const t = prune(gtSpeciesTree[og], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); if (t) cands.push({ t, q: "gt", mod: 0 }); }
+  // auch GT-Bäume anderer (alter) Gattungen, deren Arten heute hier stehen
+  for (const og of GT_FOR[g] || []) if (og !== g) { const t = prune(gtSpeciesTree[og], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); if (t) cands.push({ t, q: "gt", mod: 0 }); }
   for (const c of cands) { const cv = leaves(c.t).size + (c.mod ? 0.5 : 0); if (cv > bestCov) { bestCov = cv; best = c.t; bestQ = c.q; } }
   const tree = S.length === 1 ? leaf(S) : compose(S, (k) => geoOf(k), best, { keinSchluessel: "Die Literatur enthält keinen Schlüssel für diese Arten." });
   STAT.gattungen++; if (best) STAT.mitLit++; STAT.arten += S.length; if (best) STAT.artenLit += leaves(best).size;
@@ -390,3 +392,31 @@ if (process.env.DIAG3) {
   console.log("map", gtGenusMap("G:Amorphoscelis"), gtGenusMap("G:Perlamantis"), genGeo("Amorphoscelis").c.slice(0,5));
 }
 if (process.env.DIAG4) { const g = process.env.DIAG4; const t = gtSpeciesTree[g]; const L = t ? [...leaves(t)] : []; console.log(g, "GT-Blätter", L.length, "zugeordnet", L.filter((id) => id.startsWith("N:") && speciesKey(id.slice(2))).length, L.filter((id) => !(id.startsWith("N:") && speciesKey(id.slice(2)))).slice(0, 15)); }
+// ---------- Ehrliche Statistik: wie wird jede Art erreicht?
+{
+  const st = { merkmal: 0, nurOrt: 0, untrennbar: 0, einzig: 0, auch: 0 };
+  for (const [g, ks] of Object.entries(GEN)) {
+    const K = KEYS["G:" + g];
+    if (ks.length === 1) { st.einzig++; continue; }
+    const res = {}; // k -> {m: über Merkmal, alone: einzeln am Ende}
+    const walk = (c, morph, seen) => {
+      if (seen.has(c)) return; seen.add(c);
+      for (const l of K.c[c - 1]) {
+        const m = morph || !l.geo;
+        if (typeof l.z === "number") walk(l.z, m, new Set(seen));
+        else {
+          const s = l.z.s || [];
+          for (const k of s) { const r = (res[k] = res[k] || { m: false, alone: false }); if (s.length === 1) { r.alone = true; if (m) r.m = true; } }
+          for (const k of l.z.a || []) res[k] = res[k] || { m: false, alone: false, auch: true };
+        }
+      }
+    };
+    if (K.c.length) walk(1, false, new Set()); else for (const k of (K.end.s || [])) res[k] = { m: false, alone: (K.end.s || []).length === 1 };
+    for (const k of ks) { const r = res[k] || {}; if (r.alone && r.m) st.merkmal++; else if (r.alone) st.nurOrt++; else if (r.auch) st.auch++; else st.untrennbar++; }
+  }
+  STAT.wege = st;
+  const o = JSON.parse(fs.readFileSync(path.join(R, "data", "bestimmung.js"), "utf8").replace(/^window\.MANTODEA_BK=/, "").replace(/;\s*$/, ""));
+  o.statistik = STAT;
+  fs.writeFileSync(path.join(R, "data", "bestimmung.js"), "window.MANTODEA_BK=" + JSON.stringify(o) + ";\n");
+  console.log("Wege zur Art:", st);
+}
