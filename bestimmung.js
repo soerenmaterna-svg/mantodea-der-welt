@@ -28,8 +28,11 @@
     K.p.forEach((p, i) => p.l.forEach((x, j) => { if (typeof x.z === "number" && nr.has(x.z)) eltern.set(nr.get(x.z), [i, j]); }));
     const weg = (i, j) => { const out = [[i, j]]; let c = i, n = 0; while (eltern.has(c) && n++ < 60) { const e = eltern.get(c); out.unshift(e); c = e[0]; } return out; };
     const unter = (z, tiefe = 0) => istArt(z) ? [z.k || null].filter(Boolean) : nr.has(z) && tiefe < 60 ? K.p[nr.get(z)].l.flatMap((x) => unter(x.z, tiefe + 1)) : [];
-    const endpunkte = (k) => K.p.flatMap((p, i) => p.l.map((x, j) => (istArt(x.z) && x.z.k === k ? [i, j] : null)).filter(Boolean));
-    return { nr, weg, unter, endpunkte };
+    const suche = (f) => K.p.flatMap((p, i) => p.l.map((x, j) => (istArt(x.z) && f(x.z) ? [i, j] : null)).filter(Boolean));
+    // Endpunkt der Art; gibt es keinen, dann der Endpunkt ihrer Gattung (Gattungsschlüssel)
+    const endpunkte = (k) => { const e = suche((z) => z.k === k); if (e.length) return e; const g = (BYKEY.get(String(k)) || {}).g; if (!g) return []; const d = suche((z) => z.g === g && !z.b); return d.length ? d : suche((z) => z.g === g); };
+    const unterG = (z, tiefe = 0) => istArt(z) ? (z.g ? [z.b ? `<i>${esc(z.g)}</i> (im Original <i>${esc(z.b)}</i>)` : `<i>${esc(z.g)}</i>`] : []) : nr.has(z) && tiefe < 60 ? K.p[nr.get(z)].l.flatMap((x) => unterG(x.z, tiefe + 1)) : [];
+    return { nr, weg, unter, unterG, endpunkte };
   }
 
   // Abschnitt im Steckbrief
@@ -58,7 +61,22 @@
         ${andere.length ? `<p class="bk-ab"><b>Unterschied zu</b> ${andere.map(artLink).join(", ")}: dort ${gegen.map((j) => `<span>„${esc(K.p[pi].l[j].t)}“</span>`).join(" bzw. ")}</p>
           <div class="bk-vergl">${bildName(s.k)}${andere.slice(0, 5).map(bildName).join("")}</div>` : ""}</div>`;
     }
-    if (!eigene.length) h += `<p class="muted small">Die Art selbst kommt in den gefundenen Schlüsseln nicht vor, aber es gibt Schlüssel zu Arten der Gattung <i>${esc(s.g)}</i>.</p>`;
+    // Gattungsschlüssel: Weg zur Gattung der Art und Unterschied zu den Nachbargattungen
+    let gzahl = 0;
+    if (!eigene.length) for (const i of (D.g[s.g] || [])) {
+      const K = D.k[i]; if (K.g || gzahl >= 2) continue;
+      const W = wege(K), end = W.endpunkte(s.k); if (!end.length) continue;
+      gzahl++;
+      const [pi, li] = end[0], pfad = W.weg(pi, li);
+      const gegen = K.p[pi].l.map((x, j) => j).filter((j) => j !== li);
+      const andere = [...new Set(gegen.flatMap((j) => W.unterG(K.p[pi].l[j].z)))].filter((g) => g !== `<i>${esc(s.g)}</i>`);
+      const alt = K.p[pi].l[li].z.b;
+      h += `<div class="bk-kurz"><h4 class="d-sub">Merkmale der Gattung <i>${esc(s.g)}</i> laut Schlüssel <small>${esc(K.q)}${K.t ? " · " + esc(K.t) : ""}</small></h4>
+        ${alt ? `<p class="muted small">Im Original unter dem Namen <i>${esc(alt)}</i>.</p>` : ""}
+        <ol class="bk-weg">${pfad.map(([a, b]) => `<li>${esc(K.p[a].l[b].t)}</li>`).join("")}</ol>
+        ${andere.length ? `<p class="bk-ab"><b>Unterschied zu</b> ${andere.slice(0, 8).join(", ")}${andere.length > 8 ? " u. a." : ""}: dort ${gegen.map((j) => `<span>„${esc(K.p[pi].l[j].t)}“</span>`).join(" bzw. ")}</p>` : ""}</div>`;
+    }
+    if (!eigene.length) h += `<p class="muted small">Die Art selbst kommt in den gefundenen Schlüsseln nicht vor${gzahl ? ", wohl aber ihre Gattung" : ""}; die Schlüssel führen ${gzahl ? "bis zur Gattung" : "zu Arten der Gattung"} <i>${esc(s.g)}</i>.</p>`;
     box.innerHTML = h;
     box.querySelectorAll("img[data-ik]").forEach(fill);
   }
@@ -90,8 +108,8 @@
     if (akt.art) W.endpunkte(akt.art).forEach(([i, j]) => W.weg(i, j).forEach(([a, b]) => meinWeg.add(a + ":" + b)));
     const ziel = (z) => typeof z === "number"
       ? (W.nr.has(z) ? `<a href="#" class="bk-geh" data-geh="${z}">→ ${z}</a>` : `<span class="bk-fehlt" title="Dieses Paar konnte aus dem PDF nicht sauber gelesen werden">→ ${z} <small>(siehe PDF)</small></span>`)
-      : istArt(z) && z.f ? `<span class="bk-end"><span class="muted small">Familie</span> <b>${esc(z.f)}</b></span>`
-      : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${B.g[z.g] && B.g[z.g].some((x) => akt.ks.includes(x)) ? ` <a href="#" class="bk-geh" data-tab="${akt.ks.findIndex((x) => B.g[z.g].includes(x) && B.k[x].g === z.g)}">→ Artenschlüssel</a>` : ""}</span>`
+      : istArt(z) && z.f ? `<span class="bk-end"><span class="muted small">${z.r || "Familie"}</span> <b>${esc(z.f)}</b>${((t) => t >= 0 ? ` <a href="#" class="bk-geh" data-tab="${t}">→ Gattungsschlüssel</a>` : "")(akt.ks.findIndex((x) => B.k[x].t && B.k[x].t.includes("der " + z.f)))}</span>`
+      : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${z.b ? ` <small class="muted" title="Name in der Originaltabelle; heute laut Mantodea Species File ein Synonym">(im Original: <i>${esc(z.b)}</i>)</small>` : ""}${z.x ? ` <small class="muted" title="Diese Gattung ist in der heutigen Artenliste nicht enthalten (vermutlich Synonym)">(heute nicht in der Liste)</small>` : ""}${B.g[z.g] && B.g[z.g].some((x) => akt.ks.includes(x)) ? ` <a href="#" class="bk-geh" data-tab="${akt.ks.findIndex((x) => B.g[z.g].includes(x) && B.k[x].g === z.g)}">→ Artenschlüssel</a>` : ""}</span>`
       : istArt(z) ? (z.k ? `<span class="bk-end">${bild(z.k, "bk-mini")}${artLink(z.k)}</span>` : `<span class="bk-end"><i>${esc(z.n)}</i> <small class="muted" title="Nicht in der Artenliste (z. B. heute Synonym oder Unterart)">(nicht in der Liste)</small></span>`)
       : `<span class="bk-fehlt">(siehe PDF)</span>`;
     const zeile = (p, i, x, j) => `<div class="bk-l${meinWeg.has(i + ":" + j) ? " mein" : ""}"><span class="bk-x">${BUCH[j]}</span>
