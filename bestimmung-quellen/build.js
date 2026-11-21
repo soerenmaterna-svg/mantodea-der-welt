@@ -148,6 +148,7 @@ function gtKey(s, ctxGen, depth, mode) {
 }
 function gtTerm(term, s, ctxGen, depth, mode) {
   const kind = term.kind || "";
+  if (kind === "MULTI" && term.name.startsWith("A:")) { const g = ctxGen || (s.ctx && s.ctx.gen); return leaf(term.name.split("|").map((x) => "N:" + g + " " + x.slice(2)), "In der Quelle nicht weiter aufgeschlüsselt"); }
   if (kind === "MULTI") return resolveRef(term.name, depth, mode, "In der Quelle nicht weiter aufgeschlüsselt");
   if (kind === "SYN") return resolveRef("SYN:" + term.name, depth, mode);
   const name = clean(term.name);
@@ -388,3 +389,4 @@ if (process.env.DIAG3) {
   const t = expandSF("Perlamantinae", 0, "gattung"); console.log(JSON.stringify([...leaves(t)]));
   console.log("map", gtGenusMap("G:Amorphoscelis"), gtGenusMap("G:Perlamantis"), genGeo("Amorphoscelis").c.slice(0,5));
 }
+if (process.env.DIAG4) { const g = process.env.DIAG4; const t = gtSpeciesTree[g]; const L = t ? [...leaves(t)] : []; console.log(g, "GT-Blätter", L.length, "zugeordnet", L.filter((id) => id.startsWith("N:") && speciesKey(id.slice(2))).length, L.filter((id) => !(id.startsWith("N:") && speciesKey(id.slice(2)))).slice(0, 15)); }
