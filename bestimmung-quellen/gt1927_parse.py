@@ -32,7 +32,7 @@ def clean_left(l):
     return l
 
 NAMECH = r"[A-Za-zäöüéèêëàâïîôûüçÿ\-]"
-TERMRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s)|(?<=\. ))\s*(?P<num>\d{1,3}|[a-z]{1,2})\s?[.,]\s*(?P<kind>Gen\s?\.|sousfam\s?\.|[A-Z]\s?\.(?:\s?[a-z]\s?\.)?)\s*(?P<name>(?:' + NAMECH + r'\s?){2,}?)\s*(?P<sex>\([^)]{1,4}\))?\s*(?:\*\s*\)|\*)?\s*$')
+TERMRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s)|(?<=\. ))\s*(?P<num>\d{1,3}|[a-z]{1,2}|[LlI])\s?[.,]?\s*(?P<kind>Gen\s?\.|sousfam\s?\.|[A-Z]\s?\.(?:\s?[a-z]\s?\.)?|[A-Z](?=\s[a-z]\s[a-z]))\s*(?P<name>(?:' + NAMECH + r'\s?){2,}?)\s*(?:var\s?\.\s*[a-zé]+\s*)?(?P<sex>\([^)]{1,4}\))?\s*(?:\*\s*\)|\*)?\s*[.,]?\s*$')
 TERMRE2 = re.compile(r'(?:(?<=\.)|(?<=\s\s))\s*(?:(?P<num>\d{1,3})\s?[.,]\s*)?(?P<kind>[A-Z]\s?\.)\s*(?P<name>(?:' + NAMECH + r' ){2,}' + NAMECH + r')\s*(?P<sex>\([^)]{1,4}\))?\s*$')
 TERMRE3 = re.compile(r'(?:(?<=\.)|(?<=\s\s))\s*(?P<num>[a-z]{1,2}|[IVX]{1,4})\s?\.\s*(?P<name>[A-Z](?:' + NAMECH + r'\s?){3,})\s*$')
 GRPRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s))\s*(?:[IVXL]+\.\s*)?Groupe\s+(?P<name>(?:' + NAMECH + r'\s?){3,})\s*$')
@@ -118,7 +118,7 @@ def nextyear(k):
 out = []
 ctx = {'gen': None, 'sf': None, 'grp': None}
 i = 0
-syn_idx = [k for k, l in enumerate(L) if 'Synopsis des' in l and not 'nicht unter' in l]
+syn_idx = [k for k, l in enumerate(L) if re.search(r'Synopsis d[eè]s? ', l) and not 'nicht unter' in l]
 # context scan
 ctxs = {}
 def dsp(s):
@@ -138,7 +138,7 @@ for k, l in enumerate(L):
 
 for si, k in enumerate(syn_idx):
     head = L[k].strip()
-    kind = 'espèces' if 'espèces' in head else 'genres' if 'genres' in head else 'groupes' if 'groupes' in head else 'sous-familles' if 'sous-familles' in head else head
+    kind = 'espèces' if re.search('esp', head) else 'genres' if 'genres' in head else 'groupes' if 'groupes' in head else 'sous-familles' if 'sous-familles' in head else head
     # block end: next account header line (species or genus account) or next Synopsis
     end = syn_idx[si + 1] if si + 1 < len(syn_idx) else len(L)
     j = k + 1

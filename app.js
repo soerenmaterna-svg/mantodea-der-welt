@@ -1212,6 +1212,12 @@
   let lastTab = "arten";
   function route() {
     const h = location.hash.replace("#", "");
+    if (h.startsWith("art=")) { // Sprung aus dem Bestimmungsschlüssel
+      const k = decodeURIComponent(h.slice(4));
+      history.replaceState(null, "", "#arten");
+      if (BYKEY.get(String(k))) setTimeout(() => detail(k), 0);
+      return route();
+    }
     if (h === "stammbaum") {
       document.querySelectorAll(".tabs a").forEach((a) => a.classList.toggle("on", a.dataset.tab === "stammbaum"));
       if (window.MANTODEA_TREE) window.MANTODEA_TREE.open();

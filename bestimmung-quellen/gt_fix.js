@@ -484,6 +484,26 @@ FIX[25723] = { c: [
   [["Endlappen der Mittel- und Hinterschenkel gerundet", "G:Camelomantis"], ["Endlappen der Mittel- und Hinterschenkel sehr spitz", "G:Tisma"]],
 ] };
 
+// Gruppe Oxyothespes
+FIX[18067] = { c: [
+  [["Halsschild weniger als doppelt so lang wie die Vorderhüften", 2], ["Halsschild mehr als doppelt so lang wie die Vorderhüften", "G:Acithespis"]],
+  [["Außendornen des Vorderschenkels etwa gleich lang", "G:Oxyothespis"], ["2. Außendorn des Vorderschenkels länger als die übrigen", "G:Heterochaetula"]],
+] };
+// Gruppe Empusae
+FIX[37732] = { c: [
+  [["Vorderschenkel oben zu einem großen Blattlappen verbreitert; Mittel- und Hinterschenkel oben mit Lappen", "G:Gongylus"], ["Vorderschenkel wenig verbreitert, Oberkante gerade oder fast gerade; Mittel- und Hinterschenkel oben ohne Lappen", 2]],
+  [["Mittel- und Hinterschenkel mit Lappen", 3], ["Mittel- und Hinterschenkel ohne Lappen", 4]],
+  [["Knie-Dorn der Mittel- und Hinterschenkel kurz", "G:Empusa"], ["Knie-Dorn der Mittel- und Hinterschenkel lang", "G:Hemiempusa"]],
+  [["Häutiger Endteil des Scheitelfortsatzes etwa so lang wie oder kürzer als der Basisteil", "G:Idolomorpha"], ["Häutiger Endteil des Scheitelfortsatzes etwa so lang wie oder länger als der Basisteil", "G:Hypsicorypha"]],
+] };
+
+// Perlamantinae – Gruppen
+FIX[2584] = { c: [
+  [["Halsschild kurz, breiter als lang oder kaum länger als breit", 2], ["Halsschild viel länger als breit, schlank, manchmal stabförmig; Vorderschenkel mit 2–3 Scheibendornen; Vorderschienen schlank", "GRP:Compsothespes"]],
+  [["Vorderschenkel mit 2–3 Scheibendornen", 3], ["Vorderschenkel mit nur 1 Scheibendorn; Afterdeckplatte kurz, quer; Vorderschienen schlank, an der Spitze unbewehrt", "GRP:Perlamantes"]],
+  [["Afterdeckplatte der Weibchen groß, mit Kiel", "GRP:Paraoxypili"], ["Afterdeckplatte der Weibchen klein, quer", "GRP:Sphaeromantes"]],
+] };
+
 Object.assign(ALIAS, {
   Anaxarchae: "G:Anaxarcha", Galinthiades: "G:Galinthias", Phyllothelides: "SYN:31965", Ambiviae: "SYN:31861", Acromantes: "SYN:31410",
   Hestiasulae: "SYN:32658", Otomantes: "SYN:32907", Pseudocreobotrae: "SYN:33627", Hymenopoda: "SYN:33220", Euantissae: "SYN:32488", Panurgicae: "SYN:33049",

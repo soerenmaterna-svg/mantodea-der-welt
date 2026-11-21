@@ -56,7 +56,7 @@ function speciesKey(name) {
   return null;
 }
 function geoOf(k) { return (GEO[k] && GEO[k].c) || []; }
-function genGeo(g) { const s = new Set(); let unk = false; for (const k of GEN[g] || []) { const c = geoOf(k); if (!c.length) unk = true; c.forEach((x) => s.add(x)); } return { c: [...s], unk }; }
+function genGeo(g) { const s = new Set(); for (const k of GEN[g] || []) geoOf(k).forEach((x) => s.add(x)); return { c: [...s], unk: s.size === 0 }; }
 
 // ---------------- Baum-Format
 // Knoten: { l: [ {t, b, w, q, n: Knoten | Blatt} ] }   Blatt: { taxa: [ids], note }
@@ -243,24 +243,25 @@ const unitCountries = (u, level) => (level === 0 ? ERDTEIL[u].r.flatMap((r) => R
 const unitBild = (u, level) => "karte:" + (level === 0 ? ERDTEIL[u].b : level === 1 ? { NAM: "NA", MAM: "MA", SAM: "SA", EUR: "EU", NAF: "AF", AFR: "AF", MAD: "MG", WAS: "WA", SAS: "AS", OAS: "AS", SOA: "SO", AUS: "OZ" }[u] : u);
 
 // Zusammenbau: Literaturschlüssel + Fundorte
-function compose(items, cOf, best, opts, level = 0) {
+function compose(items, cOf, best, opts, level = 0, inside = null) {
   items = [...new Set(items)];
   if (items.length === 1) return leaf(items);
   const L = best ? leaves(best) : new Set();
   const cov = items.filter((x) => L.has(x)), unc = items.filter((x) => !L.has(x));
   if (!unc.length) return prune(best, new Set(items));
   if (level <= 2) {
-    const sp = geoSplit(items, cOf, level);
+    // nur Länder innerhalb des bereits gewählten Gebiets betrachten
+    const cIn = inside ? (x) => cOf(x).filter((c) => inside.has(c)) : cOf;
+    const sp = geoSplit(items, cIn, level);
     if (sp) {
       const ls = sp.parts.map((p) => {
-        const cs = [...new Set(p.units.flatMap((u) => unitCountries(u, level)))];
+        const cs = [...new Set(p.units.flatMap((u) => unitCountries(u, level)))].filter((c) => !inside || inside.has(c));
         const names = p.units.map((u) => unitName(u, level)).sort((a, b) => a.localeCompare(b, "de"));
-        return { t: "Fundort: " + (level === 2 && names.length > 6 ? names.slice(0, 6).join(", ") + " u. a." : names.join(", ")), alle: names, b: unitBild(p.units[0], level), g: cs, geo: 1, n: compose([...p.set], cOf, best, opts, level + 1) };
+        return { t: "Fundort: " + (level === 2 && names.length > 6 ? names.slice(0, 6).join(", ") + " u. a." : names.join(", ")), alle: names, b: unitBild(p.units[0], level), g: cs, geo: 1, n: compose([...p.set], cOf, best, opts, level + 1, new Set(cs)) };
       });
-      if (sp.unknown.length) ls.forEach((l) => (l.u = 1));
-      return { l: ls, geo: level };
+      return { l: ls, geo: level, u: sp.unknown.length ? 1 : 0 };
     }
-    return compose(items, cOf, best, opts, level + 1);
+    return compose(items, cOf, best, opts, level + 1, inside);
   }
   if (cov.length) {
     const t = prune(best, new Set(cov));
@@ -329,7 +330,7 @@ function emit(id, title, tree, meta = {}) {
   const target = (n) => {
     if (isLeaf(n)) return leafTarget(n);
     const idx = C.length; C.push(null);
-    C[idx] = n.l.map((l) => ({ t: l.t, b: l.b, w: l.w || undefined, q: l.q, g: l.g, u: l.u, alle: l.alle && l.alle.length > 6 ? l.alle : undefined, z: target(l.n) }));
+    C[idx] = n.l.map((l) => ({ t: l.t, b: l.b, w: l.w || undefined, q: l.q, g: l.g, u: n.u ? 1 : undefined, alle: l.alle && l.alle.length > 6 ? l.alle : undefined, z: target(l.n) }));
     return idx + 1;
   };
   if (isLeaf(tree)) { KEYS[id] = { t: title, ...meta, c: [], end: leafTarget(tree) }; return; }
@@ -354,10 +355,15 @@ function leafTarget(n) {
 for (const g of Object.keys(GEN)) { const r = speciesKeyFor(g); emit("G:" + g, "Arten der Gattung " + g, r.tree, { r: "gattung", taxon: g, fam: famOfGen[g] }); }
 for (const f of Object.keys(FAM)) emit("F:" + f, "Gattungen der Familie " + f, familyGenusKey(f), { r: "familie", taxon: f });
 for (const e of Object.keys(ERDTEIL)) emit("E:" + e, "Familien – " + ERDTEIL[e].t, familyKeyForErdteil(e), { r: "erdteil", taxon: ERDTEIL[e].t });
-for (const [id, k] of Object.entries(OBEN.keys)) KEYS[id] = k;
+const BYN_ALL = {}; window.MANTODEA.species.forEach((x) => (BYN_ALL[x.n] = x.k));
+for (const [id, k] of Object.entries(OBEN.keys)) {
+  for (const C of k.c) for (const l of C) if (l.z && l.z.sn) { l.z.s = l.z.sn.map((n) => BYN_ALL[n]).filter(Boolean); const miss = l.z.sn.filter((n) => !BYN_ALL[n]); if (miss.length) console.log("Fossil fehlt:", miss); delete l.z.sn; }
+  KEYS[id] = k;
+}
 
 // Artdaten kompakt: k -> [Name, Autor, Familie, Länder]
 const ART = {}; SP.forEach((x) => (ART[x.k] = [x.n, x.a || "", x.f || "", geoOf(x.k).join(" "), (GEO[x.k] && GEO[x.k].q) || ""]));
+FOS.forEach((x) => (ART[x.k] = [x.n, x.a || "", x.f || "fossil", "", "fossil"]));
 const FOSSIL = FOS.map((x) => [x.k, x.n, x.a || "", x.f || ""]);
 Object.assign(QUELLEN, OBEN.quellen || {});
 const outObj = { stand: new Date().toISOString().slice(0, 10), keys: KEYS, quellen: QUELLEN, art: ART, fossil: FOSSIL, erdteile: Object.fromEntries(Object.entries(ERDTEIL).map(([k, v]) => [k, { t: v.t, b: v.b, c: v.r.flatMap((r) => REG[r].c) }])), statistik: STAT };
@@ -377,3 +383,8 @@ if (process.env.DIAG2) {
 }
 
 if (process.env.FRDUMP) fs.writeFileSync(process.env.FRDUMP, [...FRD.entries()].map(([k, v]) => k + "\t" + v).join("\n"));
+
+if (process.env.DIAG3) {
+  const t = expandSF("Perlamantinae", 0, "gattung"); console.log(JSON.stringify([...leaves(t)]));
+  console.log("map", gtGenusMap("G:Amorphoscelis"), gtGenusMap("G:Perlamantis"), genGeo("Amorphoscelis").c.slice(0,5));
+}

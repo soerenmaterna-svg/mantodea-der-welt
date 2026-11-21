@@ -72,13 +72,14 @@
         h += `<p class="bk-auto">📍 Fundort ${esc(land(st.land))}: automatisch gewählt – <b>${esc(hit[0][0].t)}</b>. <button type="button" class="link" data-auto="${hit[0][1]}">weiter</button></p>`;
       }
     }
+    if (C.some((l) => l.u)) h += `<p class="muted small">Hinweis: Arten ohne bekannten Fundort sind vorsichtshalber in allen Fundort-Zweigen enthalten.</p>`;
     h += `<div class="bk-couplet" data-n="${C.length}"><div class="bk-num">${st.c}</div>`;
     C.forEach((l, i) => {
       const geoHint = st.land && l.g ? ((l.g || []).includes(st.land) ? " passt" : " passt-nicht") : "";
       h += `<button type="button" class="bk-lead${geoHint}" data-i="${i}">
         <span class="bk-lab">${st.c}${LET[i]}</span>
         <span class="bk-img">${bildFor(l)}</span>
-        <span class="bk-txt">${esc(l.t)}${l.alle ? `<small class="muted"> (${esc(l.alle.join(", "))})</small>` : ""}${l.u ? `<small class="muted"> · Arten ohne bekannten Fundort sind in allen Zweigen enthalten</small>` : ""}</span>
+        <span class="bk-txt">${esc(l.t)}${l.alle ? `<small class="muted"> (${esc(l.alle.join(", "))})</small>` : ""}</span>
         <span class="bk-meta">${flagsHtml(l.w)}${quelle(l.q)}</span>
         <span class="bk-ziel">${zielText(l.z)}</span>
       </button>`;
@@ -112,7 +113,13 @@
     if (arts.length > 1) h += `<p class="bk-note">Mit den vorhandenen Merkmalen nicht weiter trennbar. In Frage kommen ${arts.length} Arten:</p>`;
     for (const k of arts) h += artCard(k);
     if (z.a && z.a.length) {
-      h += `<div class="bk-auch"><p><b>Achtung:</b> Die verwendete Literatur kennt ${z.a.length > 1 ? "folgende später beschriebene Arten" : "folgende später beschriebene Art"} nicht. Aus demselben Gebiet ${z.a.length > 1 ? "kommen sie" : "kommt sie"} ebenfalls in Frage; zur sicheren Unterscheidung die Erstbeschreibung vergleichen:</p>${z.a.map((k) => artCard(k, true)).join("")}</div>`;
+      const taxa = z.a.filter((x) => /^[GF]:/.test(x)), arten = z.a.filter((x) => !/^[GF]:/.test(x));
+      if (taxa.length) {
+        h += `<div class="bk-auch"><p><b>Achtung:</b> ${taxa.length > 1 ? "Diese Gruppen sind" : "Diese Gruppe ist"} in keinem der ausgewerteten Schlüssel enthalten (meist erst später beschrieben), ${taxa.length > 1 ? "kommen" : "kommt"} nach dem Fundort aber ebenfalls in Frage:</p>`;
+        for (const t of taxa) { const g = t.slice(2), isG = t[0] === "G"; h += `<div class="res klein"><h3>${isG ? "Gattung <i>" + esc(g) + "</i>" : "Familie " + esc(g)}</h3>${BK.keys[t] ? `<button type="button" class="bk-btn" data-go="${esc(t)}">weiter: ${isG ? "Arten" : "Gattungen"} von ${esc(g)} →</button>` : ""}</div>`; }
+        h += `</div>`;
+      }
+      if (arten.length) h += `<div class="bk-auch"><p><b>Achtung:</b> ${arten.length > 1 ? "Folgende Arten sind" : "Folgende Art ist"} in keinem der ausgewerteten Bestimmungsschlüssel enthalten (meist später beschrieben oder nur unzureichend bekannt), ${arten.length > 1 ? "kommen" : "kommt"} nach dem Fundort aber ebenfalls in Frage. Zur sicheren Unterscheidung die Erstbeschreibung vergleichen:</p>${arten.map((k) => artCard(k, true)).join("")}</div>`;
     }
     return h + `</div>`;
   }
@@ -122,11 +129,16 @@
     const cs = lc ? lc.split(" ") : [];
     return `<div class="res art${klein ? " klein" : ""}"><h3><i>${esc(n)}</i> <small>${esc(au)}</small></h3>
       <p class="muted">Familie ${esc(f || "unklar")}</p>
-      <p>${cs.length ? "Fundorte: " + esc(cs.map(land).sort(coll.compare).join(", ")) + (q && q !== "daten" ? ` <small class="muted">(nach ${esc(q)})</small>` : "") : "Fundorte: nicht bekannt"}</p>
+      <p>${cs.length ? landListe(cs) + (q && q !== "daten" ? ` <small class="muted">(nach ${esc(q)})</small>` : "") : (q === "fossil" ? "Fossil" : "Fundorte: nicht bekannt")}</p>
       ${st.land && cs.length && !cs.includes(st.land) ? `<p class="warn">⚠ Für ${esc(land(st.land))} ist diese Art bisher nicht gemeldet.</p>` : ""}
       <p><a href="index.html#art=${encodeURIComponent(k)}">Steckbrief mit Fotos öffnen →</a></p></div>`;
   }
 
+  function landListe(cs) {
+    const n = cs.map(land).sort(coll.compare);
+    if (n.length <= 12) return "Fundorte: " + esc(n.join(", "));
+    return `<details><summary>Fundorte: ${n.length} Länder (anzeigen)</summary>${esc(n.join(", "))}</details>`;
+  }
   function wire() {
     main.querySelectorAll(".bk-lead").forEach((b) => (b.onclick = () => choose(+b.dataset.i)));
     main.querySelectorAll("[data-auto]").forEach((b) => (b.onclick = () => choose(+b.dataset.auto, true)));
