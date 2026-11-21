@@ -107,8 +107,9 @@
   const SA = !!window.MANTODEA_STANDALONE;
   // Nicht frei lizenzierte Fotos (nur GitHub-Fassung): werden direkt von iNaturalist eingebettet, nie kopiert, mit ©-Hinweis
   const UF = (SA && window.MANTODEA_UNFREI) || {};
-  let showUF = true; try { showUF = localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) { /* egal */ }
-  const ufOf = (s) => (SA && showUF && UF[s.k] && UF[s.k].length ? UF[s.k] : null);
+  // nicht frei lizenzierte Fotos (©) nur in der GitHub-Fassung; ein-/ausblendbar über den Filter "Bildlizenz"
+  let ufStart = true; try { ufStart = localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) { /* egal */ }
+  const ufOf = (s) => (SA && !state.license && UF[s.k] && UF[s.k].length ? UF[s.k] : null);
   const ufImg = (x, alt) => `<img src="${esc(x.u)}" alt="${esc(alt || "")}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
   const ufCredit = (x) => `© ${esc(x.by || "Fotograf")} · alle Rechte vorbehalten · <a href="${esc(x.ref)}" target="_blank" rel="noopener">iNaturalist ↗</a>`;
   const RM = window.MANTODEA_REMOTE || { u: {} };
@@ -273,7 +274,7 @@
       (!state.family || s.f === state.family) &&
       (!state.genus || s.g === state.genus) &&
       (!state.abc || s.n[0].toUpperCase() === state.abc) &&
-      (!state.license || isCommercial(s.p)) &&
+      (state.license !== "commercial" || isCommercial(s.p)) &&
       (!state.status || (state.status === "sicher" ? !s.u : state.status === "unsicher" ? s.u : NEW.has(s.n))) &&
       (!state.conts.size || s.cc.some((c) => state.conts.has(c))) &&
       (!state.country || s.ct.includes(state.country)) &&
@@ -414,7 +415,7 @@
     if (state.country) c.push(["country", "Land", cname(state.country)]);
     for (const k of state.conts) c.push(["cont:" + k, "Kontinent", CONT[k]]);
     if (state.status) c.push(["status", "Status", optText("status")]);
-    if (state.license) c.push(["license", "Bildlizenz", "nur kommerziell nutzbar"]);
+    if (state.license) c.push(["license", "Bildlizenz", state.license === "frei" ? "ohne nicht freie Fotos (©)" : "nur kommerziell nutzbar"]);
     if (!state.hideFossil) c.push(["hideFossil", "", "mit fossilen Arten"]);
     if (state.view === "table") c.push(["view", "Ansicht", "Tabelle"]);
     return c;
@@ -1098,7 +1099,11 @@
   $("group").addEventListener("change", (e) => { state.group = e.target.value; save(); render(); });
   $("family").addEventListener("change", (e) => { state.family = e.target.value; fillGenus(); render(); });
   $("genus").addEventListener("change", (e) => { state.genus = e.target.value; render(); });
-  $("license").addEventListener("change", (e) => { state.license = e.target.value; render(); });
+  $("license").addEventListener("change", (e) => {
+    state.license = e.target.value;
+    if (SA) try { localStorage.setItem("mantodea-unfrei", state.license ? "0" : "1"); } catch (err) { /* egal */ }
+    render();
+  });
   $("country").addEventListener("change", (e) => { state.country = e.target.value; render(); });
   $("status").addEventListener("change", (e) => { state.status = e.target.value; render(); });
   $("onlyPhoto").addEventListener("change", (e) => { state.onlyPhoto = e.target.checked; render(); });
@@ -1108,8 +1113,9 @@
   });
   $("hideFossil").addEventListener("change", (e) => { state.hideFossil = e.target.checked; render(); });
   if (SA && Object.keys(UF).length) {
-    $("showUnfree").checked = showUF; $("showUnfree").closest("label").hidden = false;
-    $("showUnfree").addEventListener("change", (e) => { showUF = e.target.checked; try { localStorage.setItem("mantodea-unfrei", showUF ? "1" : "0"); } catch (err) { /* egal */ } render(); });
+    $("lic-alle").textContent = "alle Fotos, auch nicht frei lizenzierte (©)";
+    $("lic-frei").hidden = false;
+    if (!ufStart) { state.license = "frei"; $("license").value = "frei"; }
   }
   $("continents").addEventListener("click", (e) => {
     const b = e.target.closest(".chip");
