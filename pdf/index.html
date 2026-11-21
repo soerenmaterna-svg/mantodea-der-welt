@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF wird geladen …</title>
+<link rel="icon" href="../favicon.png">
+<style>
+  html,body{margin:0;background:#525659;font-family:system-ui,sans-serif}
+  #lade{position:fixed;inset:0;background:#f4f7f1;color:#1d2a1f;display:flex;align-items:center;justify-content:center;z-index:5}
+  .box{width:min(460px,88vw);text-align:center}
+  .pdf{display:inline-grid;place-items:center;width:46px;height:56px;border-radius:5px 14px 5px 5px;background:#c0392b;color:#fff;font:800 .85rem system-ui;margin-bottom:14px}
+  h1{font-size:1.15rem;margin:0 0 6px}
+  #t{margin:0 0 16px;color:#5b6b55;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar{height:12px;border-radius:999px;background:#dfe8d8;overflow:hidden}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,#3f7d3a,#6fae5f);border-radius:999px;transition:width .2s}
+  .fill.unbest{width:35%;animation:hin 1.2s ease-in-out infinite alternate}@keyframes hin{from{margin-left:0}to{margin-left:65%}}
+  #z{margin-top:8px;font-size:.85rem;color:#5b6b55}
+  #fehler a{color:#3f7d3a;font-weight:600}
+  #kopf{position:sticky;top:0;z-index:3;display:flex;gap:8px;align-items:center;padding:6px 10px;background:#2f3a2c;color:#fff;font-size:.85rem}
+  #kopf .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #kopf button,#kopf a{background:#3f7d3a;color:#fff;border:0;border-radius:999px;padding:5px 11px;font:600 .8rem system-ui;text-decoration:none;cursor:pointer}
+  #seiten{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 40px}
+  #seiten canvas{background:#fff;box-shadow:0 2px 8px #0006;max-width:100%}
+  #nativ{border:0;width:100%;height:calc(100vh - 38px);display:block}
+</style></head>
+<body>
+<div id="lade"><div class="box"><div class="pdf">PDF</div><h1>PDF wird geladen …</h1><p id="t"></p>
+  <div class="bar"><div class="fill" id="f"></div></div><div id="z"></div><p id="fehler"></p></div></div>
+<div id="kopf" hidden><span class="n" id="kn"></span><button id="minus" title="kleiner">−</button><button id="plus" title="größer">+</button><a id="dl" download>Speichern</a></div>
+<div id="seiten"></div>
+<script type="module">
+// Aufruf: pdf/#u=<Dropbox-Link>&t=<Titel>
+const P = new URLSearchParams(location.hash.slice(1));
+const quelle = P.get("u") || "", titel = P.get("t") || "PDF";
+const $ = (id) => document.getElementById(id);
+$("t").textContent = titel;
+const url = quelle.replace("https://www.dropbox.com/", "https://dl.dropboxusercontent.com/").replace(/([?&])(raw|dl)=\d/, "$1dl=1");
+const mb = (n) => (n / 1048576).toFixed(n > 10485760 ? 0 : 1).replace(".", ",") + " MB";
+function fehler() {
+  $("f").style.width = "0"; $("z").textContent = "";
+  $("fehler").innerHTML = 'Das PDF konnte hier nicht geladen werden. <a href="' + quelle.replace(/"/g, "&quot;") + '">Direkt bei Dropbox öffnen</a>';
+}
+async function laden() {
+  const r = await fetch(url);
+  if (!r.ok || !r.body) throw new Error("HTTP " + r.status);
+  const total = +r.headers.get("content-length") || 0;
+  if (!total) $("f").className = "fill unbest";
+  const rd = r.body.getReader(), teile = []; let n = 0;
+  for (;;) {
+    const { done, value } = await rd.read();
+    if (done) break;
+    teile.push(value); n += value.length;
+    if (total) { const p = Math.round(n / total * 100); $("f").style.width = p + "%"; $("z").textContent = `${p} % · ${mb(n)} von ${mb(total)}`; }
+    else $("z").textContent = mb(n) + " geladen";
+  }
+  const daten = new Uint8Array(n); let o = 0;
+  for (const t of teile) { daten.set(t, o); o += t.length; }
+  return daten;
+}
+let zoom = 1, doc = null;
+let beob = null;
+async function zeichnen() {
+  // Platzhalter in richtiger Größe für alle Seiten, gezeichnet wird erst, wenn eine Seite ins Bild kommt (spart Speicher)
+  const box = $("seiten"); box.innerHTML = ""; beob?.disconnect();
+  const breite = Math.min(innerWidth - 16, 1000) * zoom, dpr = Math.min(devicePixelRatio || 1, 2);
+  const s1 = await doc.getPage(1), v1 = s1.getViewport({ scale: 1 });
+  const fertig = new Set();
+  beob = new IntersectionObserver((es) => es.forEach(async (en) => {
+    if (!en.isIntersecting) return;
+    const c = en.target, i = +c.dataset.i; if (fertig.has(i)) return; fertig.add(i);
+    const s = await doc.getPage(i), v0 = s.getViewport({ scale: 1 }), v = s.getViewport({ scale: breite / v0.width * dpr });
+    c.width = v.width; c.height = v.height; c.style.width = v.width / dpr + "px"; c.style.height = v.height / dpr + "px";
+    await s.render({ canvasContext: c.getContext("2d"), viewport: v }).promise;
+  }), { rootMargin: "1500px 0px" });
+  for (let i = 1; i <= doc.numPages; i++) {
+    const c = document.createElement("canvas"); c.dataset.i = i;
+    c.style.width = breite + "px"; c.style.height = breite * v1.height / v1.width + "px";
+    box.append(c); beob.observe(c);
+  }
+}
+try {
+  const daten = await laden();
+  document.title = titel;
+  const blob = new Blob([daten], { type: "application/pdf" }), bu = URL.createObjectURL(blob);
+  $("kn").textContent = titel; $("dl").href = bu; $("dl").download = titel.replace(/[^\w\- .,()]+/g, "_").slice(0, 80) + ".pdf";
+  $("kopf").hidden = false;
+  if (navigator.pdfViewerEnabled) {
+    // Browser mit eingebauter PDF-Anzeige (Computer): direkt diese nehmen
+    const fr = document.createElement("iframe"); fr.id = "nativ"; fr.src = bu; fr.title = titel;
+    $("seiten").replaceWith(fr); $("minus").hidden = $("plus").hidden = true;
+  } else {
+    // Handy/Tablet ohne PDF-Anzeige: Seiten selbst zeichnen (PDF.js), damit nichts heruntergeladen werden muss
+    const pdfjs = await import("./pdfjs/pdf.min.mjs");
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL("./pdfjs/pdf.worker.min.mjs", import.meta.url).href;
+    doc = await pdfjs.getDocument({ data: daten }).promise;
+    $("lade").remove();
+    $("plus").onclick = () => { zoom = Math.min(zoom * 1.25, 4); zeichnen(); };
+    $("minus").onclick = () => { zoom = Math.max(zoom / 1.25, 0.5); zeichnen(); };
+    await zeichnen();
+  }
+  $("lade")?.remove();
+} catch (e) { console.error(e); fehler(); }
+</script>
+</body></html>

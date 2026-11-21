@@ -512,58 +512,17 @@
       <span class="cl"><a href="${bhlSearch(c.replace(/[().,]/g, " "))}" target="_blank" rel="noopener">BHL ↗</a>
       <a href="${scholar(c + " " + s.n)}" target="_blank" rel="noopener">Scholar ↗</a></span></li>`;
   }
-  // PDFs aus der Sammlung: neuen Tab sofort öffnen, darin "PDF wird geladen" mit Fortschrittsbalken, dann die PDF anzeigen.
-  // Dropbox erlaubt das Laden von dl.dropboxusercontent.com (CORS). Im claude.ai-Artifact sind fremde Abrufe gesperrt –
-  // dort öffnet der Link wie bisher direkt.
+  // PDFs aus der Sammlung (nur GitHub-Fassung): eigene Seite pdf/ zeigt "PDF wird geladen" mit Fortschrittsbalken und öffnet
+  // das PDF danach sofort. Dropbox erlaubt das Laden von dl.dropboxusercontent.com (CORS). Im claude.ai-Artifact sind fremde
+  // Abrufe gesperrt – dort öffnet der Link wie bisher direkt.
   document.addEventListener("click", async (ev) => {
     const a = ev.target.closest("a.erst, ul.dbx a");
     if (!a || !SA || ev.ctrlKey || ev.metaKey || ev.shiftKey || !/dropbox\.com/.test(a.href)) return;
     ev.preventDefault();
-    const url = a.href.replace("https://www.dropbox.com/", "https://dl.dropboxusercontent.com/").replace(/([?&])raw=1/, "$1dl=1");
     const titel = (a.getAttribute("title") || a.textContent || "PDF").trim().replace(/\s+/g, " ");
-    const w = window.open("", "_blank");
-    if (!w) { location.href = a.href; return; }
-    w.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PDF wird geladen …</title>
-      <style>body{margin:0;font-family:system-ui,sans-serif;background:#f4f7f1;color:#1d2a1f;display:flex;align-items:center;justify-content:center;height:100vh}
-      .box{width:min(460px,88vw);text-align:center}.pdf{display:inline-grid;place-items:center;width:46px;height:56px;border-radius:5px 14px 5px 5px;background:#c0392b;color:#fff;font:800 .85rem system-ui;margin-bottom:14px}
-      h1{font-size:1.15rem;margin:0 0 6px}p{margin:0 0 16px;color:#5b6b55;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .bar{height:12px;border-radius:999px;background:#dfe8d8;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,#3f7d3a,#6fae5f);border-radius:999px;transition:width .2s}
-      .fill.unbest{width:35%;animation:hin 1.2s ease-in-out infinite alternate}@keyframes hin{from{margin-left:0}to{margin-left:65%}}
-      #z{margin-top:8px;font-size:.85rem;color:#5b6b55}</style></head><body><div class="box"><div class="pdf">PDF</div><h1>PDF wird geladen …</h1>
-      <p id="t"></p><div class="bar"><div class="fill" id="f"></div></div><div id="z"></div></div></body></html>`);
-    w.document.close();
-    const $w = (id) => w.document.getElementById(id);
-    $w("t").textContent = titel;
-    const mb = (n) => (n / 1048576).toFixed(n > 10485760 ? 0 : 1).replace(".", ",") + " MB";
-    try {
-      const r = await fetch(url);
-      if (!r.ok || !r.body) throw new Error("Laden fehlgeschlagen");
-      const total = +r.headers.get("content-length") || 0;
-      if (!total) $w("f").className = "fill unbest";
-      const reader = r.body.getReader(), teile = []; let n = 0;
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        teile.push(value); n += value.length;
-        if (w.closed) return;
-        if (total) { $w("f").style.width = Math.round(n / total * 100) + "%"; $w("z").textContent = `${Math.round(n / total * 100)} % · ${mb(n)} von ${mb(total)}`; }
-        else $w("z").textContent = mb(n) + " geladen";
-      }
-      const blob = new Blob(teile, { type: "application/pdf" });
-      const bu = URL.createObjectURL(blob);
-      // PDF im selben Tab anzeigen (eingebettet); Knopf als Rückfall für Handys ohne eingebaute PDF-Anzeige
-      w.document.title = titel;
-      w.document.body.innerHTML = "";
-      w.document.body.style.cssText = "margin:0;display:block;height:100vh";
-      const fr = w.document.createElement("iframe");
-      fr.src = bu; fr.title = titel; fr.style.cssText = "border:0;width:100%;height:100%;display:block";
-      const k = w.document.createElement("a");
-      k.href = bu; k.download = titel.replace(/[^\w\- .,()]+/g, "_").slice(0, 80) + ".pdf"; k.textContent = "PDF öffnen / speichern";
-      k.style.cssText = "position:fixed;right:12px;bottom:12px;background:#3f7d3a;color:#fff;padding:8px 14px;border-radius:999px;font:600 .85rem system-ui;text-decoration:none;box-shadow:0 2px 8px #0004";
-      w.document.body.append(fr, k);
-    } catch (e) {
-      if (!w.closed) w.location.href = a.href;     // Rückfall: direkt über Dropbox öffnen
-    }
+    // eigene Anzeige-Seite: Ladebalken, danach sofort das PDF (auch auf Handys ohne eingebaute PDF-Anzeige)
+    const ziel = "pdf/#" + new URLSearchParams({ u: a.href, t: titel }).toString();
+    if (!window.open(ziel, "_blank")) location.href = ziel;
   });
 
   // Originalbeschreibung der Art aus der Literatursammlung (Dropbox), als PDF-Knopf unter dem Namen
