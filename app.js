@@ -515,6 +515,18 @@
   // PDFs aus der Sammlung (nur GitHub-Fassung): eigene Seite pdf/ zeigt "PDF wird geladen" mit Fortschrittsbalken und öffnet
   // das PDF danach sofort. Dropbox erlaubt das Laden von dl.dropboxusercontent.com (CORS). Im claude.ai-Artifact sind fremde
   // Abrufe gesperrt – dort öffnet der Link wie bisher direkt.
+  document.addEventListener("click", (ev) => {
+    // Literaturliste: schrittweise je 25 weitere aufklappen, am Ende wieder zuklappen (kein eigener Scrollbereich)
+    const b = ev.target.closest("button.dbx-alle"); if (!b) return;
+    const zu = [...b.previousElementSibling.querySelectorAll("li.dbx-mehr")];
+    const versteckt = zu.filter((x) => x.hidden);
+    if (!versteckt.length) {
+      zu.forEach((x) => { x.hidden = true; });
+      b.closest("details").scrollIntoView({ block: "nearest" });
+    } else versteckt.slice(0, 25).forEach((x) => { x.hidden = false; });
+    const rest = zu.filter((x) => x.hidden).length;
+    b.textContent = rest ? `▾ ${Math.min(25, rest)} weitere anzeigen (noch ${rest})` : "▴ Weniger anzeigen";
+  });
   document.addEventListener("click", async (ev) => {
     const a = ev.target.closest("a.erst, ul.dbx a, a.lit-q");
     if (!a || !SA || ev.ctrlKey || ev.metaKey || ev.shiftKey || !/dropbox\.com/.test(a.href)) return;
@@ -589,7 +601,14 @@
         const A = D.arten[s.n] || [], G = (D.gattungen[s.g] || []).filter((i) => !A.includes(i)), Fm = (D.familien[s.f] || []).filter((i) => !A.includes(i) && !G.includes(i));
         const sortJ = (ids) => ids.map((i) => D.dateien[i]).sort((a, b) => (parseInt((b.j.match(/\d{4}/) || [0])[0]) - parseInt((a.j.match(/\d{4}/) || [0])[0])));
         const li = (f) => `<li><a href="${esc(link(f))}" target="_blank" rel="noopener">📄 ${esc(f.t || f.n)}</a>${f.j ? ` <span class="muted">(${esc(f.j)})</span>` : ""}</li>`;
-        const block = (ids, title, open) => ids.length ? `<details class="dbx-g"${open ? " open" : ""}><summary>${title} <small>${ids.length}</small></summary><ul class="lit dbx">${sortJ(ids).map(li).join("")}</ul></details>` : "";
+        // ohne eigenen Scrollbereich: die neuesten 8 sichtbar, der Rest schrittweise ausklappbar
+        const ZEIG = 8;
+        const block = (ids, title, open) => {
+          if (!ids.length) return "";
+          const fs = sortJ(ids), rest = fs.length - ZEIG;
+          return `<details class="dbx-g"${open ? " open" : ""}><summary>${title} <small>${ids.length}</small></summary><ul class="lit dbx">${fs.map((f, i) => i < ZEIG ? li(f) : li(f).replace("<li>", '<li class="dbx-mehr" hidden>')).join("")}</ul>${rest > 0
+            ? `<button type="button" class="dbx-alle">▾ ${Math.min(25, rest)} weitere anzeigen (noch ${rest})</button>` : ""}</details>`;
+        };
         const total = A.length + G.length + Fm.length;
         h += `<h4>📚 Literatursammlung (Dropbox)${total ? ` <small>${total}</small>` : ""}</h4>`;
         if (total) h += block(A, `zur Art <i>${esc(s.n)}</i>`, A.length && A.length <= 40) + block(G, `zur Gattung <i>${esc(s.g)}</i>`, !A.length && G.length <= 25) + block(Fm, `zur Familie ${esc(s.f)}`, false)

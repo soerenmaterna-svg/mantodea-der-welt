@@ -946,7 +946,9 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .dbx-g { margin: 6px 0; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; background: var(--bg); }
 .dbx-g summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 .dbx-g summary small { color: var(--muted); font-weight: 500; }
-.dbx-g ul.dbx { max-height: 340px; overflow: auto; margin: 4px 0 6px; padding-left: 4px; }
+.dbx-g ul.dbx { margin: 4px 0 6px; padding-left: 4px; }
+.dbx-alle { margin: 2px 0 8px; border: 1px solid #a9cf9a; background: #eef7e9; color: #2f5f2b; border-radius: 999px; padding: 5px 14px; font: 600 .82rem system-ui; cursor: pointer; }
+.dbx-alle:hover { background: #e2f1da; }
 .dbx-g ul.dbx li { list-style: none; margin: 4px 0; font-size: .88rem; }
 
 /* Erstbeschreibung als PDF-Knopf unter dem Artnamen */
@@ -1006,7 +1008,7 @@ a.erst .et b, a.erst .go { color: #2f6a2a; }
 .lit-orte dt { font-weight: 700; font-size: .8rem; color: var(--muted); }
 .lit-orte dd { margin: 0; font-size: .88rem; }
 .lit-orte .lit-q { font-size: .75rem; white-space: nowrap; }
-.lit-pl { margin: 6px 0 0; padding-left: 18px; font-size: .82rem; max-height: 260px; overflow: auto; }
+.lit-pl { margin: 6px 0 0; padding-left: 18px; font-size: .82rem; }
 @media (max-width: 600px) { .lit-orte dl { grid-template-columns: 1fr; } }
 a.erst.netz .pdf { background: linear-gradient(160deg, #2f6f9f, #1d4f75); font-size: .62rem; }
 a.erst + a.erst { margin-left: 8px; }
