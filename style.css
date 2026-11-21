@@ -1033,7 +1033,7 @@ a.erst + a.erst { margin-left: 8px; }
 .bk-th figcaption { font-size: .7rem; line-height: 1.2; margin-top: 2px; color: var(--muted); }
 .bk-dlg { width: min(860px, 96vw); max-height: 92vh; }
 .bk-body { overflow: auto; padding: 4px 16px 18px; }
-.bk-kopf { position: sticky; top: 0; background: var(--bg); padding: 6px 0 8px; z-index: 2; border-bottom: 1px solid var(--line); margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px; }
+.bk-kopf { position: static; background: var(--bg); padding: 6px 0 8px; z-index: 2; border-bottom: 1px solid var(--line); margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px; }
 .bk-qu { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .bk-qu a, .bk-qu button { font-size: .8rem; border: 1px solid #a9cf9a; background: #eef7e9; color: #2f5f2b; border-radius: 999px; padding: 3px 10px; text-decoration: none; cursor: pointer; }
 .bk-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 8px; }
@@ -1055,3 +1055,18 @@ a.erst + a.erst { margin-left: 8px; }
 .bk-mini img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; display: block; }
 .bk-mein-hint { color: #2f5f2b; }
 @media (max-width: 600px) { .bk-l { grid-template-columns: 16px 1fr; } .bk-l > :last-child { grid-column: 2; } .bk-end { white-space: normal; } }
+
+/* Bestimmungsschlüssel: eigener Vollbild-Dialog, Hintergrund deutlich abgedunkelt */
+.bk-dlg::backdrop { background: rgba(10,20,10,.78); backdrop-filter: blur(3px); }
+.bk-dlg { height: 92vh; }
+.bk-dlg .cdlg-head { gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.bk-dlg .cdlg-head h2 { flex: 1; }
+.bk-body { position: relative; flex: 1; overscroll-behavior: contain; }
+.bk-zurueck { font: inherit; font-size: .9rem; padding: 6px 12px; border: 1px solid var(--accent, #3f7d3a); border-radius: 999px; background: var(--accent-soft, #e6f2e3); color: var(--accent, #3f7d3a); cursor: pointer; white-space: nowrap; }
+.bk-zurueck[hidden] { display: none; }
+.bk-p.blink { animation: bkblink 1.6s; }
+@media (max-width: 700px) {
+  .bk-dlg, .bk-dlg[open] { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; inset: 0; border-radius: 0; }
+  .bk-dlg .cdlg-head h2 { font-size: 1.05rem; }
+}
+html.bk-offen, html.bk-offen body { overflow: hidden; }

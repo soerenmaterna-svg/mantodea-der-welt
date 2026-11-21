@@ -87,14 +87,18 @@
     if (dlg) return dlg;
     dlg = document.createElement("dialog");
     dlg.className = "cdlg bk-dlg";
-    dlg.innerHTML = `<div class="cdlg-head"><h2>🔑 Bestimmungsschlüssel</h2><button type="button" class="close" aria-label="Schließen">×</button></div><div class="bk-body"></div>`;
+    dlg.innerHTML = `<div class="cdlg-head"><h2>🔑 Bestimmungsschlüssel</h2><button type="button" class="bk-zurueck" hidden></button><button type="button" class="close" aria-label="Schließen">×</button></div><div class="bk-body"></div>`;
     document.body.appendChild(dlg);
+    dlg.addEventListener("close", () => document.documentElement.classList.remove("bk-offen"));
     dlg.addEventListener("click", (e) => {
       if (e.target === dlg || e.target.closest(".close")) { dlg.close(); return; }
       const a = e.target.closest("[data-art]");
       if (a) { e.preventDefault(); dlg.close(); detail(a.dataset.art); return; }
       const g = e.target.closest("[data-geh]");
-      if (g) { e.preventDefault(); const t = dlg.querySelector(`#bk-p-${g.dataset.geh}`); if (t) { t.scrollIntoView({ behavior: "smooth", block: "center" }); t.classList.add("blink"); setTimeout(() => t.classList.remove("blink"), 1200); } return; }
+      if (g) { e.preventDefault(); const von = g.closest(".bk-p"); springe(+g.dataset.geh, von ? +von.id.replace("bk-p-", "") : null); return; }
+      if (e.target.closest(".bk-zurueck")) { e.preventDefault(); const n = verlauf.pop(); springe(n); return; }
+      const ky = e.target.closest("[data-key]");
+      if (ky) { e.preventDefault(); const k = +ky.dataset.key; if (!akt.ks.includes(k)) akt.ks.push(k); zeige(akt.ks.indexOf(k)); return; }
       const t = e.target.closest("[data-tab]");
       if (t) { zeige(+t.dataset.tab); return; }
       if (e.target.closest(".bk-orig-sw")) dlg.classList.toggle("orig");
@@ -102,14 +106,24 @@
     return dlg;
   }
   let akt = { ks: [], art: null };
+  let verlauf = [];                       // Sprünge im Schlüssel, für "zurück"
+  const artenSchluessel = (g) => (B.g[g] || []).filter((x) => B.k[x].g === g).sort((a, b) => B.k[b].m - B.k[a].m)[0] ?? -1;
+  function springe(nr, merken) {
+    const body = dlg.querySelector(".bk-body"), t = dlg.querySelector(`#bk-p-${nr}`); if (!t) return;
+    if (merken != null) verlauf.push(merken);
+    body.scrollTo({ top: body.scrollTop + t.getBoundingClientRect().top - body.getBoundingClientRect().top - 6, behavior: "smooth" });
+    t.classList.remove("blink"); void t.offsetWidth; t.classList.add("blink");
+    const zb = dlg.querySelector(".bk-zurueck");
+    zb.hidden = !verlauf.length; if (verlauf.length) zb.textContent = `↩ zurück zu ${verlauf[verlauf.length - 1]}`;
+  }
   function zeige(ti) {
     const D = B, K = D.k[akt.ks[ti]], W = wege(K);
     const meinWeg = new Set();
     if (akt.art) W.endpunkte(akt.art).forEach(([i, j]) => W.weg(i, j).forEach(([a, b]) => meinWeg.add(a + ":" + b)));
     const ziel = (z) => typeof z === "number"
       ? (W.nr.has(z) ? `<a href="#" class="bk-geh" data-geh="${z}">→ ${z}</a>` : `<span class="bk-fehlt" title="Dieses Paar konnte aus dem PDF nicht sauber gelesen werden">→ ${z} <small>(siehe PDF)</small></span>`)
-      : istArt(z) && z.f ? `<span class="bk-end"><span class="muted small">${z.r || "Familie"}</span> <b>${esc(z.f)}</b>${((t) => t >= 0 ? ` <a href="#" class="bk-geh" data-tab="${t}">→ Gattungsschlüssel</a>` : "")(akt.ks.findIndex((x) => B.k[x].t && B.k[x].t.includes("der " + z.f)))}</span>`
-      : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${z.b ? ` <small class="muted" title="Name in der Originaltabelle; heute laut Mantodea Species File ein Synonym">(im Original: <i>${esc(z.b)}</i>)</small>` : ""}${z.x ? ` <small class="muted" title="Diese Gattung ist in der heutigen Artenliste nicht enthalten (vermutlich Synonym)">(heute nicht in der Liste)</small>` : ""}${B.g[z.g] && B.g[z.g].some((x) => akt.ks.includes(x)) ? ` <a href="#" class="bk-geh" data-tab="${akt.ks.findIndex((x) => B.g[z.g].includes(x) && B.k[x].g === z.g)}">→ Artenschlüssel</a>` : ""}</span>`
+      : istArt(z) && z.f ? `<span class="bk-end"><span class="muted small">${z.r || "Familie"}</span> <b>${esc(z.f)}</b>${((t) => t >= 0 && t !== akt.ks[ti] ? ` <a href="#" class="bk-geh" data-key="${t}">→ Gattungsschlüssel</a>` : "")(B.k.findIndex((x) => x.t && x.t.includes("der " + z.f)))}</span>`
+      : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${z.b ? ` <small class="muted" title="Name in der Originaltabelle; heute laut Mantodea Species File ein Synonym">(im Original: <i>${esc(z.b)}</i>)</small>` : ""}${z.x ? ` <small class="muted" title="Diese Gattung ist in der heutigen Artenliste nicht enthalten (vermutlich Synonym)">(heute nicht in der Liste)</small>` : ""}${((t) => t >= 0 && t !== akt.ks[ti] ? ` <a href="#" class="bk-geh" data-key="${t}" title="Schlüssel zu den Arten dieser Gattung öffnen">→ Artenschlüssel</a>` : "")(artenSchluessel(z.g))}</span>`
       : istArt(z) ? (z.k ? `<span class="bk-end">${bild(z.k, "bk-mini")}${artLink(z.k)}</span>` : `<span class="bk-end"><i>${esc(z.n)}</i> <small class="muted" title="Nicht in der Artenliste (z. B. heute Synonym oder Unterart)">(nicht in der Liste)</small></span>`)
       : `<span class="bk-fehlt">(siehe PDF)</span>`;
     const zeile = (p, i, x, j) => `<div class="bk-l${meinWeg.has(i + ":" + j) ? " mein" : ""}"><span class="bk-x">${BUCH[j]}</span>
@@ -121,12 +135,13 @@
         <span class="bk-qu"><a class="erst-mini" href="${esc(K.u.replace(/([?&])dl=0/, "$1raw=1"))}" target="_blank" rel="noopener">📄 Originalarbeit (PDF)</a>
         ${K.l !== "de" ? `<button type="button" class="bk-orig-sw">Original (${SPR[K.l] || K.l}) ein/aus</button>` : ""}</span>
         ${K.h ? `<p class="small"><b>Hinweis:</b> ${esc(K.h)}</p>` : ""}
-        <p class="muted small">${K.l !== "de" ? `Aus dem ${SPR[K.l] || K.l}en übersetzt, eng am Wortlaut${K.m ? ", von Hand geprüft" : ""}. ` : K.m ? "Von Hand geprüft. " : ""}${K.m ? "" : "Nur Paare, die sich sauber aus dem PDF lesen ließen. "}Abbildungsverweise (Abb.) beziehen sich auf die Originalarbeit.${akt.art ? ` <span class="bk-mein-hint">Grün markiert: Weg zu <i>${esc(name(akt.art))}</i>.</span>` : ""}</p></div>
+        <p class="muted small">${K.l !== "de" ? `Aus dem ${SPR[K.l] || K.l}en übersetzt, eng am Wortlaut${K.m ? ", von Hand geprüft" : ""}. ` : K.m ? "Von Hand geprüft. " : ""}${K.m ? "" : "Nur Paare, die sich sauber aus dem PDF lesen ließen. "}Abbildungsverweise (Abb.) beziehen sich auf die Originalarbeit.${akt.art && meinWeg.size ? ` <span class="bk-mein-hint">Grün markiert: Weg zu <i>${esc(name(akt.art))}</i>.</span>` : ""}</p></div>
       ${K.p.map((p, i) => `<div class="bk-p" id="bk-p-${p.n}"><div class="bk-n">${p.n}</div><div class="bk-ls">${p.l.map((x, j) => zeile(p, i, x, j)).join("")}</div></div>`).join("")}`;
     body.querySelectorAll("img[data-ik]").forEach(fill);
     body.scrollTop = 0;
+    verlauf = []; dlg.querySelector(".bk-zurueck").hidden = true;
     const m = body.querySelector(".bk-l.mein");
-    if (m) setTimeout(() => m.scrollIntoView({ block: "center" }), 50);
+    if (m) setTimeout(() => body.scrollTo({ top: Math.max(0, body.scrollTop + m.closest(".bk-p").getBoundingClientRect().top - body.getBoundingClientRect().top - 6) }), 50);
   }
   async function oeffnen(k) {
     const D = await laden(); if (!D) return;
@@ -138,6 +153,7 @@
     dialog(); dlg.classList.remove("orig");
     zeige(0);
     dlg.showModal ? dlg.showModal() : dlg.setAttribute("open", "");
+    document.documentElement.classList.add("bk-offen");
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button[data-best]");
