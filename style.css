@@ -941,3 +941,10 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .tree-dlg[data-tree="wieland2013"] .tree-src { background: #f6f1fb; border-bottom-color: #dccdee; }
 .tree-dlg[data-tree="wieland2013"] .tree-src .ibtn { background: #6a3d9a; }
 .tree-src .tag.wie { background: #6a3d9a; }
+
+/* Literatursammlung (Dropbox) im Steckbrief */
+.dbx-g { margin: 6px 0; border: 1px solid var(--line); border-radius: 10px; padding: 4px 10px; background: var(--bg); }
+.dbx-g summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.dbx-g summary small { color: var(--muted); font-weight: 500; }
+.dbx-g ul.dbx { max-height: 340px; overflow: auto; margin: 4px 0 6px; padding-left: 4px; }
+.dbx-g ul.dbx li { list-style: none; margin: 4px 0; font-size: .88rem; }

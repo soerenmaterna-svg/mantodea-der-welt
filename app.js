@@ -538,12 +538,16 @@
       await loadScript("data/dropbox.js");
       const D = window.MANTODEA_DBX;
       if (D && D.ordner) {
-        const ids = [...new Set([...(D.arten[s.n] || []), ...(D.gattungen[s.g] || []), ...(D.familien[s.f] || [])])];
         const link = (f) => f.u || (D.ordner + "&preview=" + encodeURIComponent(f.n));
-        const level = (i) => (D.arten[s.n] || []).includes(i) ? "zur Art" : (D.gattungen[s.g] || []).includes(i) ? `zur Gattung ${esc(s.g)}` : `zur Familie ${esc(s.f)}`;
-        h += `<h4>📚 Literatursammlung (Dropbox)${ids.length ? ` <small>${ids.length}</small>` : ""}</h4>`;
-        if (ids.length) h += `<ul class="lit dbx">${ids.map((i) => { const f = D.dateien[i]; return `<li><a href="${esc(link(f))}" target="_blank" rel="noopener">📄 ${esc(f.t || f.n)}</a>${f.j ? ` <span class="muted">(${esc(f.j)})</span>` : ""} <span class="muted small">· ${level(i)}</span></li>`; }).join("")}</ul>`;
-        else h += `<p class="muted small">Für diese Art sind noch keine PDFs aus der Sammlung zugeordnet.</p>`;
+        const A = D.arten[s.n] || [], G = (D.gattungen[s.g] || []).filter((i) => !A.includes(i)), Fm = (D.familien[s.f] || []).filter((i) => !A.includes(i) && !G.includes(i));
+        const sortJ = (ids) => ids.map((i) => D.dateien[i]).sort((a, b) => (parseInt((b.j.match(/\d{4}/) || [0])[0]) - parseInt((a.j.match(/\d{4}/) || [0])[0])));
+        const li = (f) => `<li><a href="${esc(link(f))}" target="_blank" rel="noopener">📄 ${esc(f.t || f.n)}</a>${f.j ? ` <span class="muted">(${esc(f.j)})</span>` : ""}</li>`;
+        const block = (ids, title, open) => ids.length ? `<details class="dbx-g"${open ? " open" : ""}><summary>${title} <small>${ids.length}</small></summary><ul class="lit dbx">${sortJ(ids).map(li).join("")}</ul></details>` : "";
+        const total = A.length + G.length + Fm.length;
+        h += `<h4>📚 Literatursammlung (Dropbox)${total ? ` <small>${total}</small>` : ""}</h4>`;
+        if (total) h += block(A, `zur Art <i>${esc(s.n)}</i>`, A.length && A.length <= 40) + block(G, `zur Gattung <i>${esc(s.g)}</i>`, !A.length && G.length <= 25) + block(Fm, `zur Familie ${esc(s.f)}`, false)
+          + `<p class="muted small">Zugeordnet über den Namen im Dateititel, neueste Arbeiten zuerst. Die PDFs liegen in der Dropbox-Sammlung (${fmt.format(D.anzahl || 0)} Dateien).</p>`;
+        else h += `<p class="muted small">Im Titel keiner PDF der Sammlung kommt diese Art, ihre Gattung oder Familie vor.</p>`;
         h += `<p class="links"><a href="${esc(D.ordner)}" target="_blank" rel="noopener">Gesamte Literatursammlung in Dropbox öffnen ↗</a></p>`;
       }
     } catch (e) { /* ohne Sammlung */ }
