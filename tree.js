@@ -44,6 +44,7 @@
   // Jeder Baum hat eine eigene Farbe für Stamm und Äste oberhalb der Familien, Hintergrund und Wasserzeichen
   const THEME = { katalog: { line: "#2e5d27", bg: "#fbfdf7", mark: "Katalog · Klassifikation" },
     schwarzroy2019: { line: "#a24e1c", bg: "#fdf8f2", mark: "Morphologie · Schwarz & Roy 2019" },
+    wieland2013: { line: "#6a3d9a", bg: "#f8f5fc", mark: "Morphologie · Wieland 2013" },
     casadei2026: { line: "#1f5f97", bg: "#f4f8fd", mark: "Genetik · Casadei-Ferreira u. a. 2026" } };
   const TH = () => THEME[curTree] || THEME.katalog;
   let curTree = "katalog", diffCount = 0, diffWith = "";
@@ -505,11 +506,11 @@
 
   function drawPick() {
     const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P[0];
-    const cls = (p) => (p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
+    const cls = (p) => (p.id === "wieland2013" ? "wie" : p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
     document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life" : p.titel)}</span></button>`).join("");
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.id === "wieland2013" ? "nach dem äußeren Körperbau, 152 Merkmale" : SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
       <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }

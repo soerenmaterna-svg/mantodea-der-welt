@@ -933,3 +933,11 @@ button.secondary { font: inherit; font-weight: 600; padding: 8px 14px; border-ra
 .ss-tv .tv-note { margin: 6px 0 0; font-size: .9rem; opacity: .9; }
 .ss-tv .tv-go { display: inline-block; margin: 6px 0; padding: 10px 18px; border-radius: 999px; background: #3f7d3a; color: #fff !important; font: 700 1rem system-ui; border: 0; text-decoration: none; cursor: pointer; }
 .ss-tv .tv-best { background: rgba(63,125,58,.35); border-radius: 8px; padding: 6px 8px; list-style: none; margin-left: -18px; }
+
+/* Wieland 2013: violett */
+.tree-pick button.wie { border-color: #b39ad3; background: #f4effa; color: #4f2a7a; }
+.tree-pick button.wie[aria-selected="true"] { background: #6a3d9a; border-color: #6a3d9a; }
+.tree-dlg[data-tree="wieland2013"] .tree-head { background: linear-gradient(180deg, #fff, #efe8f8); }
+.tree-dlg[data-tree="wieland2013"] .tree-src { background: #f6f1fb; border-bottom-color: #dccdee; }
+.tree-dlg[data-tree="wieland2013"] .tree-src .ibtn { background: #6a3d9a; }
+.tree-src .tag.wie { background: #6a3d9a; }
