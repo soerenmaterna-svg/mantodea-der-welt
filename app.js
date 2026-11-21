@@ -71,14 +71,18 @@
   if (matchMedia("(max-width: 600px)").matches) $("q").placeholder = "Suchen …";
   // ---------- Kopfzeile
   const fams = [...new Set(DATA.map((s) => s.f))].sort(coll.compare);
-  $("stats").innerHTML = [
-    [DATA.filter((s) => !s.x).length, "rezente Arten"],
-    [new Set(DATA.map((s) => s.g)).size, "Gattungen"],
-    [fams.filter((f) => !f.startsWith("(")).length, "Familien"],
-    [DATA.filter((s) => s.p).length, "Arten mit Foto"],
-    // alle eingetragenen Fotos: Galerie (iNaturalist, GBIF, Museen, alte Bücher), Flickr und Titelbilder ohne Galerie
-    [DATA.reduce((n, s) => n + (s.gn || 0) + (s.fn || 0) + (s.p && !s.gn && !s.fn ? 1 : 0), 0), "Fotos"],
-  ].map(([n, l]) => `<div><b>${fmt.format(n)}</b><span>${l}</span></div>`).join("");
+  // Kopfzeilen-Kacheln: werden bei jeder Änderung neu berechnet (auch wenn geschützte Fotos ein-/ausgeblendet werden)
+  function drawStats() {
+    const live = DATA.filter((s) => !s.x);
+    $("stats").innerHTML = [
+      [live.length, "rezente Arten"],
+      [new Set(DATA.map((s) => s.g)).size, "Gattungen"],
+      [fams.filter((f) => !f.startsWith("(")).length, "Familien"],
+      [live.filter((s) => s.p || ufOf(s)).length, "Arten mit Foto"],
+      // alle eingetragenen Fotos: Galerie (iNaturalist, GBIF, Museen, alte Bücher), Flickr, Titelbilder ohne Galerie, ggf. geschützte
+      [DATA.reduce((n, s) => n + (s.gn || 0) + (s.fn || 0) + (s.p && !s.gn && !s.fn ? 1 : 0) + ((ufOf(s) || []).length), 0), "Fotos"],
+    ].map(([n, l]) => `<div><b>${fmt.format(n)}</b><span>${l}</span></div>`).join("");
+  }
   if (M.generated) $("generated").textContent = "Datenstand: " + fmtDate(M.generated);
 
   // ---------- Bilder (gebündelt, bei Bedarf geladen)
@@ -447,7 +451,7 @@
   function render(resetShown = true) {
     const nf = activeFilters();
     $("filter-badge").textContent = nf ? String(nf) : "";
-    drawActive(); drawQuick();
+    drawActive(); drawQuick(); drawStats();
     if (resetShown) state.shown = PAGE;
     current = filtered().sort(SORTS[state.sort]);
     const groups = grouped(current);
