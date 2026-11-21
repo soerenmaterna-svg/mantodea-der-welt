@@ -90,6 +90,7 @@
     if (akt.art) W.endpunkte(akt.art).forEach(([i, j]) => W.weg(i, j).forEach(([a, b]) => meinWeg.add(a + ":" + b)));
     const ziel = (z) => typeof z === "number"
       ? (W.nr.has(z) ? `<a href="#" class="bk-geh" data-geh="${z}">→ ${z}</a>` : `<span class="bk-fehlt" title="Dieses Paar konnte aus dem PDF nicht sauber gelesen werden">→ ${z} <small>(siehe PDF)</small></span>`)
+      : istArt(z) && z.g ? `<span class="bk-end"><span class="muted small">Gattung</span> <i><b>${esc(z.g)}</b></i>${B.g[z.g] && B.g[z.g].some((x) => akt.ks.includes(x)) ? ` <a href="#" class="bk-geh" data-tab="${akt.ks.findIndex((x) => B.g[z.g].includes(x) && B.k[x].g === z.g)}">→ Artenschlüssel</a>` : ""}</span>`
       : istArt(z) ? (z.k ? `<span class="bk-end">${bild(z.k, "bk-mini")}${artLink(z.k)}</span>` : `<span class="bk-end"><i>${esc(z.n)}</i> <small class="muted" title="Nicht in der Artenliste (z. B. heute Synonym oder Unterart)">(nicht in der Liste)</small></span>`)
       : `<span class="bk-fehlt">(siehe PDF)</span>`;
     const zeile = (p, i, x, j) => `<div class="bk-l${meinWeg.has(i + ":" + j) ? " mein" : ""}"><span class="bk-x">${BUCH[j]}</span>
