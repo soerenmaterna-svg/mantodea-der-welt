@@ -33,9 +33,21 @@
     s = M.species[i]; r = R[s.k];
     if (s.x || !s.p || !r || !r.f) continue;
     liste.push({ n: s.n, a: s.a || "", u: r.f, by: s.p.by || "", l: LIZ[s.p.l] || s.p.l || "", q: s.p.src || "iNaturalist", w: (s.p.front ? 3 : 1) + Math.random() * 3 });
+    // dazu alle Galeriefotos der Art (möglichst viele Bilder)
+    var g = r.g || [], j;
+    for (j = 0; j < g.length; j++) {
+      if (!g[j] || !g[j][0] || g[j][4] === s.p.ref) continue;
+      liste.push({ n: s.n, a: s.a || "", u: g[j][0], by: g[j][1] || "", l: LIZ[g[j][2]] || g[j][2] || "", q: g[j][3] || "", w: Math.random() * 2 });
+    }
   }
   // gemischt, schöne Titelbilder (adulte Weibchen) bevorzugt
-  liste.sort(function (x, y) { return y.w * Math.random() - x.w * Math.random(); });
+  for (i = 0; i < liste.length; i++) liste[i].z = liste[i].w * Math.random();
+  liste.sort(function (x, y) { return y.z - x.z; });
+  // nicht zweimal hintereinander dieselbe Art
+  for (i = 1; i < liste.length; i++) {
+    if (liste[i].n !== liste[i - 1].n) continue;
+    for (var k = i + 1; k < Math.min(liste.length, i + 60); k++) if (liste[k].n !== liste[i - 1].n) { var t = liste[i]; liste[i] = liste[k]; liste[k] = t; break; }
+  }
   var pos = -1, cur = 0, dauer = 9000;
   var b = [document.getElementById("b0"), document.getElementById("b1")];
   function zeige() {

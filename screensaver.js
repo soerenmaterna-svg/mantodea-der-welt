@@ -20,12 +20,32 @@
   const coll = new Intl.Collator("de");
   const match = (s, f) => (!f.cont || (s.c || []).includes(f.cont)) && (!f.land || (s.ct || []).includes(f.land)) &&
     (!f.fam || s.f === f.fam) && (!f.gen || s.g === f.gen) && (!f.abc || s.n[0].toUpperCase() === f.abc) && (!f.front || s.p.front);
+  // Möglichst viele Bilder: Titelbild jeder Art und – wo große Fassungen verfügbar sind (GitHub-Seite) – alle Galeriefotos
+  const RM = window.MANTODEA_REMOTE || {};
+  function itemsOf(s) {
+    const out = [{ s, title: true }];
+    if (F.front) return out;                       // "nur adulte Weibchen": nur die ausgewählten Titelbilder
+    const g = (RM[s.k] || {}).g || [];
+    for (const x of g) if (x && x[0] && x[4] !== s.p.ref) out.push({ s, url: x[0], by: x[1], l: x[2], q: x[3], ref: x[4] });
+    return out;
+  }
+  const countItems = (list) => list.reduce((n, s) => n + itemsOf(s).length, 0);
   function shuffle() {
     const sel = pool.filter((s) => match(s, F));
     const list = sel.length ? sel : pool;
-    if (F.order === "abc") return [...list].sort((a, b) => coll.compare(a.n, b.n));
-    if (F.order === "gattung") return [...list].sort((a, b) => coll.compare(a.f, b.f) || coll.compare(a.g, b.g) || coll.compare(a.n, b.n));
-    return list.map((s) => [s, Math.random() * weight(s)]).sort((x, y) => y[1] - x[1]).map((x) => x[0]);
+    if (F.order === "abc" || F.order === "gattung") {
+      const sorted = F.order === "abc" ? [...list].sort((a, b) => coll.compare(a.n, b.n)) : [...list].sort((a, b) => coll.compare(a.f, b.f) || coll.compare(a.g, b.g) || coll.compare(a.n, b.n));
+      return sorted.flatMap(itemsOf);
+    }
+    // zufällig, schöne Titelbilder etwas bevorzugt; nie zweimal hintereinander dieselbe Art
+    const all = list.flatMap((s) => itemsOf(s).map((it) => [it, Math.random() * (it.title ? weight(s) : 1.5)]));
+    all.sort((x, y) => y[1] - x[1]);
+    const res = all.map((x) => x[0]);
+    for (let i = 1; i < res.length; i++) {             // gleiche Art direkt hintereinander? mit einem späteren Foto tauschen
+      if (res[i].s !== res[i - 1].s) continue;
+      for (let j = i + 1; j < Math.min(res.length, i + 60); j++) if (res[j].s !== res[i - 1].s) { const t = res[i]; res[i] = res[j]; res[j] = t; break; }
+    }
+    return res;
   }
   const panel = document.createElement("div");
   panel.className = "ss-set"; panel.hidden = true;
@@ -49,7 +69,7 @@
         <label>Anzeigedauer<select data-f="speed">${[5, 8, 12, 20, 30].map((v) => `<option value="${v}"${v == F.speed ? " selected" : ""}>${v} Sekunden</option>`).join("")}</select></label>
         <label class="chk"><input type="checkbox" data-f="front"${F.front ? " checked" : ""}> nur adulte Weibchen</label>
       </div>
-      <div class="ss-set-foot"><span>${n ? `${n} Arten mit Foto` : "Keine Fotos für diese Auswahl – es werden alle gezeigt"}</span>
+      <div class="ss-set-foot"><span>${n ? `${n} Arten · ${countItems(pool.filter((s) => match(s, F))).toLocaleString("de-DE")} Fotos` : "Keine Fotos für diese Auswahl – es werden alle gezeigt"}</span>
         <button type="button" data-set="reset">Zurücksetzen</button><button type="button" class="ok" data-set="ok">Übernehmen</button></div>`;
   }
   let wasPaused = null;
@@ -69,9 +89,9 @@
   async function show(i) {
     if (!running) return;
     pos = (i + order.length) % order.length;
-    const s = order[pos], my = pos;
+    const it = order[pos], s = it.s, my = pos;
     let src;
-    try { src = await UI.bigSrc(s); } catch (e) { src = null; }
+    try { src = it.url || await UI.bigSrc(s); } catch (e) { src = null; }
     if (!running || my !== pos) return;
     if (!src) { schedule(300); return; }
     const img = new Image();
@@ -83,11 +103,12 @@
       L.querySelector(".ss-fg").style.backgroundImage = `url("${src}")`;
       L.classList.remove("zoom"); void L.offsetWidth; L.classList.add("zoom");
       L.classList.add("on"); layers[1 - cur].classList.remove("on");
-      const land = (UI.ortOf && UI.ortOf(s.p.ref)) || place(s);
+      const land = (UI.ortOf && UI.ortOf(it.ref || s.p.ref)) || place(s);
       document.getElementById("ss-name").innerHTML = `<i>${UI.esc(s.n)}</i>${s.de || s.en ? ` · ${UI.esc(s.de || s.en)}` : ""}${land ? `<span class="ss-land">📍 ${UI.esc(land)}</span>` : ""}`;
-      document.getElementById("ss-credit").textContent = `Foto: ${s.p.by || "siehe Quelle"} · ${LIC[s.p.l] || s.p.l} · ${s.p.src || "iNaturalist"}`;
+      const c = it.url ? { by: it.by, l: it.l, src: it.q } : s.p;
+      document.getElementById("ss-credit").textContent = `Foto: ${c.by || "siehe Quelle"} · ${LIC[c.l] || c.l} · ${c.src || "iNaturalist"}`;
       // nächstes Foto schon vorladen
-      const nx = order[(pos + 1) % order.length]; UI.bigSrc(nx).then((u) => { if (u) { const p = new Image(); p.src = u; } }).catch(() => {});
+      const nx = order[(pos + 1) % order.length]; (nx.url ? Promise.resolve(nx.url) : UI.bigSrc(nx.s)).then((u) => { if (u) { const p = new Image(); p.src = u; } }).catch(() => {});
       schedule((+F.speed || 8) * 1000);
     };
     img.onerror = () => schedule(300);
@@ -125,7 +146,7 @@
   nameEl.style.cursor = "pointer"; nameEl.title = "Steckbrief dieser Art öffnen";
   nameEl.addEventListener("click", (e) => {
     e.stopPropagation();
-    const s = order[pos]; if (!s) return;
+    const s = order[pos] && order[pos].s; if (!s) return;
     stop();
     setTimeout(() => UI.detail(s.k), 150);
   });
