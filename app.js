@@ -516,7 +516,7 @@
   // das PDF danach sofort. Dropbox erlaubt das Laden von dl.dropboxusercontent.com (CORS). Im claude.ai-Artifact sind fremde
   // Abrufe gesperrt – dort öffnet der Link wie bisher direkt.
   document.addEventListener("click", async (ev) => {
-    const a = ev.target.closest("a.erst, ul.dbx a");
+    const a = ev.target.closest("a.erst, ul.dbx a, a.lit-q");
     if (!a || !SA || ev.ctrlKey || ev.metaKey || ev.shiftKey || !/dropbox\.com/.test(a.href)) return;
     ev.preventDefault();
     const titel = (a.getAttribute("title") || a.textContent || "PDF").trim().replace(/\s+/g, " ");
@@ -528,15 +528,36 @@
   // Originalbeschreibung der Art aus der Literatursammlung (Dropbox), als PDF-Knopf unter dem Namen
   async function fillErst(s) {
     const box = $("d-erst"); if (!box) return;
-    try { await loadScript("data/erstbeschreibung.js"); } catch (e) { return; }
-    const E = (window.MANTODEA_ERST || {})[s.n];
+    try { await Promise.all([loadScript("data/erstbeschreibung.js"), loadScript("data/erst_netz.js").catch(() => null), loadScript("data/literatur.js").catch(() => null)]); } catch (e) { return; }
+    const E = (window.MANTODEA_ERST || {})[s.n], N = (window.MANTODEA_ERSTNETZ || {})[s.n], LO = ((window.MANTODEA_LIT || {})[s.k] || {});
     if (!box.isConnected || $("d-body").dataset.k != s.k) return;
-    if (!E) { box.innerHTML = ""; return; }
-    const kurz = E.t.length > 60 ? E.t.slice(0, 57).replace(/\s+\S*$/, "") + " …" : E.t;
-    // raw=1: der Browser zeigt die PDF direkt an, ohne Dropbox-Vorschau oder Rückfrage
-    const pdfUrl = E.u.replace(/([?&])dl=0/, "$1raw=1");
-    box.innerHTML = `<a class="erst" href="${esc(pdfUrl)}" target="_blank" rel="noopener" title="${esc(E.j + " – " + E.t)}">
-      <span class="pdf">PDF</span><span class="et"><b>Erstbeschreibung${E.sicher ? "" : " (vermutlich)"}</b><span>${esc(E.j)} · ${esc(kurz)}</span></span><span class="go">↗</span></a>`;
+    const kurzT = (x) => x.length > 60 ? x.slice(0, 57).replace(/\s+\S*$/, "") + " …" : x;
+    const teile = [];
+    const dbx = () => {
+      // raw=1: der Browser zeigt die PDF direkt an, ohne Dropbox-Vorschau oder Rückfrage
+      const pdfUrl = E.u.replace(/([?&])dl=0/, "$1raw=1");
+      return `<a class="erst" href="${esc(pdfUrl)}" target="_blank" rel="noopener" title="${esc(E.j + " – " + E.t)}">
+      <span class="pdf">PDF</span><span class="et"><b>Erstbeschreibung${E.sicher ? "" : " (vermutlich)"}</b><span>${esc(E.j)} · ${esc(kurzT(E.t))}</span></span><span class="go">↗</span></a>`;
+    };
+    // Online-Fundstelle (Biodiversity Heritage Library: Seite im Original geprüft; DOI: Artikel)
+    const netz = () => {
+      const sym = N.q === "bhl" ? "BHL" : "DOI";
+      const was = N.q === "bhl" ? "Originalseite in der Biodiversity Heritage Library" : "Artikel online (DOI)";
+      return `<a class="erst netz" href="${esc(N.pdf || N.u)}" target="_blank" rel="noopener" title="${esc(was + ": " + (N.c || "") + (N.s ? ", S. " + N.s : ""))}">
+      <span class="pdf">${sym}</span><span class="et"><b>Erstbeschreibung online</b><span>${esc(N.c || N.t || "")}${N.s ? ", S. " + esc(N.s) : ""}</span></span><span class="go">↗</span></a>`;
+    };
+    if (E && E.sicher) teile.push(dbx());
+    else {
+      if (N && N.u) teile.push(netz());
+      if (E) teile.push(dbx());
+    }
+    if (!teile.length) {
+      // keine Datei gefunden: zumindest die Literaturangabe mit Suche in BHL und Google Scholar
+      const c = (N && N.c) || LO.o || "", pg = (N && N.s) || LO.op || "";
+      teile.push(`<span class="erst nur"><span class="pdf">?</span><span class="et"><b>Erstbeschreibung</b><span>${c ? esc(c) + (pg ? ", S. " + esc(pg) : "") : esc(s.n + " " + (s.a || ""))}</span>
+        <span class="such">noch keine frei zugängliche Fassung gefunden · <a href="${bhlSearch((c || s.n).replace(/[().,]/g, " "))}" target="_blank" rel="noopener">in BHL suchen ↗</a> · <a href="${scholar((c ? c + " " : "") + s.n)}" target="_blank" rel="noopener">Google Scholar ↗</a></span></span></span>`);
+    }
+    box.innerHTML = teile.join("");
   }
   async function fillLiterature(s) {
     const box = $("d-lit");
