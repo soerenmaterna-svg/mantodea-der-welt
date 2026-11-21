@@ -245,25 +245,32 @@ const unitCountries = (u, level) => (level === 0 ? ERDTEIL[u].r.flatMap((r) => R
 const unitBild = (u, level) => "karte:" + (level === 0 ? ERDTEIL[u].b : level === 1 ? { NAM: "NA", MAM: "MA", SAM: "SA", EUR: "EU", NAF: "AF", AFR: "AF", MAD: "MG", WAS: "WA", SAS: "AS", OAS: "AS", SOA: "SO", AUS: "OZ" }[u] : u);
 
 // Zusammenbau: Literaturschlüssel + Fundorte
-function compose(items, cOf, best, opts, level = 0, inside = null) {
+function pickBest(items, cands) {
+  if (!cands) return null;
+  if (!Array.isArray(cands)) return cands;
+  const set = new Set(items); let best = null, bv = -1;
+  for (const c of cands) { if (!c || !c.t) continue; const L = leaves(c.t); let n = 0; for (const x of items) if (L.has(x)) n++; const v = n + (c.mod ? 0.25 * c.mod : 0); if (n > 0 && v > bv) { bv = v; best = c.t; } }
+  return best;
+}
+function compose(items, cOf, cands, opts, level = 0, inside = null) {
   items = [...new Set(items)];
   if (items.length === 1) return leaf(items);
+  const best = pickBest(items, cands);
   const L = best ? leaves(best) : new Set();
   const cov = items.filter((x) => L.has(x)), unc = items.filter((x) => !L.has(x));
   if (!unc.length) return refine(prune(best, new Set(items)), cOf, opts);
   if (level <= 2) {
-    // nur Länder innerhalb des bereits gewählten Gebiets betrachten
     const cIn = inside ? (x) => cOf(x).filter((c) => inside.has(c)) : cOf;
     const sp = geoSplit(items, cIn, level);
     if (sp) {
       const ls = sp.parts.map((p) => {
         const cs = [...new Set(p.units.flatMap((u) => unitCountries(u, level)))].filter((c) => !inside || inside.has(c));
         const names = p.units.map((u) => unitName(u, level)).sort((a, b) => a.localeCompare(b, "de"));
-        return { t: "Fundort: " + (level === 2 && names.length > 6 ? names.slice(0, 6).join(", ") + " u. a." : names.join(", ")), alle: names, b: unitBild(p.units[0], level), g: cs, geo: 1, n: compose([...p.set], cOf, best, opts, level + 1, new Set(cs)) };
+        return { t: "Fundort: " + (level === 2 && names.length > 6 ? names.slice(0, 6).join(", ") + " u. a." : names.join(", ")), alle: names, b: unitBild(p.units[0], level), g: cs, geo: 1, n: compose([...p.set], cOf, cands, opts, level + 1, new Set(cs)) };
       });
       return { l: ls, geo: level, u: sp.unknown.length ? 1 : 0 };
     }
-    return compose(items, cOf, best, opts, level + 1, inside);
+    return compose(items, cOf, cands, opts, level + 1, inside);
   }
   if (cov.length) {
     const t = refine(prune(best, new Set(cov)), cOf, opts);
@@ -319,7 +326,8 @@ function speciesKeyFor(g) {
   for (const og of GT_FOR[g] || []) if (og !== g) { const t = prune(gtSpeciesTree[og], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); if (t) cands.push({ t, q: "gt", mod: 0 }); }
   for (const mt of modTrees[g] || []) { const t = prune(mt.t, set); if (t) cands.push({ t, q: mt.q, mod: 2 }); }
   for (const c of cands) { const cv = leaves(c.t).size + (c.mod ? 0.5 * c.mod : 0); if (cv > bestCov) { bestCov = cv; best = c.t; bestQ = c.q; } }
-  let tree = S.length === 1 ? leaf(S) : compose(S, (k) => geoOf(k), best, { keinSchluessel: "Die Literatur enthält keinen Schlüssel für diese Arten." });
+  const allCands = cands;
+  let tree = S.length === 1 ? leaf(S) : compose(S, (k) => geoOf(k), allCands.length ? allCands : null, { keinSchluessel: "Die Literatur enthält keinen Schlüssel für diese Arten." });
   for (const z of ZUSATZ.filter((x) => x.gen === g)) {
     const a = z.alt === "*" ? "*" : epiKey(g, z.alt), nk = epiKey(g, z.neu); if (!a || !nk) { console.log("Zusatz: Art fehlt", g, z.alt, z.neu); continue; }
     QUELLEN["zus:" + z.q] = { t: z.q, z: z.q + " (Differentialdiagnose in der Erstbeschreibung; als Schlüsselpaar eigene Ableitung)" };

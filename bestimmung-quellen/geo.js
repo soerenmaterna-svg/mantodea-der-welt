@@ -82,6 +82,55 @@ for (const x of SP) {
     o.c = cs.slice(0, 4); o.q = "Erstbeschreibung"; ebHit++;
   }
 }
+// Zenodo/Plazi: Bearbeitungen (taxonomic treatments) und Artikel-Zusammenfassungen aus dem Internet
+let znHit = 0;
+const ZF = path.join(S, "zengeo_raw.json");
+if (fs.existsSync(ZF)) {
+  const ZG = JSON.parse(fs.readFileSync(ZF, "utf8"));
+  const MUS = new Set(["FR", "DE", "GB", "AT", "BE", "NL", "CH", "SE", "DK", "CZ", "HU", "RU", "US", "IT", "ES", "PL"]);
+  for (const [k, z] of Object.entries(ZG)) {
+    const o = out[k]; if (!o || o.c.length) continue;
+    const cnt = new Map();
+    const ep0 = z.n.split(" ")[1];
+    for (const [st, t] of z.t) {
+      // Bearbeitung genau dieser Art: ganzer Text (Typusfundort, Verbreitung)
+      if (st === "taxonomictreatment" && t.trim().startsWith(z.n.split(" ")[0]) && t.slice(0, 120).includes(ep0)) {
+        const m = t.search(/Type locality|Holotype|Distribution|Material examined|Locus typicus|Holotypus/i);
+        for (const c of find(m >= 0 ? t.slice(m, m + 1500) : t)) cnt.set(c, (cnt.get(c) || 0) + 3);
+        continue;
+      }
+      // Abbildung/Artikel einer Neubeschreibung „… new species … from <Land>“ im Titel
+      if (st === "figure" || st === "article") {
+        const fm = t.match(/\b(?:new|n\.|nov\.)[^.]{0,80}?\bfrom ((?:the |southern |northern |eastern |western |central |Southern |Northern |Eastern |Western |Central )?[A-Z][A-Za-zé ]{2,30})/);
+        if (fm && t.includes(ep0) && (/sp\. ?n|sp\. ?nov|n\. ?sp|new species/i.test(t))) for (const c of find(fm[1])) cnt.set(c, (cnt.get(c) || 0) + 1);
+        if (st === "figure") continue;
+      }
+      // nur Textstellen in der Nähe des Artnamens werten
+      const ep = z.n.split(" ")[1]; let i = t.indexOf(ep);
+      while (i >= 0) {
+        // Fenster: hinter dem Artnamen bis zur nächsten anderen Art (Sammelabstracts nennen mehrere Arten)
+        let w = t.slice(i + ep.length, i + ep.length + 300);
+        const nx = w.search(/\b[A-Z][a-z]+ [a-z]{3,} \(?(?:n\. ?sp|n\. ?comb|[A-Z][a-zé]+,? (?:\d{4}|&|et al))/);
+        if (nx > 0) w = w.slice(0, nx);
+        w = w.replace(/^\s*(?:n\. ?(?:sp|comb|gen)\.?)/, "");
+        const sx = w.search(/(?<!\b(?:n|al|cf|St|Mt|ca))\.\s+[A-Z]/); // Satzende
+        if (sx > 0) w = w.slice(0, sx);
+        const ax = w.search(/\band [a-z]{4,} n\. ?sp|\bn\. ?(?:sp|gen|comb)\b/); // nächste neue Art/Gattung
+        if (ax > 0) w = w.slice(0, ax);
+        let cs = find(w);
+        if (!/Iceland|Ísland/.test(w)) cs = cs.filter((c) => c !== "IS");
+        for (const c of cs) cnt.set(c, (cnt.get(c) || 0) + (st === "taxonomictreatment" ? 2 : 1));
+        i = t.indexOf(ep, i + 1);
+      }
+    }
+    if (!cnt.size) continue;
+    const best = [...cnt.entries()].sort((a, b) => b[1] - a[1]);
+    let cs = best.filter(([, v]) => v >= best[0][1] / 2).map(([c]) => c);
+    if (cs.some((c) => !MUS.has(c))) cs = cs.filter((c) => !MUS.has(c));
+    o.c = cs.slice(0, 4); o.q = "Zenodo/Plazi"; znHit++;
+  }
+}
+console.log("neu aus Zenodo/Plazi:", znHit);
 fs.writeFileSync(path.join(S, "geo.json"), JSON.stringify(out));
 const none = Object.values(out).filter((o) => !o.c.length).length;
 console.log("GT-Fundorte gelesen", Object.keys(gtLoc).length, "neu aus GT", gtHit, "neu aus Erstbeschreibung", ebHit, "weiter ohne Land", none);

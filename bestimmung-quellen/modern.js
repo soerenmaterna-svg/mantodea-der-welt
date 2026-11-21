@@ -119,6 +119,81 @@ M.push({ gen: "Galepsus", q: "Giglio-Tos, E. (1911): Mantidi esotici IV. Gen. Ga
   [["Hinter- und Deckflügel blass gelblich glasklar", "A:buettneri"], ["Hinter- und Deckflügel rauchig", 34]],
   [["Scheitel fast ganzrandig oder kaum eingekerbt; Augenecke spitz, ohne Stachelspitze (Westafrika)", "A:toganus"], ["Scheitel beiderseits deutlich zweimal eingekerbt; Augenecke sehr spitz, mit Stachelspitze (Ostafrika)", "A:gestri"]],
 ] });
+
+M.push({ gen: "Hierodula", q: "Liu, Q.-P. et al. (2021): Taxonomic revision of the praying mantis subfamily Hierodulinae of China. Zootaxa 4951: 401–433 (Teil Hierodula).", t: "Liu et al. 2021", c: [
+  [["Hinterer Halsschildteil 1,8- bis 2,3-mal so lang wie der vordere; (Männchen) Genitalfortsatz nicht deutlich zweilappig", 2], ["Hinterer Halsschildteil 2,3- bis 3,5-mal so lang wie der vordere; (Männchen) Genitalfortsatz zweilappig", 4]],
+  [["Vorderschenkel innen mit schwarzem Fleck", "A:maculata"], ["Vorderschenkel innen ohne schwarzen Fleck", 3]],
+  [["Vorderhüften mit 4–5 winzigen, stark zurückgebildeten Dornen (besonders beim Männchen)", "A:tenuidentata"], ["Dornen der Vorderhüften deutlich und groß, meist höchstens 4", "A:patellifera"]],
+  [["Halsschild 4-mal so lang wie breit; Mittelfeld der Deckflügel bei beiden Geschlechtern glasklar", "A:dyaka"], ["Halsschild weniger als 4-mal so lang wie breit; Mittelfeld der Weibchen fast oder ganz undurchsichtig", 5]],
+  [["Vorderhüften mit mindestens 10 winzigen Dornen; Flügelmal klein, punktförmig", "A:confusa"], ["Weniger als 10 Hüftdornen; Flügelmal schmal, deutlich länger als breit", 6]],
+  [["Nur der 2., 4., 10. und 15. vordere Unterranddorn des Vorderschenkels an der Basis schwarz", "A:pistillinota"], ["Unterranddornen ungefärbt oder mehr als diese vier an der Basis gefärbt", 7]],
+  [["Halsschild mehr als 3-mal so lang wie breit", "A:chinensis"], ["Halsschild weniger als 3-mal so lang wie breit", 8]],
+  [["Halsschild etwa 2,6-mal so lang wie breit", 9], ["Halsschild weniger als 2,6-mal so lang wie breit", 10]],
+  [["Vorderseite der Vorderhüften im Leben hellblau", "A:jianfenglingensis"], ["Vorderseite der Vorderhüften ohne Blau", "A:longa"]],
+  [["Halsschild kaum verbreitert, hinter der Querfurche deutlich eingeschnürt; Hüftdornen sehr groß, stumpf und glänzend; Flügelmal an beiden Enden hellbraun gesäumt", "A:latipennis"], ["Halsschild verbreitert, ohne Einschnürung; Hüftdornen mittelgroß; Flügelmal ohne braunen Saum", "A:zhangi"]],
+] });
+M.push({ gen: "Rhombodera", q: "Liu, Q.-P. et al. (2021): Taxonomic revision of the praying mantis subfamily Hierodulinae of China. Zootaxa 4951 (Teil Rhombodera).", t: "Liu et al. 2021", c: [
+  [["Halsschild fast so lang wie breit, etwa doppelt so breit wie der Kopf", "A:latipronotum"], ["Halsschild deutlich länger als breit", "A:valida"]],
+] });
+M.push({ gen: "Rhombomantis", q: "Liu, Q.-P. et al. (2021): Hierodulinae of China. Zootaxa 4951.", t: "Liu et al. 2021", c: [
+  [["Halsschild etwa 1,5-mal so lang wie an der breitesten Stelle breit; Vorderhüften innen mit blau-weißer Binde", "A:longipennis"], ["Halsschild etwa doppelt so lang wie breit; Vorderhüften innen einfarbig", "A:fusca"]],
+] });
+
+const ISR = { q: "Simon, D. et al. (2025): The Mantodea of Israel and adjacent areas. Israel Journal of Entomology 54 (Schlüssel für Israel)", t: "Simon et al. 2025 (Israel)" };
+M.push({ ...ISR, gen: "Eremiaphila", c: [
+  [["Vorderhüften und -schenkel innen mit schwarzen Flecken (schon bei Larven)", "A:brunneri"], ["Vorderhüften und -schenkel innen ohne schwarze Flecken", 2]],
+  [["Flügel reichen nicht über den 1. Hinterleibsring; Weibchen mit kurzen Querkielen auf Hinterleibsringen 3–7", "A:bovei"], ["Flügel reichen über den 1. Hinterleibsring", 3]],
+  [["Halsschild deutlich rau und gekörnt; Hinterflügel rötlich mit schwarzem Spitzenstreif (Hermon, über 1600 m)", "A:genei"], ["Halsschild glatter, kaum gekörnt", 4]],
+  [["Vorderer und hinterer Halsschildteil deutlich gewölbt; Hinterflügel mit hellem Spitzenstreif", "A:braueri"], ["Halsschildteile nur schwach gewölbt; Hinterflügel mit dunklem Spitzenstreif", "A:arabica"]],
+] });
+M.push({ ...ISR, gen: "Empusa", c: [
+  [["Spitze des hinteren Kopfschilds senkrecht; Vorderschenkel breit (etwa 5-mal so lang wie breit)", "A:fasciata"], ["Spitze des hinteren Kopfschilds nach vorn gebogen; Vorderschenkel schmal (6–9-mal so lang wie breit)", 2]],
+  [["Lappen der Mittelhüften beim Weibchen etwa 7-mal, beim Männchen 13-mal so breit wie hoch; Bauchlappen schwach (Grabenbruch bis Hermon)", "A:hedenborgii"], ["Lappen der Mittelhüften beim Weibchen etwa 6-mal, beim Männchen 16-mal so breit wie hoch; Bauchlappen deutlich (zentraler Negev)", "A:guttula"]],
+] });
+M.push({ ...ISR, gen: "Pareuthyphlebs", c: [
+  [["Halsschild verhältnismäßig breit (4–5-mal so lang wie breit); Augendorn röhrenförmig mit stumpfer Spitze; Scheitelfortsatz kurz, an der Spitze schwach gegabelt", "A:occidentalis"], ["Halsschild schlank (etwa 6-mal so lang wie breit); Augendorn mit kegelförmiger Spitze; Scheitelfortsatz etwas länger, gegabelt", "A:palmonii"]],
+] });
+M.push({ ...ISR, gen: "Ameles", c: [
+  [["Augen kegelförmig, mit Endhöckerchen", "A:heldreichi"], ["Augen gerundet, ohne Endhöcker; Weibchen mit kurzen Querkielen auf den Hinterleibsringen 2–5", "A:kervillei"]],
+] });
+M.push({ ...ISR, gen: "Iris", c: [
+  [["Hinterer Kopfschild 2,5- bis 3-mal so breit wie hoch; Weibchen: Fleck der Hinterflügel kompakt, rund, schwarz", "A:deserti"], ["Hinterer Kopfschild etwa doppelt so breit wie hoch", 2]],
+  [["Fleck der Hinterflügel rund, schwarz, mit dunklem Adernetz", "A:oratoria"], ["Fleck der Hinterflügel undeutlich, verwaschen oder nur aus dunklem Adernetz", "A:caeca"]],
+] });
+M.push({ ...ISR, gen: "Severinia", c: [
+  [["Cercusglieder deutlich ungleich breit, letztes Glied am Ende flach ausgerandet; Analfeld der Hinterflügel gelb", "A:lemoroi"], ["Cercusglieder fast gleich breit, letztes Glied am Ende gerundet; Hinterflügel mit verwaschenem braunem Fleck zwischen Mittel- und Analfeld", "A:popovi"]],
+] });
+M.push({ ...ISR, gen: "Rivetina", c: [
+  [["(Männchen) Hinterer Halsschildteil weniger als 4-mal so lang wie an der schmalsten Stelle breit", 2], ["(Männchen) Hinterer Halsschildteil mehr als 4-mal so lang wie schmal; Flügel nur bis zum 7.–9. Hinterleibsring", "A:byblica"]],
+  [["(Männchen) Flügel reichen bis zur Afterdeckplatte oder darüber; Halsschild fein gezähnt", "A:baetica"], ["(Männchen) Flügel nur bis zum 5.–9. Hinterleibsring; Halsschild kräftig gezähnt", "A:balcanica"]],
+] });
+M.push({ gen: "Paraoxypilus", q: "Revision der Gattung Paraoxypilus, Records of the Australian Museum 76 (2024); P. distinctus und P. flavifemur dort als Synonyme von P. tasmaniensis", t: "Rec. Aust. Mus. 2024", c: [
+  [["Kopf neben den Augen mit deutlichen Dornen", 2], ["Kopf neben den Augen ohne deutliche Dornen", 3]],
+  [["Innenseite der Vorderbeine mit stark kontrastierenden Farben (schwarz-weiß)", "A:tasmaniensis"], ["Innenseite der Vorderbeine ohne starke Farbkontraste", "A:armatus"]],
+  [["Höcker auf dem Scheitel mit spitzem Ende", "A:verreauxii"], ["Höcker auf dem Scheitel breit gerundet", 4]],
+  [["Halsschildrand über der Ansatzstelle der Vorderhüften mit auffälligem Dorn (Lupe)", "A:kimberleyensis"], ["Halsschildrand dort nur mit winzigem Dörnchen", "A:atra"]],
+] });
+M.push({ gen: "Pseudomiopteryx", q: "Ferraz, B.R. & Rivera, J. (2026): Two new species of Pseudomiopteryx from the Brazilian Amazon, with an updated key. European Journal of Taxonomy 1101 (nach Favacho et al. 2023)", t: "Ferraz & Rivera 2026", c: [
+  [["(Nur Männchen, Genitalpräparat unter dem Binokular nötig) Spitze des linken Genitalfortsatzes (afa) gegabelt", 2], ["(Genitalpräparat) Spitze des afa nicht gegabelt", 6]],
+  [["(Genitalpräparat) afa mit deutlichem Buckel nahe der Basis", "A:spinifrons"], ["(Genitalpräparat) afa ohne Buckel", 3]],
+  [["(Genitalpräparat) Gabeläste des afa sehr ungleich", 4], ["(Genitalpräparat) Gabeläste fast gleich groß", 5]],
+  [["(Genitalpräparat) Lappen des Phallomers L4B kaum vorgezogen, breit gebogen", "A:akuntsu"], ["(Genitalpräparat) Lappen L4B stark vorgezogen", "A:riverai"]],
+  [["(Genitalpräparat) Fortsatz sdp kräftig, am Ende gebogen", "A:bogotensis"], ["(Genitalpräparat) Fortsatz sdp schmal und gerade", "A:decipiens"]],
+  [["(Genitalpräparat) Fortsatz sdp breit", 7], ["(Genitalpräparat) Fortsatz sdp schmal, spitz zulaufend", 8]],
+  [["(Genitalpräparat) Rechter Rand zwischen Seitenlappen und sdp mit zwei Lappen", "A:guyanensis"], ["(Genitalpräparat) dort mit einem Lappen", "A:columbica"]],
+  [["(Genitalpräparat) Bauchseitiges Phallomer neben sdp mit kleinem Fortsatz", 9], ["(Genitalpräparat) ohne diesen Fortsatz", 10]],
+  [["(Genitalpräparat) Spitze des sdp spitz", "A:festae"], ["(Genitalpräparat) Spitze des sdp gerundet", "A:maculata"]],
+  [["(Genitalpräparat) L4B mit großem dreieckigem Lappen", 11], ["(Genitalpräparat) L4B ohne Lappen", "A:chicomendesi"]],
+  [["(Genitalpräparat) sdp lang, schmal, speerspitzenförmig", 12], ["(Genitalpräparat) sdp kurz, breit, zahnförmig stumpf", "A:gorgonae"]],
+  [["Fundort Mittelamerika oder Südmexiko", "A:infuscata"], ["Fundort Kolumbien", "A:meridana"]],
+] });
+const KOR = { q: "Shim, J. & Song, J.-H. (2024): Taxonomy of Korean Mantodea: Morphology & DNA Barcodes. ZooKeys 1206 (Schlüssel für Korea)", t: "Shim & Song 2024 (Korea)" };
+M.push({ ...KOR, gen: "Tenodera", c: [
+  [["Vorderhüften an der Basis gelb (lebend); Hinterflügel an der Basis dunkelbraun, Vorderrandbereich braun", "A:sinensis"], ["Vorderhüften an der Basis orange (lebend); Hinterflügelbasis durchsichtig, Vorderrandbereich rötlich", "A:angustipennis"]],
+] });
+M.push({ ...KOR, gen: "Hierodula", c: [
+  [["Bauchplatte zwischen den Hinterbeinen (Furcasternit) ohne Muster", "A:chinensis"], ["Diese Bauchplatte mit zwei dunklen Querbinden", "A:patellifera"]],
+] });
 // Eigene Ergänzungen aus Differentialdiagnosen der Erstbeschreibungen:
 // { gen, alt: "epitheton im Schlüssel", neu: "epitheton der neuen Art", tNeu, tAlt, q }
 const Z = [];

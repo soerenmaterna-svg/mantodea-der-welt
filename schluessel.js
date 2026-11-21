@@ -12,7 +12,9 @@
   const LET = "abcdefghijklmnopqrstuvwxyz";
 
   // ---------- Zustand: Pfad = Liste von {key, c (Paar-Index 1-basiert), wahl (Index), auto}
-  const st = { key: "start", c: 1, path: [], land: localStorage.getItem("bk-land") || "" };
+  const EXT = !!window.BK_EXTERN; // eigenständig veröffentlichte Fassung (ohne Hauptseite)
+  const ls = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* */ } } };
+  const st = { key: "start", c: 1, path: [], land: ls.get("bk-land") || "" };
 
   // ---------- Einstiege
   const fams = Object.keys(BK.keys).filter((k) => k.startsWith("F:")).map((k) => k.slice(2)).sort(coll.compare);
@@ -27,7 +29,7 @@
   const genGo = () => { const v = $("e-gen").value.trim(); const g = gens.find((x) => x.toLowerCase() === v.toLowerCase()); if (g) { go("G:" + g); $("e-gen").value = ""; } };
   $("e-gen").addEventListener("change", genGo);
   $("e-gen").addEventListener("keydown", (e) => { if (e.key === "Enter") genGo(); });
-  $("e-land").onchange = (e) => { st.land = e.target.value; localStorage.setItem("bk-land", st.land); render(); };
+  $("e-land").onchange = (e) => { st.land = e.target.value; ls.set("bk-land", st.land); render(); };
 
   function go(key, keepPath) {
     if (!BK.keys[key]) return;
@@ -36,7 +38,7 @@
     pushHash(); render();
     main.scrollIntoView({ behavior: "smooth", block: "start" });
   }
-  function pushHash() { history.replaceState(null, "", "#" + encodeURIComponent(st.key) + (st.c > 1 ? ":" + st.c : "")); }
+  function pushHash() { if (EXT) return; try { history.replaceState(null, "", "#" + encodeURIComponent(st.key) + (st.c > 1 ? ":" + st.c : "")); } catch (e) { /* */ } }
 
   // ---------- Darstellung
   function flagsHtml(w) {
@@ -131,7 +133,7 @@
       <p class="muted">Familie ${esc(f || "unklar")}</p>
       <p>${cs.length ? landListe(cs) + (q && q !== "daten" ? ` <small class="muted">(nach ${esc(q)})</small>` : "") : (q === "fossil" ? "Fossil" : "Fundorte: nicht bekannt")}</p>
       ${st.land && cs.length && !cs.includes(st.land) ? `<p class="warn">⚠ Für ${esc(land(st.land))} ist diese Art bisher nicht gemeldet.</p>` : ""}
-      <p><a href="index.html#art=${encodeURIComponent(k)}">Steckbrief mit Fotos öffnen →</a></p></div>`;
+      <p>${EXT ? `<a href="https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(n)}" target="_blank" rel="noopener">Fotos und Beobachtungen auf iNaturalist →</a>` : `<a href="index.html#art=${encodeURIComponent(k)}">Steckbrief mit Fotos öffnen →</a>`}</p></div>`;
   }
 
   function landListe(cs) {
@@ -151,7 +153,7 @@
   // ---------- Tafelansicht (ganzer Schlüssel, druckbar)
   function tafel() {
     const K = BK.keys[st.key];
-    let h = `<section class="bk-key bk-tafel"><header class="bk-key-head"><h2>${esc(K.t)} – Tafel</h2><p class="bk-tools"><button type="button" class="link" id="b-druck">🖨 drucken</button> <button type="button" class="link" id="b-zuruck2">↩ zurück zum Schritt ${st.c}</button></p></header>`;
+    let h = `<section class="bk-key bk-tafel"><header class="bk-key-head"><h2>${esc(K.t)} – Tafel</h2><p class="bk-tools">${EXT ? "" : `<button type="button" class="link" id="b-druck">🖨 drucken</button> `}<button type="button" class="link" id="b-zuruck2">↩ zurück zum Schritt ${st.c}</button></p></header>`;
     if (!K.c.length) h += result(K.end, K);
     K.c.forEach((C, ci) => {
       h += `<div class="tf-paar"><div class="tf-num">${ci + 1}</div><div class="tf-leads">`;
@@ -162,7 +164,7 @@
       h += `</div></div>`;
     });
     main.innerHTML = h + "</section>";
-    $("b-druck").onclick = () => window.print();
+    if ($("b-druck")) $("b-druck").onclick = () => window.print();
     $("b-zuruck2").onclick = render;
     main.querySelectorAll("[data-jump]").forEach((a) => (a.onclick = (e) => { e.preventDefault(); const el = main.querySelectorAll(".tf-paar")[+a.dataset.jump - 1]; if (el) el.scrollIntoView({ behavior: "smooth" }); }));
   }
@@ -174,11 +176,12 @@
     <p>Der Schlüssel wurde aus der Literatursammlung des Projekts zusammengestellt (Stand ${esc(BK.stand)}). Rückgrat ist das Gesamtwerk von Giglio-Tos (1927, <i>Das Tierreich</i> 50): Alle seine Bestimmungstabellen – Unterfamilien, Gruppen, Gattungen und Arten – wurden ausgewertet, von Lesefehlern des Scans bereinigt, ins Deutsche übertragen, laienverständlich formuliert, auf die heute gültigen Namen umgestellt und zu einem durchgehenden Schlüssel verknüpft. Wo neuere Revisionen einzelner Gattungen einen Schlüssel enthalten, wird dieser verwendet, wenn er mehr Arten umfasst. Fundorte stammen aus Belegdaten, Literaturfundorten, den Welt-Checklisten von Patel et al. (2016), den Fundortzeilen bei Giglio-Tos und den Typusangaben der Erstbeschreibungen.</p>
     <p><b>Wie weit kommt man?</b> Von ${S.arten || "?"} heute gültigen Arten führt der Schlüssel ${W.merkmal || "?"} Arten eindeutig über Merkmale zur Art; ${W.einzig || "?"} weitere gehören zu Gattungen mit nur einer Art; ${W.nurOrt || 0} sind nur über den Fundort eindeutig. ${W.untrennbar || "?"} Arten enden in Gruppen, die die Literatur nicht weiter trennt – dort nennt der Schlüssel alle in Frage kommenden Arten. ${W.auch || "?"} Arten sind in keinem ausgewerteten Schlüssel enthalten (meist nach 1927 beschrieben); sie erscheinen an der passenden Stelle als „ebenfalls möglich“. Eine hundertprozentige Bestimmung aller Arten gibt die Literatur damit nicht her.</p>
     <p><b>Familien:</b> Die heutigen Familien (Schwarz & Roy 2019) beruhen zum großen Teil auf Genitalmerkmalen und Erbgutvergleichen und sind äußerlich oft nicht scharf zu trennen. Der Weg zur Familie folgt deshalb den äußeren Merkmalen der alten Unterfamilien; eine Familie kann daher an mehreren Stellen des Schlüssels herauskommen.</p>
-    <p><b>Bekannte Lücken:</b> Bei <i>Galepsus</i> fehlt im Scan des Giglio-Tos-Bandes eine Seite mitten in der Tabelle; diese Gattung wird nur über Fundorte und neuere Teilschlüssel aufgeschlüsselt. Einzelne alte Tabellen (u. a. <i>Catasigerpes</i>, <i>Parhierodula</i>) waren im Scan nicht sicher lesbar und wurden nicht übernommen.</p>
+    <p><b>Aus dem Internet ergänzt:</b> Wo die Sammlung Lücken hatte, wurden gezielt neuere Revisionen und Erstbeschreibungen über Zenodo/Plazi (Biodiversity Literature Repository) gesucht und gelesen, u. a. Liu et al. 2021 (Hierodulinae Chinas), Simon et al. 2025 (Israel), Shim & Song 2024 (Korea), Ferraz & Rivera 2026 (<i>Pseudomiopteryx</i>), die <i>Paraoxypilus</i>-Revision 2024 (Rec. Aust. Mus.) und Giglio-Tos 1911 (<i>Galepsus</i>, als Ersatz für die fehlende Seite im Band von 1927). Für Arten ohne Fundort in der Sammlung wurden die Typusfundorte aus Plazi-Bearbeitungen und den Titeln der Neubeschreibungen übernommen (Quelle „Zenodo/Plazi“).</p>
+    <p><b>Bekannte Lücken:</b> Viele nach 1927 beschriebene Arten stehen in keinem Schlüssel; sie werden am Ende einer Gattung als „ebenfalls möglich“ genannt. Einzelne alte Tabellen (u. a. <i>Catasigerpes</i>, <i>Parhierodula</i>) waren im Scan nicht sicher lesbar und wurden nicht übernommen. Manche neuen Schlüssel (z. B. <i>Pseudomiopteryx</i>) arbeiten nur mit Genitalmerkmalen; das ist bei jedem Schritt vermerkt.</p>
     <p><b>Zeichen:</b> ⚖ = Merkmal verlangt, Längen oder Breiten am Tier selbst zu vergleichen oder Tiere nach Größe/Farbtönung zu vergleichen (nur mit Vergleichsmaterial sicher) · 🔬 = nur mit Mikroskop bzw. Genitalpräparat · 📏 = Messung nötig. Wo die Literatur nichts anderes bietet, blieben solche Merkmale stehen; sie sind markiert.</p>`;
 
   // ---------- Start (auch über #Schlüssel:Paar)
-  const hs = decodeURIComponent(location.hash.slice(1));
+  const hs = EXT ? "" : decodeURIComponent(location.hash.slice(1));
   if (hs) { const [k, c] = hs.split(/:(?=\d+$)/); if (BK.keys[k]) { st.key = k; st.c = +c || 1; } }
   render();
 })();
