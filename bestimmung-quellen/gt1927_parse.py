@@ -32,7 +32,7 @@ def clean_left(l):
     return l
 
 NAMECH = r"[A-Za-zäöüéèêëàâïîôûüçÿ\-]"
-TERMRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s)|(?<=\. ))\s*(?P<num>\d{1,3}|[a-z]{1,2}|[LlI])\s?[.,]?\s*(?P<kind>Gen\s?\.|sousfam\s?\.|[A-Z]\s?\.(?:\s?[a-z]\s?\.)?|[A-Z](?=\s[a-z]\s[a-z]))\s*(?P<name>(?:' + NAMECH + r'\s?){2,}?)\s*(?:var\s?\.\s*[a-zé]+\s*)?(?P<sex>\([^)]{1,4}\))?\s*(?:\*\s*\)|\*)?\s*[.,]?\s*$')
+TERMRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s)|(?<=\. ))\s*(?P<num>\d{1,3}|[a-z]{1,2}|[LlI](?=\s?\.))\s?[.,]?\s*(?P<kind>Gen\s?\.|sousfam\s?\.|[A-Z]\s?\.(?:\s?[a-z]\s?\.)?|[A-Z](?=\s[a-z]\s[a-z]\s[a-z]\s[a-z]))\s*(?P<name>(?:' + NAMECH + r'\s?){2,}?)\s*(?:var\s?\.\s*[a-zé]+\s*)?(?P<sex>\([^)]{1,4}\))?\s*(?:\*\s*\)|\*)?\s*[.,]?\s*$')
 TERMRE2 = re.compile(r'(?:(?<=\.)|(?<=\s\s))\s*(?:(?P<num>\d{1,3})\s?[.,]\s*)?(?P<kind>[A-Z]\s?\.)\s*(?P<name>(?:' + NAMECH + r' ){2,}' + NAMECH + r')\s*(?P<sex>\([^)]{1,4}\))?\s*$')
 TERMRE3 = re.compile(r'(?:(?<=\.)|(?<=\s\s))\s*(?P<num>[a-z]{1,2}|[IVX]{1,4})\s?\.\s*(?P<name>[A-Z](?:' + NAMECH + r'\s?){3,})\s*$')
 GRPRE = re.compile(r'(?:^|(?<=\.)|(?<=\s\s))\s*(?:[IVXL]+\.\s*)?Groupe\s+(?P<name>(?:' + NAMECH + r'\s?){3,})\s*$')

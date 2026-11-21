@@ -753,6 +753,157 @@ FIX[33327] = { gen: "Creobroter", c: [
   [["Größer; Faltader im Analfeld der Deckflügel mit 3 Ästen; Deckflügel der Männchen mit gelbem Basalfleck", "A:gemmatus"], ["Kleiner; Faltader mit nur 2 Ästen; Deckflügel der Männchen ohne Basalfleck", "A:urbanus"]],
 ] };
 
+FIX[11578] = { gen: "Amantis", c: [
+  [["Vorderschenkel schwarz", 2], ["Vorderschenkel gelblich oder schwarz marmoriert", 6]],
+  [["Vorderhüften ganz gelb", 3], ["Vorderhüften zur Spitze hin schwarz", 5]],
+  [["Deckflügel stärker rauchig; Queräderchen im Vorderrandfeld schwärzlich", "A:irina"], ["Deckflügel gelblich; Queräderchen im Vorderrandfeld blassgelb", 4]],
+  [["2. Glied der Vorderfüße schwarz", "A:subirina"], ["2. Glied der Vorderfüße gelbbraun", "A:indica"]],
+  [["Basis der Vorderhüften schwarz", "A:malayana"], ["Basis der Vorderhüften gelb", "A:philippina"]],
+  [["1. Glied der Vorderfüße schwarz", "A:reticulata"], ["1. Glied der Vorderfüße gelbbraun", 7]],
+  [["Deckflügel der Männchen rauchig", "A:bolivarii"], ["Deckflügel der Männchen fast glasklar", 8]],
+  [["Erstes Glied der Vorderfüße ganz gelbbraun", "A:saussurei"], ["Erstes Glied der Vorderfüße an der Spitze schwarz", "A:gestri|A:reticulata"]],
+] };
+FIX[17323] = { gen: "Thesprotia", c: [
+  [["Hinterer Halsschildteil länger als die Vorderhüften", 2], ["Hinterer Halsschildteil so lang wie die Vorderhüften", 10]],
+  [["Vorderschiene außen an der Basis ohne Dorn", 3], ["Vorderschiene an der Basis mit einem Dorn", "A:fuscipennis"]],
+  [["Halsschild der Weibchen lang (24–26 mm)", 4], ["Halsschild der Weibchen kürzer", 6]],
+  [["Afterdeckplatte der Weibchen kurz, am Ende gerundet", "A:maculata"], ["Afterdeckplatte der Weibchen länger, spitz", 5]],
+  [["Mittelbeine kurz", "A:filum"], ["Mittelbeine lang", "A:gigas"]],
+  [["Deck- und Hinterflügel der Männchen rauchig", 7], ["Deck- und Hinterflügel der Männchen nicht rauchig", 8]],
+  [["Queräderchen der Deckflügel an ihrem Ansatz verdickt", "A:infumata"], ["Queräderchen der Deckflügel beim Männchen am Ansatz nicht verdickt", "A:graminis"]],
+  [["Hinterer Halsschildteil mehr als 3-mal so lang wie der vordere", 9], ["Hinterer Halsschildteil kaum 3-mal so lang wie der vordere", "A:brevis"]],
+  [["Halsschild 15–16 mm lang", "A:subhyalina"], ["Halsschild 12–13 mm lang", "A:macilenta"]],
+  [["Queräderchen der Deckflügel am Ansatz verdickt", "A:pellucida|A:brasiliensis"], ["Queräderchen der Deckflügel nicht verdickt", "A:simplex"]],
+] };
+FIX[37128] = { gen: "Danuria", c: [
+  [["Scheitel in der Mitte ohne Höcker", "A:bolauana"], ["Scheitel zwischen den Augen mit 2 oder 4 Höckern", 2]],
+  [["Mittelschenkel unten nahe der Spitze mit (manchmal sehr kleinem) Lappen", 3], ["Mittelschenkel ganz einfach", 9]],
+  [["Vorderhüften so lang wie der hintere Halsschildteil", 4], ["Vorderhüften kürzer", 8]],
+  [["Mittelschienen oben vor der Mitte mit kleinem Lappen", 5], ["Mittelschienen ohne Lappen", 6]],
+  [["Weniger schlank; Halsschild kräftiger, Randdornen kürzer und stumpf", "A:zambesica"], ["Schlanker; Halsschild schmaler, Randdornen länger und spitzer", "A:kilimandjarica"]],
+  [["Halsschild kürzer (Weibchen 20 mm)", "A:affinis"], ["Halsschild länger (25–30 mm)", 7]],
+  [["Halsschild 25 mm (Weibchen); Lappen vor der Spitze der Mittelschenkel deutlicher", "A:barbozae"], ["Halsschild 30 mm (Weibchen); Lappen der Mittelschenkel sehr schmal, kaum erkennbar", "A:congica"]],
+  [["3. Scheibendorn des Vorderschenkels innen fast ganz schwarz", "A:thunbergi"], ["3. Scheibendorn nur an der Spitze schwarz", "A:buchholzi"]],
+  [["Hinterer Halsschildteil mindestens 3-mal so lang wie der vordere", 10], ["Hinterer Halsschildteil kürzer", 11]],
+  [["Hinterer Halsschildteil mehr als 3-mal so lang wie der vordere", "A:angolensis"], ["Hinterer Halsschildteil kürzer", "A:gracilis|A:contorta"]],
+  [["Vorderer Halsschildteil breiter als der hintere", "A:impannosa"], ["Vorderer Halsschildteil nicht breiter als der hintere", 12]],
+  [["Halsschild länger (Weibchen 28–30 mm)", "A:obscuripennis"], ["Halsschild kürzer (Weibchen 22–23 mm)", "A:schweinfurthi"]],
+] };
+
+FIX[35489] = { gen: "Stagmatoptera", c: [
+  [["Deckflügel auf Höhe des Flügelmals mit schwärzlichem Fleck oder Band", 2], ["Deckflügel ohne Fleck und ohne Band", "A:indicator"]],
+  [["Deckflügel mit rundem Fleck", 3], ["Deckflügel mit schwärzlichem Band", "A:abdominalis"]],
+  [["Der Dorn vor der Klaue der Vorderschiene innen ganz schwarz", 4], ["Dieser Dorn nur an der Spitze schwarz", 8]],
+  [["Die ersten 3 Scheibendornen innen ganz schwarz", 5], ["Die ersten 3 Scheibendornen nur an der Spitze schwarz", "A:septentrionalis"]],
+  [["Vorderschienen innen in der Mitte schwarz gezeichnet; Deckflügel der Weibchen mit großem, fast die ganze Breite einnehmendem schwarzem Fleck; Hinterflügel der Weibchen gelb, undurchsichtig, nur vor dem Hinterrand mit gelben Binden", 6], ["Vorderschienen in der Mitte nicht schwarz; Deckflügel der Weibchen mit kleinem Fleck; Hinterflügel der Weibchen ganz von gelben Binden durchzogen", "A:pia"]],
+  [["Halsschild kräftiger, Verbreiterung größer; Deckflügel der Weibchen breiter; Deckflügel der Männchen hinter dem Flügelmal entlang der Radialadern undurchsichtig", 7], ["Halsschild schlanker, Verbreiterung schmaler; Deckflügel der Weibchen schmaler; Mittelfeld der Deckflügel beim Männchen ganz glasklar", "A:flavipennis"]],
+  [["Deckflügel der Männchen vor dem Flügelmal im Mittelfeld glasklar", "A:supplicaria"], ["Deckflügel der Männchen vor dem Flügelmal und entlang der Radialadern undurchsichtig", "A:incerta"]],
+  [["Halsschildränder bei beiden Geschlechtern kräftig gezähnt; Halsschild schlanker, länger", "A:binotata"], ["Halsschildränder schwächer gezähnt, bei Männchen fast unbewehrt", 9]],
+  [["Innenfleck des Vorderschenkels reicht mindestens bis zum 4. großen Randdorn", 10], ["Innenfleck reicht nur bis zum 3. großen Randdorn", 12]],
+  [["Große innere Randdornen des Vorderschenkels innen ganz schwarz", "A:femoralis"], ["Große innere Randdornen nur an der Spitze schwarz", 11]],
+  [["Halsschild-Verbreiterung breiter als der vordere Halsschildteil lang; Innenfleck des Vorderschenkels reicht bis zum 5. großen Randdorn", "A:biocellata"], ["Verbreiterung so breit wie der vordere Halsschildteil lang; Innenfleck reicht nur bis zum 4. großen Randdorn", "A:ignota"]],
+  [["Deckflügelfleck nicht augenförmig, kleiner, erreicht die Mitte des Mittelfelds nicht", "A:precaria"], ["Deckflügelfleck augenförmig, größer, reicht mindestens bis zur Mitte des Mittelfelds", "A:hyaloptera"]],
+] };
+FIX[30896] = { gen: "Acanthops", c: [
+  [["Vorderschenkel ohne Lappen an der Basis der Oberkante; Mittelschienen kaum oder nicht verbreitert", 2], ["Vorderschenkel mit Lappen; Mittelschienen oben in der basalen Hälfte mit etwas lappenartigem Kiel", 5]],
+  [["Deckflügel des Weibchens ohne sichelförmigen Spitzenlappen", "A:brunneri"], ["Deckflügel des Weibchens mit sichelförmigem Spitzenlappen", 3]],
+  [["Deckflügel des Männchens an der Spitze nicht in einen kleinen Lappen ausgezogen", "A:godmani"], ["Deckflügel des Männchens an der Spitze in einen kleinen Lappen ausgezogen", 4]],
+  [["Vorderrandfeld der Deckflügel beim Männchen breiter als das halbe Mittelfeld; Hinterflügel des Weibchens mit gerundetem Mittelfeldende, Schulterbucht deutlich", "A:falcataria|A:bolivari"], ["Mittelfeld beim Männchen viel schmaler; Hinterflügel des Weibchens an der Spitze abgestutzt, keine Schulterbucht", "A:erosa"]],
+  [["Halsschild des Weibchens auf dem vorderen Teil mit Höckern", 6], ["Halsschild des Weibchens ohne Höcker", 7]],
+  [["Halsschild länger; Hinterflügel der Männchen schwarz gebändert; Hinterflügel des Weibchens an der Spitze abgestutzt und eingebuchtet", "A:tuberculata"], ["Halsschild kürzer; Hinterflügel der Männchen rauchig; Hinterflügel des Weibchens abgestutzt, kaum eingebuchtet", "A:erosula"]],
+  [["Vorderer Halsschildteil des Weibchens mit wenigen verstreuten Körnchen", "A:griffinii"], ["Vorderer Halsschildteil des Weibchens dicht gekörnt; Hinterbeine der Männchen dicht und lang behaart", "A:falcata"]],
+] };
+FIX[26051] = { gen: "Sphodromantis", c: [
+  [["Halsschild nur im vorderen Teil verbreitert", 2], ["Halsschild auch im hinteren Teil breit blattartig verbreitert", "A:scutata"]],
+  [["Vorderhüften innen mit schwarzem Fleck", "A:biocellata"], ["Vorderhüften innen ohne schwarzen Fleck", 3]],
+  [["Dornen der Vorderhüften an der Basis nicht verdickt, aber an der Basis einiger Dornen glatte, runde Schwielenflecken", 4], ["Einige Dornen der Vorderhüften an der Basis knopfartig verdickt; keine Schwielenflecken", 11]],
+  [["Vorderschenkel innen ungefleckt", 5], ["Vorderschenkel innen gefleckt", 10]],
+  [["Deckflügel auch beim Weibchen länger als der Hinterleib", 6], ["Deckflügel der Weibchen kürzer als oder so lang wie der Hinterleib", 8]],
+  [["Halsschild hinter der Verbreiterung plötzlich verschmälert; Vorderrandfeld der Deckflügel beim Weibchen schmaler als das halbe Mittelfeld", 7], ["Halsschild hinter der Verbreiterung allmählich verschmälert; Vorderrandfeld so breit wie das halbe Mittelfeld", "A:kersteni"]],
+  [["Mittelfeld der Deckflügel beim Weibchen undurchsichtig", "A:viridis"], ["Mittelfeld der Deckflügel beim Weibchen häutig, durchscheinend", "A:arabica"]],
+  [["Scheibendornen nur mit schwarzer Spitze", "A:fenestrata"], ["Die ersten 2 Scheibendornen innen schwarz", 9]],
+  [["Auch der 3. Scheibendorn innen schwarz", "A:uebina"], ["3. Scheibendorn nur an der Spitze schwarz", "A:fulva"]],
+  [["Flügelmal sehr groß; Zähne am Halsschildrand gleichfarbig", "A:occidentalis"], ["Flügelmal sehr klein; Zähne am Halsschildrand schwarz", "A:aurea"]],
+  [["Halsschild-Verbreiterung reicht nicht bis zur Mitte des hinteren Halsschildteils", 12], ["Verbreiterung reicht bis zur Mitte des hinteren Halsschildteils oder darüber", 16]],
+  [["Flügelmal klein", 13], ["Flügelmal sehr groß", "A:gestri"]],
+  [["Deckflügel der Weibchen doppelt so lang wie der Halsschild; Vorderhüften der Männchen zwischen den Knopfdornen glatt oder kaum gezähnelt", "A:lineola"], ["Deckflügel der Weibchen kürzer als 2 Halsschildlängen; Vorderhüften der Männchen zwischen den Knopfdornen bedornt", 14]],
+  [["Hinterer Halsschildteil beim Männchen fast 2½-mal, beim Weibchen mehr als 2-mal so lang wie der vordere", "A:gastrica"], ["Hinterer Halsschildteil beim Männchen kürzer", 15]],
+  [["Hinterer Halsschildteil des Weibchens doppelt so lang wie der vordere", "A:rudolfae"], ["Hinterer Halsschildteil des Weibchens kürzer", "A:andreinii"]],
+  [["Deckflügel der Männchen mehr als 3-mal, der Weibchen mehr als 2-mal so lang wie der Halsschild", "A:centralis"], ["Deckflügel der Männchen weniger als 3-mal, der Weibchen weniger als 2-mal so lang wie der Halsschild", "A:citernii"]],
+] };
+
+FIX[11428] = { gen: "Litaneutria", c: [
+  [["Augen mehr oder weniger spitz; Deckflügel der Männchen lang", 2], ["Augen gerundet; Deckflügel der Männchen kurz", "A:skinneri"]],
+  [["Vorderrandfeld der Deckflügel beim Männchen grau", 3], ["Vorderrandfeld der Deckflügel beim Männchen grün", "A:ocularis"]],
+  [["Hinterflügel der Männchen mit rauchigem Fleck an der Basis", 4], ["Hinterflügel der Männchen gleichmäßig rauchig", "A:pacifica"]],
+  [["Hinterflügel der Männchen stärker rauchig", "A:obscura"], ["Hinterflügel der Männchen schwächer rauchig", 5]],
+  [["Halsschild weniger schlank", "A:minor"], ["Halsschild schlanker", "A:borealis"]],
+] };
+FIX[6077] = { gen: "Theopompella", c: [
+  [["Hinterer Halsschildteil fast glatt, ohne erhabene kegelförmige Höcker", 2], ["Hinterer Halsschildteil hinter der Querfurche mit 2 kegelförmigen Höckern", 3]],
+  [["Vorderhüften innen an der Basis mit schmaler schwarzer Binde", "A:heterochroa"], ["Vorderhüften ohne schwarze Binde", "A:westwoodi"]],
+  [["Vorderhüften innen ohne schwarze Binden", "A:pallida"], ["Vorderhüften innen mit 1 oder 2 schwarzen Binden", 4]],
+  [["Vorderhüften nur mit einer schwarzen Binde an der Basis", "A:fusca"], ["Vorderhüften mit 2 schwarzen Binden", 5]],
+  [["Vorderschenkelringe innen gelb, nur die Spitze schwarz", "A:aurivillii"], ["Vorderschenkelringe innen fast ganz schwarz, nur ganz an der Basis gelb", "A:orientalis"]],
+] };
+FIX[36974] = { gen: "Aethalochroa", c: [
+  [["Hinterschenkel am Ende mit Lappen", 2], ["Hinterschenkel ohne Lappen", 4]],
+  [["Augen unbewehrt", 3], ["Augen mit einem Dorn", "A:affinis"]],
+  [["Kleiner; Lappen der Mittel- und Hinterschenkel kleiner", "A:ashmoliana"], ["Größer; Lappen der Mittel- und Hinterschenkel größer", "A:insignis"]],
+  [["Mittel- und Hinterschenkel an den Unterkanten bedornt", "A:spinipes"], ["Mittel- und Hinterschenkel ohne Dornen", "A:simplicipes"]],
+] };
+FIX[32307] = { gen: "Anasigerpes", c: [
+  [["Bräunlich", "A:crassipes"], ["Grün", 2]],
+  [["Vorderschenkel innen fast ganz schwarz", "A:heydeni"], ["Vorderschenkel innen fast ganz gelb", 3]],
+  [["Vorderhüften innen mit schwarzen Querbinden", 4], ["Vorderhüften ohne Binden", 5]],
+  [["Vorderhüften mit 2 Binden", "A:bifasciata"], ["Vorderhüften mit 3 Binden", "A:trifasciata"]],
+  [["Spitzenwinkel der Hinterflügel etwas ausgezogen", "A:alluaudi"], ["Spitzenwinkel der Hinterflügel nicht ausgezogen", "A:modesta"]],
+] };
+
+FIX[15754] = { gen: "Leptocola", c: [
+  [["Vorderschenkel innen entlang der Unterkante schwarz; Mittel- und Hinterbeine gelb geringelt", 2], ["Vorderschenkel innen nicht schwarz oder nur um die Klauenfurche schwarz gefleckt; Beine nicht gelb geringelt", 3]],
+  [["Größer; Vorderbrust ungefleckt", "A:stanleyana"], ["Kleiner; Vorderbrust mit 8–9 runden Flecken in einer Reihe entlang der Mitte", "A:seriepunctata"]],
+  [["Halsschild viel länger als der übrige Körper", "A:gracillima"], ["Halsschild kürzer als der übrige Körper", 4]],
+  [["Vorderbrust ohne schwarze Punkte", "A:phthisica"], ["Vorderbrust schwarz punktiert", "A:fragilis"]],
+] };
+FIX[28213] = { gen: "Camelomantis", c: [
+  [["Ränder des hinteren Halsschildteils bei beiden Geschlechtern glatt", "A:giraffa"], ["Ränder zumindest beim Weibchen gekerbt", 2]],
+  [["Zähnchen am Rand des hinteren Halsschildteils schwarz", "A:moultoni"], ["Zähnchen gleichfarbig", 3]],
+  [["Vorderhüften mit vielen (15–18) spitzen Zähnchen", "A:sumatrana"], ["Vorderhüften mit weniger (bis 10), etwas stumpfen Zähnchen", 4]],
+  [["Vorderhüften mit 6–7 Zähnchen", "A:gracillima"], ["Vorderhüften mit 9–10 Zähnchen", "A:penangica"]],
+] };
+FIX[4389] = { gen: "Chaeteessa", c: [
+  [["Cerci so lang wie der Hinterleib", "A:filata"], ["Cerci kürzer als der Hinterleib", 2]],
+  [["Cerci länger als der halbe Hinterleib", "A:caudata"], ["Cerci kürzer als der halbe Hinterleib", "A:valida"]],
+] };
+FIX[36606] = { gen: "Zoolea", c: [
+  [["Mittel- und Seitenlappen der Bauchsegmente spitz", 2], ["Lappen der Bauchsegmente gerundet", 3]],
+  [["Fortsätze der Punktaugenhöcker länger als die Vorderschienen", "A:gigas"], ["Fortsätze fast so lang wie die Vorderschienen", "A:lobipes"]],
+  [["Halsschild mindestens doppelt so lang wie die Vorderhüften", 4], ["Halsschild weniger als doppelt so lang wie die Vorderhüften", "A:minor"]],
+  [["Fortsätze der Punktaugenhöcker so lang wie die Vorderhüften", "A:major"], ["Fortsätze kürzer als die Vorderhüften", "A:orba|A:guerinii"]],
+] };
+FIX[36002] = { gen: "Phyllovates", c: [
+  [["Punktaugenhöcker berühren sich", 2], ["Punktaugenhöcker weit getrennt", 5]],
+  [["Fortsätze der Punktaugenhöcker lang", 3], ["Fortsätze der Punktaugenhöcker sehr kurz", "A:brevicornis"]],
+  [["Hinterer Halsschildteil weniger als doppelt so lang wie die Vorderhüften", 4], ["Hinterer Halsschildteil doppelt so lang wie die Vorderhüften", "A:cornuta"]],
+  [["Fortsätze spitz; Endlappen der Hinterschenkel spitz", "A:chlorophaea"], ["Fortsätze gerundet; äußerer Endlappen der Hinterschenkel abgestutzt", "A:maya"]],
+  [["Vorderrandfeld der Deckflügel beim Weibchen zur Spitze plötzlich verschmälert", "A:cingulata"], ["Vorderrandfeld allmählich verschmälert", 6]],
+  [["Halsschildränder fein gezähnelt", "A:tripunctata"], ["Halsschildränder kräftig gezähnt", 7]],
+  [["Mittel- und Hinterschienen zwischen Basis und Mitte etwas lappig verbreitert", 8], ["Mittel- und Hinterschienen nicht verbreitert", 9]],
+  [["Deckflügel spitz", "A:parallela"], ["Deckflügel mit stumpfer Spitze", "A:minor"]],
+  [["Zähne am Halsschild kleiner", "A:parvula"], ["Zähne am Halsschild kräftiger", "A:spinicollis"]],
+] };
+
+FIX[23692] = { gen: "Auromantis", c: [
+  [["Hinterbeine der Männchen nicht braun geringelt", 2], ["Hinterbeine der Männchen braun geringelt", "A:cinctipes"]],
+  [["Flügelmal der Deckflügel groß, schwarz", "A:androgyna"], ["Flügelmal gleichfarbig", 3]],
+  [["Vorderschenkel sehr schlank", "A:gracilipes"], ["Vorderschenkel kräftig", 4]],
+  [["Hinterflügel der Männchen glasklar; Vorderrandfeld der Deckflügel beim Weibchen so breit wie das halbe Mittelfeld", "A:montana"], ["Hinterflügel der Männchen in der hinteren Hälfte des Analfelds leicht rauchig; Vorderrandfeld beim Weibchen schmaler als das halbe Mittelfeld", "A:limbata"]],
+] };
+FIX[34026] = { gen: "Euthyphleps", c: [
+  [["Mittel- und Hinterschenkel oben mit kleinem Lappen", "A:rectivenis"], ["Mittel- und Hinterschenkel oben ohne Lappen", "A:curtipes"]],
+] };
+
 Object.assign(ALIAS, {
   Anaxarchae: "G:Anaxarcha", Galinthiades: "G:Galinthias", Phyllothelides: "SYN:31965", Ambiviae: "SYN:31861", Acromantes: "SYN:31410",
   Hestiasulae: "SYN:32658", Otomantes: "SYN:32907", Pseudocreobotrae: "SYN:33627", Hymenopoda: "SYN:33220", Euantissae: "SYN:32488", Panurgicae: "SYN:33049",
