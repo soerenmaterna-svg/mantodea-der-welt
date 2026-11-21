@@ -1030,7 +1030,6 @@
       </section>
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
-        <div id="d-best"><p class="muted small">Lade Bestimmungsschlüssel …</p></div>
         <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button></p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
       <section class="d-card"><h3 class="d-h">Literatur</h3><div id="d-lit"><p class="muted">Lade Literatur …</p></div></section>
