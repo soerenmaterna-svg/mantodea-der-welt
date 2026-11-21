@@ -9,7 +9,7 @@
   const DN = new Intl.DisplayNames(["de"], { type: "region" });
   const land = (c) => { try { return DN.of(c); } catch (e) { return c; } };
   const coll = new Intl.Collator("de");
-  const LET = "abcdefgh";
+  const LET = "abcdefghijklmnopqrstuvwxyz";
 
   // ---------- Zustand: Pfad = Liste von {key, c (Paar-Index 1-basiert), wahl (Index), auto}
   const st = { key: "start", c: 1, path: [], land: localStorage.getItem("bk-land") || "" };

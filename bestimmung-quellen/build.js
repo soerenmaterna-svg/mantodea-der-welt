@@ -26,6 +26,7 @@ for (const [line, f] of Object.entries(GTFIX_SRC)) {
   GTFIX[line] = { couplets: f.c.map((pair) => pair.map(([t, z]) => ({ t, end: zEnd(z) }))), de: 1, ctx: f.gen ? { gen: f.gen } : undefined };
 }
 const OBEN = require("./oben.js");
+const { M: MODERN, Z: ZUSATZ } = require("./modern.js");
 
 // ---------------- Taxa
 const SP = window.MANTODEA.species.filter((x) => !x.x);
@@ -249,7 +250,7 @@ function compose(items, cOf, best, opts, level = 0, inside = null) {
   if (items.length === 1) return leaf(items);
   const L = best ? leaves(best) : new Set();
   const cov = items.filter((x) => L.has(x)), unc = items.filter((x) => !L.has(x));
-  if (!unc.length) return prune(best, new Set(items));
+  if (!unc.length) return refine(prune(best, new Set(items)), cOf, opts);
   if (level <= 2) {
     // nur Länder innerhalb des bereits gewählten Gebiets betrachten
     const cIn = inside ? (x) => cOf(x).filter((c) => inside.has(c)) : cOf;
@@ -265,10 +266,21 @@ function compose(items, cOf, best, opts, level = 0, inside = null) {
     return compose(items, cOf, best, opts, level + 1, inside);
   }
   if (cov.length) {
-    const t = prune(best, new Set(cov));
+    const t = refine(prune(best, new Set(cov)), cOf, opts);
     return addNote(t, unc);
   }
   return leaf(items, opts.keinSchluessel);
+}
+// Mehrere Arten am Ende eines Merkmalswegs: zusätzlich über den Fundort trennen
+function refine(t, cOf, opts) {
+  if (!t) return t;
+  if (isLeaf(t)) {
+    if (t.taxa.length < 2 || !t.taxa.every((x) => BYK[x])) return t;
+    const r = compose(t.taxa, cOf, null, { keinSchluessel: t.note || "Mit den Merkmalen der Literatur nicht weiter trennbar." });
+    if (isLeaf(r)) return t;
+    return r;
+  }
+  return { ...t, l: t.l.map((l) => ({ ...l, n: refine(l.n, cOf, opts) })) };
 }
 function addNote(t, unc) {
   if (!unc.length) return t;
@@ -282,6 +294,18 @@ for (const [og, t] of Object.entries(gtSpeciesTree)) for (const id of leaves(t))
 const altTrees = ALT.k.map((k, i) => { try { return altTree(i); } catch (e) { return null; } });
 const altFor = {}; // Gattung -> [{i, tree}]
 altTrees.forEach((t, i) => { if (!t) return; const gs = new Set([...leaves(t)].filter((x) => BYK[x]).map((x) => BYK[x].g)); gs.forEach((g) => (altFor[g] = altFor[g] || []).push(i)); });
+function epiKey(g, e) {
+  const ks = GEN[g] || [];
+  const ex = ks.find((k) => BYK[k].n.split(" ")[1] === e); if (ex) return ex;
+  const pre = ks.filter((k) => BYK[k].n.split(" ")[1].startsWith(e)); if (pre.length === 1) return pre[0];
+  const sk = speciesKey(g + " " + e); return sk;
+}
+const modTrees = {};
+MODERN.forEach((m, mi) => {
+  const q = "mod" + mi; QUELLEN[q] = { z: m.q, t: m.t };
+  const node = (c, seen = new Set()) => { if (seen.has(c)) return null; seen.add(c); const ls = []; for (const [t, z] of m.c[c - 1]) { let ch; if (typeof z === "number") ch = node(z, new Set(seen)); else { const ks = z.split("|").map((x) => epiKey(m.gen, x.slice(2))).filter(Boolean); if (!ks.length) console.log("Modern: Art nicht gefunden", m.gen, z); ch = leaf(ks); } if (ch) ls.push({ t, w: flags(t), q, n: ch }); } return ls.length ? { l: ls } : null; };
+  (modTrees[m.gen] = modTrees[m.gen] || []).push({ t: node(1), q });
+});
 const KEYS = {};
 const STAT = { gattungen: 0, mitLit: 0, nurOrt: 0, arten: 0, artenLit: 0, artenEinzeln: 0 };
 function speciesKeyFor(g) {
@@ -293,8 +317,24 @@ function speciesKeyFor(g) {
   for (const gg of genusSyn[g] ? [] : []) void gg;
   // auch GT-Bäume anderer (alter) Gattungen, deren Arten heute hier stehen
   for (const og of GT_FOR[g] || []) if (og !== g) { const t = prune(gtSpeciesTree[og], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); if (t) cands.push({ t, q: "gt", mod: 0 }); }
-  for (const c of cands) { const cv = leaves(c.t).size + (c.mod ? 0.5 : 0); if (cv > bestCov) { bestCov = cv; best = c.t; bestQ = c.q; } }
-  const tree = S.length === 1 ? leaf(S) : compose(S, (k) => geoOf(k), best, { keinSchluessel: "Die Literatur enthält keinen Schlüssel für diese Arten." });
+  for (const mt of modTrees[g] || []) { const t = prune(mt.t, set); if (t) cands.push({ t, q: mt.q, mod: 2 }); }
+  for (const c of cands) { const cv = leaves(c.t).size + (c.mod ? 0.5 * c.mod : 0); if (cv > bestCov) { bestCov = cv; best = c.t; bestQ = c.q; } }
+  let tree = S.length === 1 ? leaf(S) : compose(S, (k) => geoOf(k), best, { keinSchluessel: "Die Literatur enthält keinen Schlüssel für diese Arten." });
+  for (const z of ZUSATZ.filter((x) => x.gen === g)) {
+    const a = z.alt === "*" ? "*" : epiKey(g, z.alt), nk = epiKey(g, z.neu); if (!a || !nk) { console.log("Zusatz: Art fehlt", g, z.alt, z.neu); continue; }
+    QUELLEN["zus:" + z.q] = { t: z.q, z: z.q + " (Differentialdiagnose in der Erstbeschreibung; als Schlüsselpaar eigene Ableitung)" };
+    let used = 0;
+    const rep = (n) => {
+      if (isLeaf(n)) {
+        if (a === "*" ? !(n.auch || []).includes(nk) : !n.taxa.includes(a)) return n;
+        used++;
+        const rest = n.taxa.filter((x) => x !== nk);
+        return { l: [ { t: z.tNeu, w: flags(z.tNeu), q: "zus:" + z.q, n: leaf([nk]) }, { t: z.tAlt, w: flags(z.tAlt), q: "zus:" + z.q, n: { ...n, taxa: rest, auch: (n.auch || []).filter((x) => x !== nk) } } ] };
+      }
+      return { ...n, l: n.l.map((l) => ({ ...l, n: rep(l.n) })) };
+    };
+    tree = rep(tree); if (!used) console.log("Zusatz nicht eingebaut (Art nicht im Baum):", g, z.alt);
+  }
   STAT.gattungen++; if (best) STAT.mitLit++; STAT.arten += S.length; if (best) STAT.artenLit += leaves(best).size;
   return { tree, q: bestQ };
 }
@@ -420,3 +460,4 @@ if (process.env.DIAG4) { const g = process.env.DIAG4; const t = gtSpeciesTree[g]
   fs.writeFileSync(path.join(R, "data", "bestimmung.js"), "window.MANTODEA_BK=" + JSON.stringify(o) + ";\n");
   console.log("Wege zur Art:", st);
 }
+if (process.env.DIAG5) { const g = process.env.DIAG5; const set = new Set(GEN[g]); for (const mt of modTrees[g] || []) { const t = prune(mt.t, set); console.log("mod", mt.q, t ? leaves(t).size : 0); } for (const i of altFor[g] || []) { const t = prune(altTrees[i], set); console.log("alt", i, ALT.k[i].t, t ? leaves(t).size : 0); } if (gtSpeciesTree[g]) { const t = prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); console.log("gt", t ? leaves(t).size : 0); } }
