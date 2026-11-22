@@ -548,7 +548,7 @@
     ev.preventDefault();
     const titel = (a.getAttribute("title") || a.textContent || "PDF").trim().replace(/\s+/g, " ");
     // eigene Anzeige-Seite: Ladebalken, danach sofort das PDF (auch auf Handys ohne eingebaute PDF-Anzeige)
-    const ziel = "pdf/#" + new URLSearchParams({ u: a.href, t: titel }).toString();
+    const ziel = "pdf/#" + new URLSearchParams({ u: a.href, t: titel, ...(a.dataset.seite ? { s: a.dataset.seite } : {}) }).toString();
     if (!window.open(ziel, "_blank")) location.href = ziel;
   });
 
@@ -792,7 +792,7 @@
       const b = SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k];
       return b && b.length ? `<h4 class="g-group uf">Weitere Bilder im Netz – nur als Verweis <small>${b.length}</small></h4>
       <p class="muted small">Bilder bei anderen Anbietern, deren Lizenz unbekannt ist oder die nicht frei lizenziert sind. Sie werden hier nicht angezeigt – der Link führt zur Quelle.</p>
-      <ul class="netz-belege">${b.map((x) => `<li><a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src)} ↗</a> – ${esc(x.t)}${x.l ? ` <span class="muted">(${esc(x.l)})</span>` : ""}</li>`).join("")}</ul>` : "";
+      <ul class="netz-belege">${b.map((x) => `<li><a href="${esc(x.ref)}" target="_blank" rel="noopener"${x.s ? ` class="lit-q" data-seite="${x.s}" title="${esc(x.src)}"` : ""}>${esc(x.src)} ↗</a> – ${esc(x.t)}${x.l ? ` <span class="muted">(${esc(x.l)})</span>` : ""}</li>`).join("")}</ul>` : "";
     };
     if (!(s.gb || s.fb)) { box.innerHTML = ufHtml(); return; }
     const bundles = [s.gb, s.fb].filter(Boolean);

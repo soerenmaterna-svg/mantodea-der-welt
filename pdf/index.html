@@ -27,9 +27,9 @@
 <div id="kopf" hidden><span class="n" id="kn"></span><button id="minus" title="kleiner">−</button><button id="plus" title="größer">+</button><a id="dl" download>Speichern</a></div>
 <div id="seiten"></div>
 <script type="module">
-// Aufruf: pdf/#u=<Dropbox-Link>&t=<Titel>
+// Aufruf: pdf/#u=<Dropbox-Link>&t=<Titel>[&s=<Seite>]
 const P = new URLSearchParams(location.hash.slice(1));
-const quelle = P.get("u") || "", titel = P.get("t") || "PDF";
+const quelle = P.get("u") || "", titel = P.get("t") || "PDF", seite = Math.max(1, parseInt(P.get("s") || "1", 10) || 1);
 const $ = (id) => document.getElementById(id);
 $("t").textContent = titel;
 const url = quelle.replace("https://www.dropbox.com/", "https://dl.dropboxusercontent.com/").replace(/([?&])(raw|dl)=\d/, "$1dl=1");
@@ -84,7 +84,7 @@ try {
   $("kopf").hidden = false;
   if (navigator.pdfViewerEnabled) {
     // Browser mit eingebauter PDF-Anzeige (Computer): direkt diese nehmen
-    const fr = document.createElement("iframe"); fr.id = "nativ"; fr.src = bu; fr.title = titel;
+    const fr = document.createElement("iframe"); fr.id = "nativ"; fr.src = bu + (seite > 1 ? "#page=" + seite : ""); fr.title = titel;
     $("seiten").replaceWith(fr); $("minus").hidden = $("plus").hidden = true;
   } else {
     // Handy/Tablet ohne PDF-Anzeige: Seiten selbst zeichnen (PDF.js), damit nichts heruntergeladen werden muss
@@ -95,6 +95,7 @@ try {
     $("plus").onclick = () => { zoom = Math.min(zoom * 1.25, 4); zeichnen(); };
     $("minus").onclick = () => { zoom = Math.max(zoom / 1.25, 0.5); zeichnen(); };
     await zeichnen();
+    if (seite > 1) { const c = document.querySelector(`#seiten canvas[data-i="${seite}"]`); if (c) c.scrollIntoView(); }
   }
   $("lade")?.remove();
 } catch (e) { console.error(e); fehler(); }
