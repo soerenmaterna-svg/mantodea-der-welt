@@ -534,7 +534,7 @@
     b.textContent = rest ? `▾ ${Math.min(25, rest)} weitere anzeigen (noch ${rest})` : "▴ Weniger anzeigen";
   });
   document.addEventListener("click", async (ev) => {
-    const a = ev.target.closest("a.erst, ul.dbx a, a.lit-q");
+    const a = ev.target.closest("a.erst, ul.dbx a, a.lit-q, a.gb-pdf");
     if (!a || !SA || ev.ctrlKey || ev.metaKey || ev.shiftKey || !/dropbox\.com/.test(a.href)) return;
     ev.preventDefault();
     const titel = (a.getAttribute("title") || a.textContent || "PDF").trim().replace(/\s+/g, " ");

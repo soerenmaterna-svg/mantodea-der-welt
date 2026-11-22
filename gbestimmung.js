@@ -61,7 +61,9 @@
       <p class="gb-ki">⚠️ <b>Mit KI erstellt.</b> Diese Kurzbestimmung wurde von einer KI aus der Fachliteratur abgeleitet und kann Fehler enthalten. Für eine verbindliche Bestimmung bitte immer die Originalarbeit verwenden (Link unten).</p>
       ${merkmale}
       ${g.hinweis ? `<p class="gb-hinweis">ℹ️ ${esc(g.hinweis)}</p>` : ""}
-      <p class="gb-quelle">📄 <b>Originalarbeit:</b> ${g.quellen.map((q) => q.u ? `<a href="${esc(q.u)}" target="_blank" rel="noopener">${esc(q.t)} ↗</a>` : esc(q.t)).join(" · ")}</p>
+      <div class="gb-quelle"><b>📄 Originalarbeit – bitte für die verbindliche Bestimmung verwenden:</b>${g.quellen.map((q) => q.u
+        ? `<a class="erst gb-pdf" href="${esc(q.u.replace(/([?&])dl=0/, "$1raw=1"))}" target="_blank" rel="noopener" title="${esc(q.t)}"><span class="pdf">PDF</span><span class="et"><b>Originalarbeit öffnen</b><span>${esc(q.t)}</span></span><span class="go">↗</span></a>`
+        : `<p>${esc(q.t)}</p>`).join("")}</div>
     </div>`;
   }
 

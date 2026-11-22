@@ -27,7 +27,8 @@
 .gb-weiter { margin-top: auto; display: block; text-align: center; text-decoration: none; background: #fff3c4; border: 2px dashed #c99a00; color: #6b4d00 !important; border-radius: 10px; padding: 6px; font-weight: 700; font-size: 14.5px; }
 .gb-weiter small { display: block; font-weight: 400; font-size: 12.5px; }
 .gb-hinweis { font-size: 13.5px; color: #6b7470; margin: 10px 0 0; }
-.gb-quelle { border-top: 1px solid #e4e4dc; margin: 10px 0 0; padding-top: 8px; font-size: 14px; }
+.gb-quelle { border-top: 1px solid #e4e4dc; margin: 10px 0 0; padding-top: 8px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.gb-quelle a.erst { margin: 0; }
 .gb-lupe { position: fixed; inset: 0; background: rgba(10,12,10,.9); z-index: 9999; display: grid; place-items: center; padding: 14px; }
 .gb-lupe[hidden] { display: none; }
 .gb-lupe-in { position: relative; max-width: min(96vw, 1000px); cursor: default; }
