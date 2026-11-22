@@ -1,0 +1,45 @@
+.gb { background: #fff; border: 2px solid #2f6b3a; border-radius: 16px; padding: 12px; margin: 12px 0; font-size: 15px; line-height: 1.45; color: #1d2420; text-align: left; }
+.gb-kopf { font-size: 16px; margin-bottom: 6px; }
+.gb-hier-hinweis { color: #2f6b3a; font-weight: 600; }
+.gb-ki { background: #fff4e5; border: 1px solid #f0b46a; border-radius: 10px; padding: 7px 10px; margin: 6px 0 10px; font-size: 13.5px; }
+.gb-m { border-top: 1px solid #e4e4dc; padding-top: 10px; margin-top: 10px; scroll-margin-top: 80px; border-radius: 10px; transition: box-shadow .3s; }
+.gb-m.blink { box-shadow: 0 0 0 4px #f4b400; }
+.gb-m h4 { margin: 0 0 4px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+.gb-nr { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #1d2420; color: #fff; font-size: 15px; flex: none; }
+.gb-nurwenn { margin: 0 0 2px; color: #8a6300; font-weight: 600; font-size: 14px; }
+.gb-wo { margin: 0 0 8px; color: #6b7470; font-size: 14px; }
+.gb-reihe { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 8px; }
+.gb-s { border: 2px solid var(--c); border-radius: 12px; padding: 7px; display: flex; flex-direction: column; gap: 6px; background: #fff; }
+.gb-s.hier { box-shadow: 0 0 0 4px #f4b400; }
+.gb-s h5 { margin: 0; font-size: 15px; line-height: 1.25; }
+.gb-fig { margin: 0; }
+.gb-fig figcaption { font-size: 10.5px; color: #6b7470; margin-top: 1px; line-height: 1.3; }
+.gb-fig figcaption a { color: #6b7470; }
+.gb-bild { max-width: 360px; margin: 0 auto; position: relative; border-radius: 8px; overflow: hidden; background: #111; cursor: zoom-in; }
+.gb-bild.fig { background: #fff; border: 1px solid #ecece4; max-width: 230px; }
+.gb-bild.breit { max-width: 100%; }
+.gb-bild img { width: 100%; display: block; }
+.gb-bild svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.gb-bild.f-rauch img { filter: sepia(.6) brightness(.55) contrast(1.2); }
+.gb-pfl { position: absolute; transform: translateY(-50%); background: #d62828; color: #fff; font: 700 12px/1.2 system-ui, sans-serif; border: 2px solid #fff; border-radius: 999px; padding: 2px 7px; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.gb-leer { border-radius: 8px; background: repeating-linear-gradient(45deg, #f4f4ee, #f4f4ee 8px, #ecece4 8px, #ecece4 16px); color: #6b7470; font-size: 12.5px; padding: 12px; text-align: center; }
+.gb-erg { margin-top: auto; display: block; background: var(--c); color: #fff !important; border-radius: 10px; padding: 7px 10px; font-weight: 700; font-size: 16px; text-decoration: none; text-align: center; }
+.gb-weiter { margin-top: auto; display: block; text-align: center; text-decoration: none; background: #fff3c4; border: 2px dashed #c99a00; color: #6b4d00 !important; border-radius: 10px; padding: 6px; font-weight: 700; font-size: 14.5px; }
+.gb-weiter small { display: block; font-weight: 400; font-size: 12.5px; }
+.gb-hinweis { font-size: 13.5px; color: #6b7470; margin: 10px 0 0; }
+.gb-quelle { border-top: 1px solid #e4e4dc; margin: 10px 0 0; padding-top: 8px; font-size: 14px; }
+.gb-lupe { position: fixed; inset: 0; background: rgba(10,12,10,.9); z-index: 9999; display: grid; place-items: center; padding: 14px; }
+.gb-lupe[hidden] { display: none; }
+.gb-lupe-in { position: relative; max-width: min(96vw, 1000px); cursor: default; }
+.gb-lupe-in img { max-width: 100%; max-height: 84vh; display: block; border-radius: 8px; background: #fff; }
+.gb-lupe-in svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.gb-lupe-zu { position: fixed; top: 10px; left: 12px; border: 0; background: #fff; color: #2f6b3a; border-radius: 999px; padding: 8px 16px; font-size: 16px; font-weight: 700; }
+@media (max-width: 600px) {
+  .gb { padding: 8px; }
+  .gb-reihe { gap: 5px; grid-template-columns: repeat(min(var(--n), 2), minmax(0, 1fr)); }
+  .gb-s { padding: 5px; }
+  .gb-s h5 { font-size: 13px; }
+  .gb-pfl { font-size: 9.5px; padding: 1px 4px; }
+  .gb-erg { font-size: 13px; padding: 5px 4px; }
+  .gb-weiter { font-size: 12.5px; }
+}

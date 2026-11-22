@@ -477,8 +477,12 @@
       else html += `<div class="tablewrap"><table><thead><tr><th></th><th>Art</th><th>Gattung</th><th>Familie</th><th>Kontinente</th><th class="tnum">Funde</th></tr></thead><tbody>${part.map(row).join("")}</tbody></table></div>`;
     }
     if (!current.length) html = `<p class="empty">Keine Art passt zu diesen Filtern.</p>`;
+    // Kurz-Bestimmung der Arten, wenn eine Gattung gewählt ist (gbestimmung.js)
+    const GBK = window.MANTODEA_GBK;
+    if (state.genus && GBK && GBK.has(state.genus)) html = GBK.html(state.genus) + html;
     if (io) io.disconnect();
     $("list").innerHTML = html;
+    if (GBK) GBK.einpassen($("list"));
     lazy($("list"));
     $("fd-count").textContent = `${fmt.format(current.length)} ${current.length === 1 ? "Art" : "Arten"} anzeigen`;
     $("more").hidden = state.shown >= total;
@@ -1029,6 +1033,7 @@
         <div id="d-assigned"></div>
       </section>
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
+      ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><h3 class="d-h">Arten der Gattung <i>${esc(s.g)}</i> unterscheiden</h3>${window.MANTODEA_GBK.html(s.g, { art: s.n })}</section>` : ""}
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
         <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button></p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
@@ -1045,6 +1050,7 @@
     fillLiterature(s);
     fillKeyLit(s);
     fillSyn(s);
+    if (window.MANTODEA_GBK) setTimeout(() => window.MANTODEA_GBK.einpassen($("d-body")), 50);
     document.dispatchEvent(new CustomEvent("mantodea:detail", { detail: String(s.k) }));
   }
   $("d-body").addEventListener("click", (e) => {
@@ -1080,6 +1086,13 @@
     $("count").scrollIntoView({ behavior: "smooth" });
   });
   $("detail").addEventListener("click", (e) => { if (e.target === $("detail")) $("detail").close(); });
+  // Ergebnis-Knopf der Kurz-Bestimmung: Art direkt öffnen
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a.gb-erg[data-k]");
+    if (!a) return;
+    e.preventDefault(); e.stopPropagation();
+    if (BYKEY.get(String(a.dataset.k))) detail(a.dataset.k);
+  }, true);
   const openFrom = (e) => {
     const el = e.target.closest("[data-k]");
     if (el && !e.target.closest("a")) detail(el.dataset.k);
