@@ -274,4 +274,84 @@ module.exports = {
     ],
     hinweis: "Zur Kontrolle: S. pluto hat sehr lange, dicke, gebogene Kniedornen, S. porioni dünne, gerade.",
   },
+
+  Choeradodis: {
+    kurzquelle: "Roy 2004",
+    quellen: [{ t: "Roy, R. (2004): Révision et phylogénie des Choeradodini Kirby, 1904 (Dictyoptera, Mantidae). Bulletin de la Société entomologique de France 109(2): 113–128", u: DBX + "AJDWU2N9guK9yKwJU876xDo/Roy%202004b%20-%20R%C3%A9vision%20et%20phylog%C3%A9nie%20des%20Choeradodini%20Kirby%2C%201904%20%28Dictyoptera%2C%20Mantidae%29.pdf" + RK }],
+    arten: { "Choeradodis rhombicollis": { farbe: "#2e7d32" }, "Choeradodis strumaria": { farbe: "#9e9d24" }, "Choeradodis columbica": { farbe: "#00838f" }, "Choeradodis rhomboidea": { farbe: "#6a1b9a" }, "Choeradodis stalii": { farbe: "#ad1457" } },
+    merkmale: [
+      { titel: "Vorderrand der Vorderhüfte", wo: "Lupe: Die Vorderhüfte ist das lange Grundglied des Fangbeins. An ihrer vorderen Kante sitzen Dornen.",
+        spalten: [
+          { t: "Nur fein und unregelmäßig gezähnelt", art: "Choeradodis rhombicollis" },
+          { t: "Mit 6–12 kräftigen Dornen (meist 8–9)", weiter: 2, arten: ["Choeradodis strumaria", "Choeradodis columbica", "Choeradodis rhomboidea", "Choeradodis stalii"] },
+        ] },
+      { titel: "Innenseite des Vorderschenkels", nurWenn: "Nur bei kräftigen Hüftdornen.", wo: "Fangbein von vorn: der breite, bedornte Schenkel. In Drohhaltung ist die Innenseite gut zu sehen.",
+        spalten: [
+          { t: "Ohne schwarze Zeichnung", art: "Choeradodis strumaria" },
+          { t: "Nur kleine schwarze Punkte an der Basis der großen Dornen", art: "Choeradodis columbica" },
+          { t: "Großer schwarzer Fleck", weiter: 3, arten: ["Choeradodis rhomboidea", "Choeradodis stalii"], bilder: [
+            { src: "schenkel_rhombicollis.jpg", cap: "Roy 2004, Fig. 20–21 (Schenkel innen, hier C. rhombicollis)", pf: [{ x: 40, y: 50, lx: 2, ly: 92, t: "schwarzer Fleck" }] }] },
+        ] },
+      { titel: "Breiteste Stelle des Halsschilds (von oben)", nurWenn: "Nur bei großem Schenkelfleck.", wo: "Von oben auf das blattartig verbreiterte Halsschild schauen (Männchen gezeigt, gleicher Maßstab).",
+        spalten: [
+          { t: "Etwa in der Mitte (fast quadratische Raute)", art: "Choeradodis rhomboidea", bilder: [
+            { src: "hals_rhomboidea.png", cap: "♂ – Roy 2004, Fig. 23", pf: [{ x: 50, y: 50, lx: 20, ly: 92, t: "breit in der Mitte" }] }] },
+          { t: "Deutlich vor der Mitte (Dreieck mit breiter Vorderseite)", art: "Choeradodis stalii", bilder: [
+            { src: "hals_stalii.png", cap: "♂ – Roy 2004, Fig. 25", pf: [{ x: 50, y: 30, lx: 20, ly: 92, t: "breit vorn" }] }] },
+        ] },
+    ],
+    hinweis: "Der Schlüssel stammt aus der Revision von Roy (2004) und ersetzt den alten von Giglio-Tos (1927), der C. columbica noch nicht kannte. Widerspruch: Giglio-Tos nennt für C. strumaria einen Schenkelfleck in der oberen Hälfte, Roy dagegen „Fémurs antérieurs non tachés“; im Zweifel zusätzlich die Dornen zählen (strumaria: 5 außen, 25–28 innen; die anderen: 4 außen, 15–18 innen). Zur Kontrolle rhomboidea/stalii: erstes Fußglied der Vorderbeine bei rhomboidea an der Basis hell, bei stalii innen dunkel.",
+  },
+
+  Majangella: {
+    kurzquelle: "Svenson & Vollmer 2014",
+    quellen: [{ t: "Svenson, G. J. & Vollmer, A. (2014): A case of the higher-level classification of praying mantises (Mantodea) obscuring the synonymy of Majangella Giglio-Tos, 1915 and Ephippiomantis Werner, 1922. Zootaxa 3797(1): 105–121", u: DBX + "ACzSNxpuUgaDYNrIiTer8sg/Svenson%20%26%20Vollmer%202014%20-%20A%20case%20of%20the%20higher-level%20classification%20of%20praying%20mantises%20%28Mantodea%29%20obscuring%20the%20synonymy%20of%20Majangella%20Giglio-Tos%2C%201915%20and%20Ephippiomantis%20Werner%2C%201922.pdf" + RK }],
+    arten: { "Majangella carli": { farbe: "#8d6e63" }, "Majangella moultoni": { farbe: "#558b2f" }, "Majangella ophirensis": { farbe: "#5d4037" } },
+    merkmale: [
+      { titel: "Fortsatz auf dem Scheitel (Kopf von vorn)", wo: "Kopf von vorn: zwischen den großen Augen ragt oben ein Fortsatz nach oben.",
+        spalten: [
+          { t: "Ein einziger Zapfen mit stumpf gerundeter Spitze", art: "Majangella carli", bilder: [
+            { src: "kopf_carli.jpg", cap: "Svenson & Vollmer 2014, Fig. 2C", pf: [{ x: 50, y: 18, lx: 30, ly: 92, t: "eine Spitze" }] }] },
+          { t: "Hoch, tief eingeschnitten, beide Spitzen fast parallel nach oben", art: "Majangella moultoni", bilder: [
+            { src: "kopf_moultoni.jpg", cap: "Svenson & Vollmer 2014, Fig. 2B", pf: [{ x: 50, y: 15, lx: 30, ly: 92, t: "zwei parallele Spitzen" }] }] },
+          { t: "Niedriger, weniger eingeschnitten, Spitzen im Winkel (~30°) auseinander", art: "Majangella ophirensis", bilder: [
+            { src: "kopf_ophirensis.jpg", cap: "Svenson & Vollmer 2014, Fig. 2D", pf: [{ x: 50, y: 15, lx: 30, ly: 92, t: "Spitzen gespreizt" }] }] },
+        ] },
+    ],
+    hinweis: "Der Schlüssel der Originalarbeit gilt für Männchen. Zur Kontrolle: Bei M. moultoni ist die schwarze Zeichnung innen am Vorderschenkel durch ein helles Querband unterbrochen, bei M. ophirensis nicht.",
+  },
+
+  Trachymantis: {
+    kurzquelle: "Milledge 2005",
+    quellen: [{ t: "Milledge, G. A. (2005): Revision of the genera Sphodropoda, Trachymantis and Zopheromantis (Mantodea: Mantidae: Mantinae). Records of the Australian Museum 57: 191–210", u: DBX + "ABQ56XWCazNUYbKxAxaB1-c/Milledge%202005%20-%20Revision%20of%20the%20Genera%20Sphodropoda%2C%20Trachymantis%20and%20Zopheromantis%20%28Mantodea%2C%20Mantidae%2C%20Mantinae%29.pdf" + RK }],
+    arten: { "Trachymantis obesa": { farbe: "#1565c0" }, "Trachymantis dentifrons": { farbe: "#2e7d32" } },
+    merkmale: [
+      { titel: "Innenseite des Fangbeins (Hüfte und Schenkel)", wo: "Fangbein von innen bzw. von vorn ansehen.",
+        spalten: [
+          { t: "Hüfte am Vorderrand mit 5 schwarzen Flecken; Schenkel mit großem schwarzem Fleck und 3 schmalen schwarzen Querbändern", art: "Trachymantis obesa", bilder: [
+            { src: "bein_obesa.png", cap: "Milledge 2005, Fig. 29", pf: [{ x: 87, y: 45, lx: 2, ly: 92, t: "5 Flecken an der Hüfte" }] },
+            { src: "kopf_obesa.png", cap: "Kopf von vorn – Milledge 2005, Fig. 28", pf: [{ x: 50, y: 70, lx: 2, ly: 92, t: "Stirnschild höher als breit" }] }] },
+          { t: "Hüfte ohne Zeichnung; Schenkel höchstens mit einem dunklen Fleck vor der Klauenfurche und 3 kleinen Punkten", art: "Trachymantis dentifrons", bilder: [
+            { src: "bein_dentifrons.png", cap: "Milledge 2005, Fig. 32", pf: [{ x: 25, y: 45, lx: 2, ly: 92, t: "Hüfte ohne Flecken" }] },
+            { src: "kopf_dentifrons.png", cap: "Kopf von vorn – Milledge 2005, Fig. 31", pf: [{ x: 50, y: 70, lx: 2, ly: 92, t: "Stirnschild so hoch wie breit" }] }] },
+        ] },
+    ],
+    hinweis: "Eigene Ableitung: Der Schlüssel von Milledge trennt die Arten über die Form des Stirnschilds (höher als breit bzw. etwa so hoch wie breit, unten zur Kontrolle gezeigt). Die Zeichnung der Fangbeine stammt aus den Artbeschreibungen derselben Arbeit und ist leichter zu sehen.",
+  },
+
+  Phasmomantella: {
+    kurzquelle: "Vermeersch 2018",
+    quellen: [{ t: "Vermeersch, X. H. C. (2018): Phasmomantella gen. nov., a spectacular new genus of praying mantis from southern Central Vietnam (Mantodea, Mantidae, Deroplatyinae, Euchomenellini). European Journal of Taxonomy 442: 1–17", u: DBX + "AKuPA_QiE_vcFX3cscpcE9M/Vermeersch%202018b%20%E2%80%93%20Phasmomantella%20gen.%20nov.%2C%20a%20spectacular%20new%20genus%20of%20praying%20mantis%20from%20southern%20Central%20Vietnam%20%28Mantodea%2C%20Mantidae%2C%20Deroplatyinae%2C%20Euchomenellini%29.pdf" + RK }],
+    arten: { "Phasmomantella nuichuana": { farbe: "#8d6e00" }, "Phasmomantella pallida": { farbe: "#37474f" } },
+    merkmale: [
+      { titel: "Fleck an der Vorderseite des Vorderschenkels", wo: "Fangbein von vorn: zwischen dem 1. und 5. Dorn der unteren Vorderkante.",
+        spalten: [
+          { t: "Unregelmäßig umrandeter, fast quadratischer Fleck (bei Sammlungsstücken rotbraun); Dornen gelbgrün mit dunkler Spitze", art: "Phasmomantella nuichuana", bilder: [
+            { src: "bein_nuichuana.jpg", cap: "Holotypus ♀ – Vermeersch 2018, Fig. 3D", pf: [{ x: 33, y: 22, lx: 30, ly: 95, t: "rotbrauner Fleck" }] }] },
+          { t: "Rechteckiger schwarzer Fleck; mehrere Dornen ganz dunkel", art: "Phasmomantella pallida", bilder: [
+            { src: "bein_pallida.jpg", cap: "Holotypus ♂ (Sammlungsstück) – Vermeersch 2018, Fig. 5", pf: [{ x: 45, y: 40, lx: 10, ly: 90, t: "schwarzer Fleck" }] }] },
+        ] },
+    ],
+    hinweis: "Beide Arten sind nur von wenigen Tieren aus Süd-Vietnam bekannt.",
+  },
 };

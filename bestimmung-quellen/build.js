@@ -485,3 +485,74 @@ if (process.env.DIAG6) {
   fs.writeFileSync(process.env.DIAG6, JSON.stringify(out, null, 0));
   console.log("Gattungen 100 %:", out.length);
 }
+// ---------- DIAG7: Gattungen, deren zusammengesetzter Schlüssel jede Art über Merkmale (ohne Fundort) erreicht
+if (process.env.DIAG7) {
+  const out = [];
+  for (const [g, ks] of Object.entries(GEN)) {
+    if (ks.length < 2) continue;
+    const K = KEYS["G:" + g]; if (!K || !K.c.length) continue;
+    // nur Merkmalspfade: Fundort-Paare dürfen vorkommen, aber jede Art muss auf einem Pfad OHNE Fundort-Entscheidung allein stehen
+    const res = {}; let geoNoetig = false, waage = false;
+    const walk = (c, seen, flags) => {
+      if (seen.has(c)) return; seen.add(c);
+      for (const l of K.c[c - 1]) {
+        const f = { geo: flags.geo || !!l.geo || /^Fundort/.test(l.t), w: flags.w || !!l.w, q: new Set([...flags.q, l.q]) };
+        if (typeof l.z === "number") walk(l.z, new Set(seen), f);
+        else { const s = l.z.s || []; if (s.length === 1) { const r = (res[s[0]] = res[s[0]] || []); r.push(f); } }
+      }
+    };
+    walk(1, new Set(), { geo: false, w: false, q: new Set() });
+    let alle = true, mitW = false, quellen = new Set(), geo = false;
+    for (const k of ks) {
+      const r = res[k] || []; const ok = r.filter((f) => !f.geo);
+      if (!ok.length) { alle = false; if (r.length) geo = true; continue; }
+      if (ok.every((f) => f.w)) mitW = true;
+      ok[0].q.forEach((q) => quellen.add(q));
+    }
+    out.push({ g, n: ks.length, alle, mitW, geo, q: [...quellen], fehlt: ks.filter((k) => !(res[k] || []).some((f) => !f.geo)).length });
+  }
+  fs.writeFileSync(process.env.DIAG7, JSON.stringify(out));
+  const a = out.filter((x) => x.alle);
+  console.log("alle über Merkmale:", a.length, "davon ohne ⚖:", a.filter((x) => !x.mitW).length, "| fehlt genau 1:", out.filter((x) => x.fehlt === 1).length, "| fehlt nur wegen Fundort:", out.filter((x) => !x.alle && x.geo).length);
+}
+// ---------- DIAG8: wie DIAG6, aber mit Einstufung (streng / mit Vergleich ⚖ / mit Lupe-Zählen / fehlt 1 Art)
+if (process.env.DIAG8) {
+  const out = [];
+  const flags = (n, f = { geo: 0, w: 0, gen: 0, mess: 0, d: 0 }, d = 1) => {
+    if (isLeaf(n)) { f.d = Math.max(f.d, d - 1); return f; }
+    for (const l of n.l) { if (/Fundort|Verbreitung/i.test(l.t)) f.geo++; if (/Genital|Präparat|Phallomer|Mikroskop/i.test(l.t)) f.gen++; if (/\d+(,\d+)?\s*mm\b|messen|Länge|länger|kürzer|breiter|schmaler|größer|kleiner/i.test(l.t) || l.w) f.w++; flags(l.n, f, d + 1); }
+    return f;
+  };
+  const einzel = (n) => isLeaf(n) ? n.taxa.length === 1 : n.l.every((l) => einzel(l.n));
+  for (const [g, ks] of Object.entries(GEN)) {
+    if (ks.length < 2) continue;
+    const set = new Set(ks); const cands = [];
+    for (const mt of modTrees[g] || []) cands.push([mt.q, prune(mt.t, set)]);
+    for (const i of altFor[g] || []) cands.push(["alt" + i, prune(altTrees[i], set)]);
+    if (gtSpeciesTree[g]) cands.push(["gt", prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null))]);
+    let best = null;
+    for (const [q, t] of cands) {
+      if (!t || isLeaf(t)) continue;
+      const L = leaves(t).size, f = flags(t), ein = einzel(t);
+      const r = { g, n: ks.length, q, abgedeckt: L, einzel: ein, ...f };
+      const score = (L === ks.length ? 100 : L === ks.length - 1 ? 50 : 0) + (ein ? 20 : 0) - f.geo * 30 - f.gen * 30 - f.w * 3;
+      if (!best || score > best.score) best = { ...r, score };
+    }
+    if (best) out.push(best);
+  }
+  fs.writeFileSync(process.env.DIAG8, JSON.stringify(out));
+}
+if (process.env.DIAG9) {
+  for (const g of process.env.DIAG9.split(",")) {
+    const ks = GEN[g] || []; const set = new Set(ks); const nm = (k) => (BYK[k] ? BYK[k].n.split(" ")[1] : k);
+    const q = process.env.DIAG9Q ? JSON.parse(process.env.DIAG9Q)[g] : null;
+    let t = null;
+    if (q === "gt") t = prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null));
+    else if (q && q.startsWith("alt")) t = prune(altTrees[+q.slice(3)], set);
+    else if (q && q.startsWith("mod")) t = prune((modTrees[g] || []).find((m) => m.q === q).t, set);
+    const L = t ? leaves(t) : new Set();
+    console.log("##", g, q, (QUELLEN[q] || {}).z || "", "| fehlt:", ks.filter((k) => !L.has(k)).map(nm).join(","));
+    const pr = (n, ind) => { if (isLeaf(n)) return; n.l.forEach((l) => { console.log(ind + "- " + l.t.slice(0, 220) + (isLeaf(l.n) ? " → " + l.n.taxa.map(nm).join("|") : "")); pr(l.n, ind + "  "); }); };
+    if (t) pr(t, "  ");
+  }
+}
