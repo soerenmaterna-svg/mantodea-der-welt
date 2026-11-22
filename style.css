@@ -1079,3 +1079,16 @@ html.bk-offen, html.bk-offen body { overflow: hidden; }
 .bk-wechsel:disabled { color: var(--muted); cursor: default; }
 .netz-belege { margin: 4px 0 10px; padding-left: 18px; font-size: .9rem; }
 .netz-belege li { margin: 3px 0; }
+
+/* Ungereimtheiten: Liste bei den Quellen und Hinweis bei der Art */
+details.ung { margin: 18px 0 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+details.ung > summary { cursor: pointer; font-weight: 600; font-size: 1.05rem; }
+details.ung > summary small, .ung-p summary small, .ung-art summary small { color: var(--muted); font-weight: 500; }
+details.ung-p { border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; margin: 8px 0; scroll-margin-top: 70px; transition: box-shadow .3s; }
+details.ung-p summary { cursor: pointer; }
+details.ung-p ul, .ung-art ul { padding-left: 1.2em; margin: 6px 0; }
+details.ung-p li, .ung-art li { margin: 3px 0; font-size: .9rem; overflow-wrap: anywhere; }
+.ung-hl { box-shadow: 0 0 0 3px var(--accent); }
+.ung-art { background: #fff4e0; border: 1px solid #e8c27a; border-radius: 10px; padding: 6px 12px; margin: 10px 0 4px; }
+.ung-art summary { cursor: pointer; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .ung-art { background: #3a2f1c; border-color: #7a6232; } }

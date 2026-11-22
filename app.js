@@ -752,6 +752,48 @@
   }
   const D_g = () => (window.MANTODEA_SYN || {})._g || {};
 
+  // ---------- Ungereimtheiten (automatische Prüfung der Literatur- und Namensdaten)
+  // Bei der Art nur ein aufklappbarer Hinweis; die vollständige Liste mit Erklärungen steht unten bei den Quellen.
+  async function fillUng(s) {
+    const box = $("d-ung"); if (!box) return;
+    try { await loadScript("data/ungereimtheiten.js"); } catch (e) { return; }
+    const U = window.MANTODEA_UNG, hits = U && U.a[s.n];
+    if (!hits || !hits.length || !box.isConnected || $("d-body").dataset.k != s.k) return;
+    const zeilen = hits.map(([pi, fi]) => { const p = U.p[pi];
+      return `<li><b>${esc(p.t)}:</b> ${esc(p.f[fi])} <a href="#ung-${p.id}" data-ung="${p.id}">Erklärung (${p.id}) →</a></li>`; }).join("");
+    box.innerHTML = `<details class="ung-art"><summary>⚠️ Hinweis: Ungereimtheiten in den Daten <small>${hits.length}</small></summary>
+      <ul>${zeilen}</ul>
+      <p class="muted small">Ergebnis einer automatischen Prüfung (Stand ${esc(U.stand)}): ein Hinweis zum Nachprüfen, keine bestätigte Korrektur. <a href="#ungereimtheiten" data-ung="">Alle Ungereimtheiten mit Erklärung ansehen →</a></p></details>`;
+  }
+  async function renderUng() {
+    const body = $("ung-body"); if (!body || body.dataset.done) return;
+    try { await loadScript("data/ungereimtheiten.js"); } catch (e) { body.innerHTML = `<p class="muted">Liste konnte nicht geladen werden.</p>`; return; }
+    const U = window.MANTODEA_UNG; body.dataset.done = 1;
+    body.innerHTML = `<p>Die Beschreibungen der Gottesanbeterinnen stammen aus über 250 Jahren. Frühere Bearbeiter kannten die Arbeiten der anderen oft nicht: Arten wurden doppelt beschrieben, Namen mehrfach vergeben oder falsch zugeordnet, und heutige Datenbanken übernehmen solche Widersprüche. Eine automatische Prüfung aller ${fmt.format(DATA.length)} Arten (Artenliste, Originalbeschreibungen, Fachliteratur, Synonyme, Erstbeschreibungs-PDFs, Gattungsjahre) hat die folgenden Ungereimtheiten gefunden. Jeder Punkt ist ein Hinweis zum Prüfen, keine fertige Korrektur – manche Abweichungen sind fachlich begründet (z. B. Druck- gegenüber Erscheinungsjahr oder geschützte Namen). Bei den betroffenen Arten steht ein aufklappbarer Hinweis.</p>
+      <p class="muted small">Stand der Prüfung: ${esc(U.stand)} · ${fmt.format(Object.keys(U.a).length)} Arten mit mindestens einem Hinweis</p>
+      ${U.p.map((p) => `<details class="ung-p" id="ung-${p.id}"><summary><b>${p.id}</b> ${esc(p.t)}${p.f.length ? ` <small>${fmt.format(p.f.length)}</small>` : ""}</summary>
+        <p>${esc(p.e)}</p>${p.f.length ? `<ul>${p.f.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}</details>`).join("")}`;
+  }
+  let ungSprung = false;   // während des Sprungs zur Liste keine weiteren Arten nachladen
+  async function showUng(id) {
+    const d = $("ungereimtheiten"); if (!d) return;
+    ungSprung = true; setTimeout(() => { ungSprung = false; }, 4000);
+    d.open = true; await renderUng();
+    const t = (id && $("ung-" + id)) || d;
+    if (t !== d) t.open = true;
+    t.classList.add("ung-hl"); setTimeout(() => t.classList.remove("ung-hl"), 2500);
+    // die Artenliste lädt beim Scrollen weiter nach: so lange nachfassen, bis die Stelle ruhig oben steht
+    let n = 0;
+    const hin = () => { t.scrollIntoView({ block: "start" }); const y = t.getBoundingClientRect().top;
+      if (++n < 15 && (y > 90 || y < 0)) setTimeout(hin, 200); };
+    setTimeout(hin, 60);
+  }
+  { const d = $("ungereimtheiten"); if (d) d.addEventListener("toggle", () => { if (d.open) renderUng(); }); }
+  $("d-body").addEventListener("click", (e) => {
+    const a = e.target.closest("a[data-ung]"); if (!a) return;
+    e.preventDefault(); $("detail").close(); showUng(a.dataset.ung);
+  });
+
   // ---------- Galerie, nach Geschlecht/Stadium gruppiert, und zoombare Großansicht
   let galItems = [];
   // Große Fassungen (>= 600 px) je Art, erst beim Öffnen des Steckbriefs geladen
@@ -1042,6 +1084,7 @@
         <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         <div id="d-erst"></div>
+        <div id="d-ung"></div>
         ${s.u ? `<p class="note small">Diese Art steht nicht im Catalogue of Life. Sie kann neu beschrieben und dort noch nicht erfasst sein, oder der Name ist veraltet bzw. ein Synonym. Gefunden in: ${(s.src || []).map((q) => SRC_NAME[q]).join(", ")}.</p>` : ""}
         ${s.ct && s.ct.length ? `<p class="d-occ">📍 <b>Vorkommen:</b> ${s.ct.slice(0, 8).map(cname).map(esc).join(", ")}${s.ct.length > 8 ? ` und ${s.ct.length - 8} weitere · <a href="#" data-goto-c="1">alle auf der Karte</a>` : ""}</p>` : `<p class="d-occ muted">📍 Vorkommen: keine Länderangaben bekannt</p>`}
         <p class="d-tax">Mantodea › <a href="#" data-fam="${esc(s.f)}">${esc(s.f)}</a>${s.sf && !s.sf.startsWith("(") ? ` › ${esc(s.sf)}` : ""} › <a href="#" data-gen="${esc(s.g)}" data-genfam="${esc(s.f)}"><i>${esc(s.g)}</i></a></p>
@@ -1073,6 +1116,7 @@
     fillLiterature(s);
     fillKeyLit(s);
     fillSyn(s);
+    fillUng(s);
     document.dispatchEvent(new CustomEvent("mantodea:detail", { detail: String(s.k) }));
   }
   $("d-body").addEventListener("click", (e) => {
@@ -1187,7 +1231,7 @@
   const more = () => { state.shown += PAGE; render(false); };
   $("more").addEventListener("click", more);
   if ("IntersectionObserver" in window) {
-    new IntersectionObserver((es) => { if (es[0].isIntersecting && !$("more").hidden && !$("v-arten").hidden) more(); }, { rootMargin: "600px" }).observe($("sentinel"));
+    new IntersectionObserver((es) => { if (es[0].isIntersecting && !$("more").hidden && !$("v-arten").hidden && !ungSprung) more(); }, { rootMargin: "600px" }).observe($("sentinel"));
   }
 
   // ---------- Unbestimmte Beobachtungen (iNaturalist)
