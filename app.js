@@ -135,8 +135,24 @@
     if (x.frei) (NF[k] = NF[k] || []).push(x); else (UF[k] = UF[k] || []).push(x);
   }
   const ufOf = (s) => { if (!SA) return null; const a = [...(NF[s.k] || []), ...(!state.license && UF[s.k] ? UF[s.k] : [])]; return a.length ? a : null; };
+  // Literatur mit Abbildungen je Art (Zeitschriften, Bücher) aus data/netzfotos.js
+  const netzLit = (s) => { const L = SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.lit || {})[s.k]; return L && L.length ? L : null; };
+  const litListe = (L) => `<ul class="lit netz-lit">${L.map((x) => `<li>${licChip(x.l, "Lizenz: " + (x.l || "unbekannt"))} <a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a>
+    <span class="muted">${esc([x.au, x.y].filter(Boolean).join(" "))}${x.j ? " · " + esc(x.j) : ""}${x.sn ? " · " + esc(x.sn) : ""}</span>${x.abb ? ` · <b class="abb">${x.abb} ${x.abb === 1 ? "Abbildung" : "Abbildungen"} der Art</b>` : x.ta ? ` · <span class="abb">Artbeschreibung</span>` : ""}${x.pdf ? ` · <a href="${esc(x.pdf)}" target="_blank" rel="noopener">PDF ↗</a>` : ""}</li>`).join("")}</ul>`;
   const ufImg = (x, alt) => `<img src="${esc(x.u)}" alt="${esc(alt || "")}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
   const ufBadge = (x, big) => (x.frei ? "" : `<span class="cbadge${big ? " big" : ""}" title="nicht frei lizenziert">©</span>`);
+  // Lizenz-Schild: kurz und farbig (grün = frei, orange = frei, aber nicht kommerziell, rot = © / unbekannt)
+  const licKurz = (l) => {
+    l = String(l || "");
+    if (/cc0|cc-zero|publicdomain\/zero/i.test(l)) return ["CC0", "frei"];
+    if (/gemeinfrei|public domain|pdm/i.test(l)) return ["gemeinfrei", "frei"];
+    const m = l.match(/(?:cc[\s-]*)?\b(by(?:[\s-]*(?:nc|sa|nd))*)\b/i);
+    if (m && (/creativecommons|cc[\s-]/i.test(l) || /^by\b/i.test(l))) { const k = "CC " + m[1].toUpperCase().replace(/[\s-]+/g, "-"); return [k, /NC|ND/.test(k) ? "nc" : "frei"]; }
+    if (/^©|alle rechte|all rights|rechte beim/i.test(l)) return ["©", "zu"];
+    if (/open access/i.test(l)) return ["frei lesbar", "nc"];
+    return ["?", "zu"];
+  };
+  const licChip = (l, title) => { const [k, c] = licKurz(l); return `<span class="lic lic-${c}" title="${esc(title || l || "Lizenz unbekannt")}">${esc(k)}</span>`; };
   const ufCredit = (x) => x.frei
     ? `${x.art ? esc(x.art) + " · " : ""}Foto: ${esc(x.by || "unbekannt")} · ${esc(x.l)} · <a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src || "Quelle")} ↗</a>`
     : `${x.art ? esc(x.art) + " · " : ""}© ${esc(x.by || "Fotograf")} · ${esc(x.l && x.l !== "©" ? x.l : "alle Rechte vorbehalten")} · <a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src || "iNaturalist")} ↗</a>`;
@@ -621,9 +637,9 @@
     try {
       await loadScript("data/openalex.js");
       const OA = window.MANTODEA_OA || {}, w = (OA.w || {})[s.k];
-      const oaLink = `https://openalex.org/works?filter=title_and_abstract.search:%22${encodeURIComponent(s.n)}%22`;
-      if (w && w.p.length) h += `<h4>Fachartikel, in denen die Art vorkommt <small>(OpenAlex, ${fmt.format(w.n)} Treffer, meistzitierte zuerst)</small></h4><ul class="lit">${w.p.map((p) =>
-        `<li><a href="${esc(p.u)}" target="_blank" rel="noopener">${esc(p.t)}</a> <span class="muted">${esc([p.s, p.y].filter(Boolean).join(", "))}</span></li>`).join("")}</ul>
+      const oaLink = `https://openalex.org/works?filter=fulltext.search:%22${encodeURIComponent(s.n)}%22`;
+      if (w && w.p.length) h += `<h4>Zeitschriften, Bücher und Artikel, in denen die Art vorkommt <small>(OpenAlex-Volltextsuche, ${fmt.format(w.n)} Treffer)</small></h4><ul class="lit">${w.p.map((p) =>
+        `<li>${p.l !== undefined ? licChip(p.l || (p.oa ? "Open Access, Lizenz nicht angegeben" : "©"), p.l ? "Lizenz: " + p.l : p.oa ? "frei lesbar (Open Access), Lizenz nicht angegeben" : "Rechte beim Verlag") + " " : ""}<a href="${esc(p.u)}" target="_blank" rel="noopener">${esc(p.t)}</a> <span class="muted">${esc([p.au, p.s, p.y].filter(Boolean).join(", "))}</span>${p.oa && p.pdf ? ` · <a href="${esc(p.pdf)}" target="_blank" rel="noopener">frei lesbar ↗</a>` : p.oa ? ` <span class="muted small">(frei lesbar)</span>` : ""}</li>`).join("")}</ul>
         ${w.n > w.p.length ? `<p class="small"><a href="${oaLink}" target="_blank" rel="noopener">Alle ${fmt.format(w.n)} Treffer bei OpenAlex ansehen ↗</a></p>` : ""}`;
       else if (!w && OA.abgedeckt < OA.arten) h += `<p class="muted small">Die Fachartikel-Suche bei OpenAlex läuft schrittweise jede Nacht. Für diese Art ist sie noch nicht erfolgt (${fmt.format(OA.abgedeckt)} von ${fmt.format(OA.arten)} Arten erledigt). <a href="${oaLink}" target="_blank" rel="noopener">Jetzt direkt bei OpenAlex suchen ↗</a></p>`;
     } catch (e) { /* OpenAlex-Daten noch nicht vorhanden */ }
@@ -842,13 +858,13 @@
     if (!box) return;
     const ufHtml = () => {
       const all = ufOf(s) || [], fr = all.filter((x) => x.frei), u = all.filter((x) => !x.frei);
-      const th = (x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="${esc((x.art ? x.art + " – " : "") + (x.frei ? x.by + " · " + x.l : "© " + x.by + " – alle Rechte vorbehalten"))}">${ufImg(x, s.n)}${ufBadge(x)}</a>`;
+      const th = (x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="${esc((x.art ? x.art + " – " : "") + (x.frei ? x.by + " · " + x.l : "© " + x.by + " – " + (x.l && x.l !== "©" ? x.l : "alle Rechte vorbehalten")))}">${ufImg(x, s.n)}${ufBadge(x)}${licChip(x.l, "Lizenz: " + (x.l || "unbekannt"))}</a>`;
       return (fr.length ? `<h4 class="g-group">Fotos aus dem Netz – frei lizenziert <small>${fr.length}</small></h4>
       <p class="muted small">Museumsbelege (NHM London, Tervuren, Lund, US-Sammlungen u. a.) und Abbildungen aus Fachartikeln und Büchern mit freier Lizenz oder gemeinfrei. Antippen öffnet die Quelle mit Lizenz und Urheber.</p>
       <div class="gallery ufgal">${fr.map(th).join("")}</div>` : "") +
       (u.length ? `<h4 class="g-group uf">Weitere Fotos – nicht frei lizenziert <small>${u.length}</small></h4>
       <p class="muted small">Diese Fotos werden direkt von der Quelle angezeigt; die Rechte liegen bei den Urhebern. Antippen öffnet die Quelle. In den Filtern lassen sie sich ausblenden.</p>
-      <div class="gallery ufgal">${u.map(th).join("")}</div>` : "") + belegHtml();
+      <div class="gallery ufgal">${u.map(th).join("")}</div>` : "") + belegHtml() + litHtml();
     };
     const belegHtml = () => {
       const b = SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k];
@@ -856,6 +872,11 @@
       <p class="muted small">Bilder bei anderen Anbietern, deren Lizenz unbekannt ist oder die nicht frei lizenziert sind. Sie werden hier nicht angezeigt – der Link führt zur Quelle.</p>
       <ul class="netz-belege">${b.map((x) => `<li><a href="${esc(x.ref)}" target="_blank" rel="noopener"${x.s ? ` class="lit-q" data-seite="${x.s}" title="${esc(x.src)}"` : ""}>${esc(x.src)} ↗</a> – ${esc(x.t)}${x.l ? ` <span class="muted">(${esc(x.l)})</span>` : ""}</li>`).join("")}</ul>` : "";
     };
+    // Fachartikel und Bücher mit Abbildungen dieser Art (data/netzfotos.js, Feld lit), mit Lizenz-Schild
+    const litHtml = () => { const L = netzLit(s); return L ? `<h4 class="g-group">Literatur mit Abbildungen dieser Art <small>${L.length}</small></h4>
+      <p class="muted small">Zeitschriftenartikel und Bücher, in denen die Art beschrieben oder abgebildet ist. Das Schild zeigt die Lizenz des Artikels: <span class="lic lic-frei">CC BY</span> frei, <span class="lic lic-nc">CC BY-NC</span> frei, aber nicht kommerziell, <span class="lic lic-nc">frei lesbar</span> online frei lesbar, Lizenz nicht angegeben, <span class="lic lic-zu">©</span> Rechte beim Verlag bzw. unbekannt. „Artbeschreibung“: Die Art wird dort taxonomisch bearbeitet (nach Plazi).</p>
+      ${litListe(L)}` : ""; };
+
     if (!(s.gb || s.fb)) { box.innerHTML = ufHtml(); return; }
     const bundles = [s.gb, s.fb].filter(Boolean);
     let items;
@@ -1111,7 +1132,7 @@
       </section>
       <section class="d-card">
         ${s.gb || s.fb ? `<h3 class="d-h">Fotos <small>${(s.gn || 0) + (s.fn || 0)} Fotos${s.fn ? ` (davon ${s.fn} von Flickr)` : ""} · antippen zum Vergrößern</small></h3><div id="d-gal"><p class="muted">Lade Fotos …</p></div>` :
-          (ufOf(s) || (SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k]) ? `<h3 class="d-h">Fotos</h3><div id="d-gal"></div>` : `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`)}
+          (ufOf(s) || netzLit(s) || (SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k]) ? `<h3 class="d-h">Fotos</h3><div id="d-gal"></div>` : `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`)}
       </section>
       <section class="d-card">
         <h3 class="d-h">Fundorte</h3><div id="d-map" class="d-map"><p class="muted">Lade Karte …</p></div>
