@@ -1008,12 +1008,12 @@ a.erst .et b, a.erst .go { color: #2f6a2a; }
 .map-legend .lg-litc { display: inline-block; width: 12px; height: 9px; background: #cfe3c2; border: 1px solid #9bbf86; margin-right: 5px; }
 .map-legend .lg-hist { display: inline-block; width: 12px; height: 9px; border: 1px dashed #9c5a3c; background: repeating-linear-gradient(45deg, #b5654a 0 2px, transparent 2px 4px); margin-right: 5px; }
 .lit-orte { margin-top: 10px; background: #f6f8f3; border-radius: 10px; padding: 8px 12px; }
-.lit-orte dl { margin: 4px 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; }
+.lit-orte dl { margin: 4px 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; }
 .lit-orte dt { font-weight: 700; font-size: .8rem; color: var(--muted); }
-.lit-orte dd { margin: 0; font-size: .88rem; }
-.lit-orte .lit-q { font-size: .75rem; white-space: nowrap; }
+.lit-orte dd { margin: 0; font-size: .88rem; min-width: 0; overflow-wrap: anywhere; }
+.lit-orte .lit-q { font-size: .75rem; overflow-wrap: anywhere; }
 .lit-pl { margin: 6px 0 0; padding-left: 18px; font-size: .82rem; }
-@media (max-width: 600px) { .lit-orte dl { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .lit-orte dl { grid-template-columns: minmax(0, 1fr); } }
 a.erst.netz .pdf { background: linear-gradient(160deg, #2f6f9f, #1d4f75); font-size: .62rem; }
 a.erst + a.erst { margin-left: 8px; }
 .erst.nur { display: inline-flex; align-items: center; gap: 10px; margin: 8px 0 2px; padding: 6px 12px 6px 6px; max-width: 100%; border: 1px dashed #a9cf9a; border-radius: 12px; background: #f6faf3; }
@@ -1092,3 +1092,7 @@ details.ung-p li, .ung-art li { margin: 3px 0; font-size: .9rem; overflow-wrap: 
 .ung-art { background: #fff4e0; border: 1px solid #e8c27a; border-radius: 10px; padding: 6px 12px; margin: 10px 0 4px; }
 .ung-art summary { cursor: pointer; font-weight: 600; }
 @media (prefers-color-scheme: dark) { .ung-art { background: #3a2f1c; border-color: #7a6232; } }
+
+/* Schutz gegen Überlauf im Steckbrief: lange Namen, Zitate und Links umbrechen statt über den Rand zu laufen */
+#d-body { overflow-wrap: anywhere; }
+#d-body .d-card, #d-body dd, #d-body li { min-width: 0; }

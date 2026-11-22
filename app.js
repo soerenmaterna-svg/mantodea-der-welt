@@ -40,7 +40,27 @@
   const fmtDate = (d) => { try { return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return d; } };
 
   const NEW = new Set(STATUS.neu_seit_letztem_lauf || []);
-  const CCONT = M.countries || {};
+  // Land → Kontinent. Fehlt die Zuordnung in species.js, wird sie aus den Arten selbst abgeleitet
+  // (Arten mit genau einem Kontinent: in welchem Kontinent kommt das Land am häufigsten vor?)
+  const CCONT = (() => {
+    if (M.countries && Object.keys(M.countries).length) return M.countries;
+    const z = {};
+    for (const s of DATA) if (s.c && s.c.length === 1) for (const cc of s.ct || []) { const t = z[cc] || (z[cc] = {}); t[s.c[0]] = (t[s.c[0]] || 0) + 1; }
+    const r = {};
+    for (const [cc, t] of Object.entries(z)) r[cc] = Object.entries(t).sort((a, b) => b[1] - a[1])[0][0];
+    return r;
+  })();
+  // Länder aus der Fachliteratur (genannte Länder und Fundorte mit Koordinaten) zählen als belegte Länder
+  const LITLAND = window.MANTODEA_LITLAND || {};
+  for (const s of DATA) {
+    const ll = LITLAND[s.k]; if (!ll) continue;
+    s.ct = s.ct || []; s.cn = s.cn || {}; s.c = s.c || [];
+    for (const cc of ll) {
+      if (!s.ct.includes(cc)) s.ct.push(cc);
+      const v = s.cn[cc] || (s.cn[cc] = [0, 0, 0]); v[2] = 1;
+      const k = CCONT[cc]; if (k && !s.c.includes(k)) s.c.push(k);
+    }
+  }
   let regionNames = null;
   try { regionNames = new Intl.DisplayNames(["de"], { type: "region" }); } catch (e) { /* alter Browser */ }
   const cname = (cc) => { try { return (regionNames && regionNames.of(cc)) || cc; } catch (e) { return cc; } };
@@ -1063,7 +1083,7 @@
       if (cs.length) h += `<h4 class="ct-h">${esc(k === "NONE" ? "ohne Kontinentzuordnung" : CONT[k])} <small>${cs.length}</small></h4><ul class="ctlist">${cs.map(item).join("")}</ul>`;
     }
     if ((s.cq || []).length) h += `<details class="ctq"><summary>Fragliche Einzelmeldungen (${s.cq.length})</summary><p class="muted small">Einzelne Meldungen weit außerhalb des übrigen Verbreitungsgebiets. Möglich sind Fehlbestimmung, entflogene Haustiere oder Einschleppung. Sie zählen nicht für die Ländersuche.</p><ul class="ctlist">${s.cq.map(item).join("")}</ul></details>`;
-    h += `<p class="muted small">👁️ Beobachtungen (z. B. iNaturalist, nur Forschungsqualität und frei lebend), 🏛️ Museumsbelege, 📖 regionale Artenliste in der Fachliteratur. Laborproben und Tiere aus Haltung zählen nicht. Kursiv: weniger als 5 Nachweise, eventuell eingeschleppt oder unbeständig. Quelle: <a href="https://www.gbif.org/occurrence/search?taxon_key=${esc(s.gk || "")}" target="_blank" rel="noopener">GBIF</a>, Plazi.</p>`;
+    h += `<p class="muted small">👁️ Beobachtungen (z. B. iNaturalist, nur Forschungsqualität und frei lebend), 🏛️ Museumsbelege, 📖 Fachliteratur (regionale Artenliste, Verbreitungsangabe oder Fundort mit Koordinaten). Laborproben und Tiere aus Haltung zählen nicht. Kursiv: weniger als 5 Nachweise, eventuell eingeschleppt oder unbeständig. Quelle: <a href="https://www.gbif.org/occurrence/search?taxon_key=${esc(s.gk || "")}" target="_blank" rel="noopener">GBIF</a>, Plazi.</p>`;
     return h;
   }
   function detail(k) {
