@@ -26,6 +26,7 @@ for (const [name, g] of Object.entries(Q)) {
   }
   // jede Art muss genau einmal als Ergebnis erreichbar sein
   const erg = g.merkmale.flatMap((M) => M.spalten.filter((s) => s.art).map((s) => s.art));
+  for (const f of g.fehlt || []) if (g.arten[f.art] || !f.t) fehler.push(name + ": fehlt-Eintrag falsch: " + f.art);
   for (const a of Object.keys(g.arten)) if (erg.filter((x) => x === a).length !== 1) fehler.push(name + ": Art " + a + " wird " + erg.filter((x) => x === a).length + "-mal erreicht");
 }
 if (fehler.length) { console.error(fehler.join("\n")); process.exit(1); }

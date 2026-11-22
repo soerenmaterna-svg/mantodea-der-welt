@@ -193,7 +193,8 @@
   $("family").insertAdjacentHTML("beforeend", fams.map((f) => `<option>${esc(f)}</option>`).join(""));
   function fillGenus() {
     const gs = [...new Set(DATA.filter((s) => !state.family || s.f === state.family).map((s) => s.g))].sort(coll.compare);
-    $("genus").innerHTML = `<option value="">alle Gattungen (${gs.length})</option>` + gs.map((g) => `<option>${esc(g)}</option>`).join("");
+    const stern = (g) => (window.MANTODEA_GBK && window.MANTODEA_GBK.has(g) ? " *" : "");
+    $("genus").innerHTML = `<option value="">alle Gattungen (${gs.length}) · * = mit Bestimmungsschlüssel</option>` + gs.map((g) => `<option value="${esc(g)}">${esc(g)}${stern(g)}</option>`).join("");
     if (!gs.includes(state.genus)) state.genus = "";
     $("genus").value = state.genus;
   }
@@ -372,9 +373,9 @@
     } else {
       const cnt = {}; basePick("genus").forEach((s) => { cnt[s.g] = (cnt[s.g] || 0) + 1; });
       const gs = Object.keys(cnt).filter((g) => !q || g.toLowerCase().includes(q)).sort(coll.compare);
-      let html = q ? "" : `<button type="button" data-v="" class="all ${state.genus ? "" : "on"}"><span>alle Gattungen</span><small>${fmt.format(Object.keys(cnt).length)}</small></button>`, last = "";
+      let html = q ? "" : `<p class="muted small gb-stern-info"><b class="gb-stern">*</b> = mit Bestimmungsschlüssel für die Arten</p><button type="button" data-v="" class="all ${state.genus ? "" : "on"}"><span>alle Gattungen</span><small>${fmt.format(Object.keys(cnt).length)}</small></button>`, last = "";
       for (const g of gs) { if (!q && g[0] !== last) { html += `<h3>${esc(g[0])}</h3>`; last = g[0]; }
-        html += `<button type="button" data-v="${esc(g)}" class="${g === state.genus ? "on" : ""}"><span><i>${esc(g)}</i></span><small>${fmt.format(cnt[g])}</small></button>`; }
+        html += `<button type="button" data-v="${esc(g)}" class="${g === state.genus ? "on" : ""}"><span><i>${esc(g)}</i>${window.MANTODEA_GBK && window.MANTODEA_GBK.has(g) ? ` <b class="gb-stern" title="Mit Bestimmungsschlüssel">*</b>` : ""}</span><small>${fmt.format(cnt[g])}</small></button>`; }
       L.innerHTML = html || `<p class="muted">Keine Gattung gefunden.</p>`;
     }
   }

@@ -354,4 +354,352 @@ module.exports = {
     ],
     hinweis: "Beide Arten sind nur von wenigen Tieren aus Süd-Vietnam bekannt.",
   },
+
+  Toxodera: {
+    kurzquelle: "Roy 2009",
+    quellen: [{ t: "Roy, R. (2009): Révision des Toxoderini sensu novo (Mantodea, Toxoderinae). Revue suisse de Zoologie 116: 93–183", u: DBX + "AAAmaYnSwDlmz3TTUMJKmf0/Roy%202009c%20-%20R%C3%A9vision%20des%20Toxoderini%20sensu%20novo%20%28Mantodea%2C%20Toxoderinae%29.pdf" + RK }, { t: "Anderson, K. (2024): Philippine Mantodea: Descriptions of Newly Identified Species Part I. Soothsayer 5(1): 89–105 (Erstbeschreibung von T. novopensis)", u: "https://zenodo.org/records/14082182" }],
+    arten: { "Toxodera integrifolia": { farbe: "#6d4c41" }, "Toxodera fimbriata": { farbe: "#8d6e63" }, "Toxodera hauseri": { farbe: "#a1887f" }, "Toxodera maculata": { farbe: "#5d4037" }, "Toxodera pfanneri": { farbe: "#795548" }, "Toxodera beieri": { farbe: "#4e342e" }, "Toxodera denticulata": { farbe: "#3e2723" }, "Toxodera maxima": { farbe: "#2b1d16" } },
+    merkmale: [
+      { titel: "Blattlappen an Mittel- und Hinterschenkeln", wo: "Die blattartigen Verbreiterungen an den Schenkeln der Laufbeine von der Seite ansehen.",
+        spalten: [
+          { t: "Schmal, mit gleichmäßig gebogenen Rändern", art: "Toxodera integrifolia" },
+          { t: "Breit, gezähnt oder zerfranst", weiter: 2, arten: ["Toxodera fimbriata", "Toxodera hauseri"] },
+          { t: "Breit, gewellt oder gelappt", weiter: 3, arten: ["Toxodera maculata", "Toxodera pfanneri", "Toxodera beieri", "Toxodera denticulata", "Toxodera maxima"] },
+        ] },
+      { titel: "Endfortsatz der Mittel- und Hinterschenkel", nurWenn: "Nur bei gezähnten Lappen.", wo: "Der spitze Fortsatz am Ende des Schenkels (Knie) im Vergleich zu den seitlichen Fortsätzen.",
+        spalten: [
+          { t: "Weniger als doppelt so lang wie die Seitenfortsätze; Lappen schmal mit spitzen Zähnen", art: "Toxodera fimbriata" },
+          { t: "Mehr als doppelt so lang; Lappen ziemlich breit mit kurzen Zähnen", art: "Toxodera hauseri" },
+        ] },
+      { titel: "Augenspitze und Schenkellappen", nurWenn: "Nur bei gewellten oder gelappten Lappen.", wo: "Oben am Auge sitzt eine Spitze; dazu die Form der Schenkellappen.",
+        spalten: [
+          { t: "Kurze Augenspitze, Lappen unregelmäßig gewellt", weiter: 4, arten: ["Toxodera maculata", "Toxodera pfanneri"] },
+          { t: "Lange Augenspitze, Lappen deutlich zweilappig", weiter: 5, arten: ["Toxodera beieri", "Toxodera denticulata", "Toxodera maxima"] },
+        ] },
+      { titel: "Endfortsatz und breiteste Stelle der Schenkellappen", nurWenn: "Nur bei kurzer Augenspitze.",
+        spalten: [
+          { t: "Endfortsatz nach vorn gebogen; Lappen im Enddrittel am breitesten; Augenspitze dünn", art: "Toxodera maculata" },
+          { t: "Endfortsatz nicht nach vorn gebogen; Lappen in der Mitte am breitesten; Augenspitze kräftig", art: "Toxodera pfanneri" },
+        ] },
+      { titel: "Mittellappen auf dem 5. Hinterleibsring (oben)", nurWenn: "Nur bei langer Augenspitze.",
+        spalten: [
+          { t: "Hell, Spitze sichelförmig nach hinten gebogen; Deckflügel stark braun gefleckt", art: "Toxodera beieri" },
+          { t: "Dunkel, schmal, nach vorn gebogen; Stirnschild mit zweilappigem Oberrand; Augen mit deutlichem Dorn", art: "Toxodera denticulata" },
+          { t: "Dunkel, schmal, nach vorn gebogen; Stirnschild oben dreilappig, Augenspitze kurz und dick; sehr groß", art: "Toxodera maxima" },
+        ] },
+    ],
+    fehlt: [{ art: "Toxodera novopensis", t: "2024 von den Philippinen (Mindanao) beschrieben – die einzige Toxodera von dort. Kurze kegelförmige Augenspitze (wie maculata/pfanneri), aber Schenkellappen deutlich zweilappig mit viel größerem Endlappen (wie beieri/denticulata/maxima); Mittellappen des 5. Hinterleibsrings unregelmäßig gezähnt; Mittelkiel des Halsschilds fein gezähnelt.", q: "Diagnose in Anderson 2024 (Link unten), eigene Einordnung in den Schlüssel" }],
+  },
+
+  Paratoxodera: {
+    kurzquelle: "Roy 2009",
+    quellen: [{ t: "Roy, R. (2009): Révision des Toxoderini sensu novo (Mantodea, Toxoderinae). Revue suisse de Zoologie 116: 93–183", u: DBX + "AAAmaYnSwDlmz3TTUMJKmf0/Roy%202009c%20-%20R%C3%A9vision%20des%20Toxoderini%20sensu%20novo%20%28Mantodea%2C%20Toxoderinae%29.pdf" + RK }],
+    arten: { "Paratoxodera meggitti": { farbe: "#5d4037" }, "Paratoxodera gigliotosi": { farbe: "#6d4c41" }, "Paratoxodera marshallae": { farbe: "#8d6e63" }, "Paratoxodera cornicollis": { farbe: "#4e342e" }, "Paratoxodera polyacantha": { farbe: "#3e2723" } },
+    merkmale: [
+      { titel: "Blattverbreiterung am Hinterrand des Halsschilds", wo: "Halsschild von der Seite: am hinteren Ende sitzt oben eine blattartige Verbreiterung.",
+        spalten: [
+          { t: "Groß und dreieckig, viel größer als die Mittellappen des Halsschilds", art: "Paratoxodera meggitti" },
+          { t: "Etwa so groß wie die Mittellappen oder kleiner", weiter: 2, arten: ["Paratoxodera gigliotosi", "Paratoxodera marshallae", "Paratoxodera cornicollis", "Paratoxodera polyacantha"] },
+        ] },
+      { titel: "Mittellappen des 5. Hinterleibsrings", nurWenn: "Nur bei kleiner Verbreiterung.",
+        spalten: [
+          { t: "Am Ende sehr breit; Lappen an Bauch und Halsschild stark entwickelt", art: "Paratoxodera gigliotosi" },
+          { t: "Schmal", weiter: 3, arten: ["Paratoxodera marshallae", "Paratoxodera cornicollis", "Paratoxodera polyacantha"] },
+        ] },
+      { titel: "Hinterrand der Schenkellappen (Mittel- und Hinterbeine)", nurWenn: "Nur bei schmalem Lappen am 5. Ring.",
+        spalten: [
+          { t: "Nur leicht gewellt", art: "Paratoxodera marshallae" },
+          { t: "Ebenso eingekerbt wie der Vorderrand", weiter: 4, arten: ["Paratoxodera cornicollis", "Paratoxodera polyacantha"] },
+        ] },
+      { titel: "Lappen auf der Mitte des Halsschilds", nurWenn: "Nur bei eingekerbten Schenkellappen.",
+        spalten: [
+          { t: "Nach vorn gerichtet, der zweite verkleinert oder fehlend; Vorderschiene innen mit etwa 30 Dornen", art: "Paratoxodera cornicollis" },
+          { t: "An der Basis breit, in kleine Spitzen auslaufend; Vorderschiene innen oft mit mehr als 40 Dornen", art: "Paratoxodera polyacantha" },
+        ] },
+    ],
+    fehlt: [{ art: "Paratoxodera borneana", t: "Laut Roy (2009) keine eigene Art, sondern nur eine Form von P. cornicollis: Auf dem Halsschild ist nur noch der vordere Lappen vorhanden. Führt im Schlüssel daher zu P. cornicollis.", q: "Roy 2009 (Link unten)" }],
+  },
+
+  Pseudocreobotra: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }, { t: "Schorn, S. (2009): Blütenmantiden – Gattungen Pseudocreobotra & Creobroter. Natur und Tier Verlag (Vergleich wahlbergii/ocellata)", u: DBX + "AEPvozXVGjmu6A99dNSZ8J0/Schorn%202009%20-%20Bl%C3%BCtenmantiden%20-%20Gattungen%20Pseudocreobotra%20%26%20Creobroter.pdf" + RK }],
+    arten: { "Pseudocreobotra ocellata": { farbe: "#2e7d32" }, "Pseudocreobotra amarae": { farbe: "#c2185b" } },
+    merkmale: [
+      { titel: "Form des Halsschilds (von oben)", wo: "Breite des Halsschilds an der breitesten Stelle mit seiner Länge vergleichen.",
+        spalten: [
+          { t: "Fast so breit wie lang", art: "Pseudocreobotra ocellata" },
+          { t: "Fast breiter als lang", art: "Pseudocreobotra amarae" },
+        ] },
+    ],
+    fehlt: [{ art: "Pseudocreobotra wahlbergi", t: "Laut Schorn (2009) ist das Halsschild von P. wahlbergi breiter als lang (bei P. ocellata länger als breit), die Fangbeine sind kräftiger bedornt. Achtung: Das passt auch zu P. amarae – die Abgrenzung wahlbergi/amarae ist in der Literatur nicht geklärt. Verbreitung: südliches und östliches Afrika (ocellata: West- und Zentralafrika).", q: "Schorn 2009; Verbreitung nach Fundorten" }],
+    hinweis: "Der alte Schlüssel trennt nur über die Halsschild-Proportionen, und die Quellen widersprechen sich dabei teilweise. Für eine sichere Bestimmung reicht er nicht.",
+  },
+
+  Popa: {
+    kurzquelle: "Paulian 1957",
+    quellen: [{ t: "Paulian, R. (1957): Faune de Madagascar V. Insectes Mantodea (Tableau des espèces de Popa)", u: DBX + "AFcmGflmpuKbxL8V3-PUf2A/Paulian%201957%20-%20Faune%20de%20Madagascar.%20V%20-%20Insectes%20Mantodea.pdf" + RK }],
+    arten: { "Popa spurca": { farbe: "#795548" }, "Popa batesi": { farbe: "#4e342e" } },
+    merkmale: [
+      { titel: "Länge der Vorderhüften im Vergleich zum Halsschild", wo: "Fangbeine angelegt: Wie weit reicht die Hüfte nach hinten?",
+        spalten: [
+          { t: "Kleinere Art; Vorderhüften reichen beim Männchen fast, beim Weibchen ganz bis zum Hinterende des Halsschilds", art: "Popa spurca" },
+          { t: "Größere Art; Vorderhüften erreichen auch beim Weibchen das Hinterende des Halsschilds bei weitem nicht", art: "Popa batesi" },
+        ] },
+    ],
+    fehlt: [{ art: "Popa gracilis", t: "Keine vergleichende Beschreibung gefunden. Der Name („gracilis“ = schlank) deutet auf eine schlankere Form hin – das ist nur eine Vermutung. Die Gattung wurde von Lombardo (1995, Tropical Zoology) überarbeitet; diese Arbeit liegt nicht vor.", q: "eigene Suche in der Sammlung und im Internet" }],
+  },
+
+  Zoolea: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Zoolea lobipes": { farbe: "#2e7d32" }, "Zoolea major": { farbe: "#1b5e20" }, "Zoolea orba": { farbe: "#558b2f" }, "Zoolea minor": { farbe: "#7cb342" } },
+    merkmale: [
+      { titel: "Lappen an den Bauchsegmenten", wo: "Hinterleib von unten bzw. von der Seite: an den Segmenten sitzen blattartige Mittel- und Seitenlappen.",
+        spalten: [
+          { t: "Spitz", art: "Zoolea lobipes" },
+          { t: "Gerundet", weiter: 2, arten: ["Zoolea major", "Zoolea orba", "Zoolea minor"] },
+        ] },
+      { titel: "Halsschild im Vergleich zu den Vorderhüften", nurWenn: "Nur bei gerundeten Lappen.",
+        spalten: [
+          { t: "Mindestens doppelt so lang wie die Vorderhüften", weiter: 3, arten: ["Zoolea major", "Zoolea orba"] },
+          { t: "Weniger als doppelt so lang", art: "Zoolea minor" },
+        ] },
+      { titel: "Fortsätze der Punktaugenhöcker (Stirnhorn)", nurWenn: "Nur bei langem Halsschild.",
+        spalten: [
+          { t: "So lang wie die Vorderhüften", art: "Zoolea major" },
+          { t: "Kürzer als die Vorderhüften", art: "Zoolea orba" },
+        ] },
+    ],
+    fehlt: [{ art: "Zoolea descampsi", t: "2009 von Roy & Ehrmann aus Brasilien beschrieben. Die Unterschiede stehen in deren Revision der Gattung (Revue française d’Entomologie 31: 1–22), die nicht in der Sammlung liegt und online nicht frei verfügbar war.", q: "MNHN-Typenkatalog, Mantodea Species File" }],
+    hinweis: "Alter Schlüssel von Giglio-Tos (1927); die moderne Revision von Roy & Ehrmann (2009) lag nicht vor.",
+  },
+
+  Omomantis: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Omomantis zebrata": { farbe: "#c2185b" }, "Omomantis tigrina": { farbe: "#f9a825" } },
+    merkmale: [
+      { titel: "Vorderrandfeld der Hinterflügel", wo: "Hinterflügel beim Abflug oder in Drohhaltung: der vordere Randstreifen.",
+        spalten: [
+          { t: "Leuchtend rosa", art: "Omomantis zebrata" },
+          { t: "Gelb", art: "Omomantis tigrina" },
+        ] },
+    ],
+    fehlt: [{ art: "Omomantis sigma", t: "Keine vergleichende Beschreibung gefunden. Bekannt aus Zentralafrika (Kongo, Zentralafrikanische Republik, Gabun), O. zebrata dagegen aus dem südlichen Afrika – der Fundort ist bisher der einzige Hinweis.", q: "Rehn 1949; Moulin et al. 2017 (Verbreitung)" }],
+  },
+
+  Taumantis: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }, { t: "Lombardo, F. (1990): Il genere Taumantis Giglio-Tos e descrizione di una sua nuova specie del Kenya. Animalia 17: 197–200", u: DBX + "AKOmFbKiZA2TnADnjh_FAkE/Lombardo%201991a%20-%20Il%20genere%20Taumantis%20Giglio-Tos%20e%20descrizione%20di%20una%20sua%20nuova%20specie%20del%20Kenya.pdf" + RK }],
+    arten: { "Taumantis sigiana": { farbe: "#558b2f" }, "Taumantis cephalotes": { farbe: "#33691e" } },
+    merkmale: [
+      { titel: "Zweiter Scheibendorn des Vorderschenkels", wo: "Lupe: Fangbein von innen; die Scheibendornen stehen in der Mitte nahe der Basis des Schenkels.",
+        spalten: [
+          { t: "Gelb mit schwarzer Spitze", art: "Taumantis sigiana" },
+          { t: "Ganz schwarz", art: "Taumantis cephalotes" },
+        ] },
+    ],
+    fehlt: [{ art: "Taumantis globiceps", t: "Lombardo hat das Typusmaterial untersucht und hält T. globiceps für keine echte Taumantis – sie gehöre in die Gattung Paracilnia. Name „globiceps“ = Kugelkopf. Bekannt aus dem südlichen Afrika (Südafrika, Malawi, Botswana, Sambia).", q: "Lombardo 1990 (Link unten)" }],
+    hinweis: "Lombardo (1990) beschreibt außerdem T. ehrmannii aus Kenia, leicht zu erkennen an einem glänzend schwarzen Fleck am hinteren Rand des Flügelmals; sie fehlt in der heutigen Artenliste.",
+  },
+
+  Pachymantis: {
+    kurzquelle: "Roy 2013",
+    quellen: [{ t: "Roy, R. (2013): Révision du genre Pachymantis Saussure, 1871 (Mantodea, Hymenopodidae). Bulletin de la Société entomologique de France 118(2): 145–154", u: DBX + "ADVpAn4ztn4Fg0OgApduaR4/Roy%202013c%20-%20R%C3%A9vision%20du%20genre%20Pachymantis%20Saussure%2C%201871%20%28Mantodea%2C%20Hymenopodidae%29.pdf" + RK }],
+    arten: { "Pachymantis bicingulata": { farbe: "#6d4c41" }, "Pachymantis piceifemur": { farbe: "#3e2723" }, "Pachymantis maculicoxa": { farbe: "#a1887f" } },
+    merkmale: [
+      { titel: "Färbung der Vorderhüften", wo: "Fangbein von unten bzw. von vorn.",
+        spalten: [
+          { t: "Basis ocker, dann großflächig schwarz; vordere Schenkelringe ocker", weiter: 2, arten: ["Pachymantis bicingulata", "Pachymantis piceifemur"] },
+          { t: "Ocker, unten mit zwei großen Flecken und schwarzer Spitze; Schenkelringe unten schwarz", art: "Pachymantis maculicoxa" },
+        ] },
+      { titel: "Unterseite der Vorderschenkel", nurWenn: "Nur bei großflächig schwarzer Hüfte.",
+        spalten: [
+          { t: "Ganz rötlich-ocker", art: "Pachymantis bicingulata" },
+          { t: "Braunschwarz, zumindest vorn", art: "Pachymantis piceifemur" },
+        ] },
+    ],
+    fehlt: [{ art: "Pachymantis dohertyi", t: "Laut Roy (2013) keine echte Pachymantis: Sie gehört in die eigene Gattung Triaenocorypha und hat drei Hörner auf dem Kopf – daran sofort zu erkennen.", q: "Roy 2013 (Link unten)" }],
+  },
+
+  Mantasoa: {
+    kurzquelle: "Mériguet 2005",
+    quellen: [{ t: "Mériguet, B. (2005): Mantasoa, nouveau genre de Mante endémique à Madagascar proche de Tarachomantis Brancsik (Dictyoptera, Mantidae)", u: DBX + "ADnTRQhROlM9xus6Java3KE/M%C3%A9riguet%202005%20%E2%88%92%20Mantasoa%2C%20nouveau%20genre%20de%20Mante%20end%C3%A9mique%20%C3%A0%20Madagascar%20proche%20de%20Tarachomantis%20Brancsik%20%28Dictyoptera%2C%20Mantidae%29%202.%20Version.pdf" + RK },
+      { t: "Mériguet, B. (2013): Madamantis, un nouveau sous-genre inclus dans le genre Tarachomantis Brancsik, 1893", u: DBX + "AMYgqxIqRmjUFgVOH_W9ZLY/M%C3%A9riguet%202013%20-%20Madamantis%2C%20un%20nouveau%20sous-genre%20inclus%20dans%20le%20genre%20Tarachomantis%20Brancsik%2C%201893%20%28Dictyoptera%2C%20Mantidae%29.pdf" + RK }],
+    arten: { "Mantasoa lebbei": { farbe: "#a1887f" }, "Mantasoa macula": { farbe: "#3e2723" } },
+    merkmale: [
+      { titel: "Fleck an der Klauenfurche der Vorderbeine", wo: "Fangbein von innen: die Furche, in die die Schienenklaue einschlägt.",
+        spalten: [
+          { t: "Schwach ausgeprägt und rötlich", art: "Mantasoa lebbei" },
+          { t: "Sehr deutlich und schwarz", art: "Mantasoa macula" },
+        ] },
+    ],
+    fehlt: [{ art: "Mantasoa maculata", t: "Vermutlich keine eigene Art: Laut Mériguet (2013) ist „maculata“ ein Schreibfehler von Beier (1935) für M. macula, der in Artenlisten übernommen wurde. Führt daher zu M. macula.", q: "Mériguet 2013 (Link unten)" }],
+  },
+
+  Sinaiella: {
+    kurzquelle: "Kaltenbach 1982",
+    quellen: [{ t: "Kaltenbach, A. (1982): Insects of Saudi Arabia – Mantodea. Fauna of Saudi Arabia 4", u: DBX + "AA54aNpdijWk34Dzjqs-NWM/Kaltenbach%201982%20-%20Insects%20of%20Saudi%20Arabia%20-%20Mantodea.pdf" + RK }],
+    arten: { "Sinaiella nebulosa": { farbe: "#8d6e63" }, "Sinaiella sabulosa": { farbe: "#d7ccc8" } },
+    merkmale: [
+      { titel: "Zeichnung und Endglied der Cerci", wo: "Lupe für die Cerci (Fäden am Hinterleibsende).",
+        spalten: [
+          { t: "Vorderschenkel meist mit dunkler Querbinde und Basalfleck, Flügel mit unscharfen braunen Flecken oder ohne Muster; Cercus-Endglied flach ausgerandet", art: "Sinaiella nebulosa" },
+          { t: "Ganz strohfarben, ohne Zeichnung, Flügel ohne dunkle Flecken; Cercus-Endglied gerundet", art: "Sinaiella sabulosa" },
+        ] },
+    ],
+    fehlt: [{ art: "Sinaiella raggei", t: "Nur über die Genitalien der Männchen sicher zu trennen: der hintere Lappen der Phalloid-Apophyse trägt nur einen Dorn (bei den anderen Arten zweispitzig). Typusfundort Saudi-Arabien. 2025 wurde außerdem S. azadi (Iran, Armenien) beschrieben.", q: "Kolnegari et al. 2025, Zootaxa 5594 (Schlüssel der Gattung)" }],
+  },
+
+  Microthespis: {
+    kurzquelle: "Soomro et al. 2002",
+    quellen: [{ t: "Soomro, N. M. et al. (2002): A female of Microthespis evansi Uvarov 1931 (Rivetinae, Mantodea) from Sindh, Pakistan. Proc. Pakistan Congr. Zool. 22 (mit Schlüssel der drei Arten)", u: DBX + "AGR_y-G5G3gZQpGeWQbltu0/Soomro%20et%20al.%202002b%20-%20A%20female%20of%20Microthespis%20evansi%20Uvarov%201931%20%28Rivetinae%2C%20Mantodea%29%20from%20Sindh%2C%20Pakistan.pdf" + RK }],
+    arten: { "Microthespis evansi": { farbe: "#bcaaa4" }, "Microthespis dmitriewi": { farbe: "#3e2723" }, "Microthespis sindhensis": { farbe: "#6d4c41" } },
+    merkmale: [
+      { titel: "Zeichnung der Vorderbrust (zwischen den Vorderhüften, von unten)", wo: "Tier umdrehen: Unterseite des Halsschilds.",
+        spalten: [
+          { t: "Ohne schwarze Zeichnung", art: "Microthespis evansi" },
+          { t: "Schwarzes Querband vor der Mitte und großer länglicher Fleck vor dem Hinterrand", art: "Microthespis dmitriewi" },
+          { t: "Herzförmiger schwarzer Fleck", art: "Microthespis sindhensis" },
+        ] },
+    ],
+  },
+
+  Euthyphleps: {
+    kurzquelle: "Giglio-Tos 1927 / Lombardo 1992",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }, { t: "Lombardo, F. (1992): Una nuova specie di Euthyphleps dell’Afghanistan (Insecta, Mantodea, Toxoderinae). Animalia 19: 61–65", u: DBX + "AJNMr-KVXL6y5VhY1r35FtQ/Lombardo%201992a%20-%20Una%20nuova%20specie%20di%20Euthyphleps%20dell%27Afghanistan%20%28Insecta%2C%20Mantodea%2C%20Toxoderinae%29.pdf" + RK }],
+    arten: { "Euthyphleps tectiformis": { farbe: "#6d4c41" }, "Euthyphleps rectivenis": { farbe: "#a1887f" }, "Euthyphleps curtipes": { farbe: "#3e2723" } },
+    merkmale: [
+      { titel: "Hinterrand des Halsschilds", wo: "Halsschild von der Seite: oben am Hinterrand.",
+        spalten: [
+          { t: "Mit einem Dorn (dazu Cercus-Spitze ohne Zähnchen)", art: "Euthyphleps tectiformis" },
+          { t: "Ohne Dorn", weiter: 2, arten: ["Euthyphleps rectivenis", "Euthyphleps curtipes"] },
+        ] },
+      { titel: "Oberseite der Mittel- und Hinterschenkel", nurWenn: "Nur ohne Dorn am Halsschild.",
+        spalten: [
+          { t: "Mit kleinem Lappen", art: "Euthyphleps rectivenis" },
+          { t: "Ohne Lappen", art: "Euthyphleps curtipes" },
+        ] },
+    ],
+    hinweis: "Merkmal 1 stammt aus der Beschreibung von Lombardo (1992), der für E. tectiformis genau diese Unterschiede zu allen anderen Arten nennt. Lombardo bezweifelt außerdem, dass E. curtipes richtig in diese Gattung gestellt ist.",
+  },
+
+  Promiopteryx: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Promiopteryx simplex": { farbe: "#c5e1a5" }, "Promiopteryx punctata": { farbe: "#455a64" }, "Promiopteryx granadensis": { farbe: "#8d6e63" }, "Promiopteryx fallax": { farbe: "#6d4c41" }, "Promiopteryx stigmatica": { farbe: "#3e2723" } },
+    merkmale: [
+      { titel: "Queräderchen zwischen den Schrägadern des Deckflügels", wo: "Lupe: Deckflügel gegen das Licht halten.",
+        spalten: [
+          { t: "Fein, am Ansatz nicht dunkler oder verdickt", weiter: 2, arten: ["Promiopteryx simplex", "Promiopteryx punctata"] },
+          { t: "Am Ansatz dunkler und verdickt", weiter: 3, arten: ["Promiopteryx granadensis", "Promiopteryx fallax", "Promiopteryx stigmatica"] },
+        ] },
+      { titel: "Deckflügel insgesamt", nurWenn: "Nur bei feinen Queräderchen.",
+        spalten: [
+          { t: "Glasklar, Längsadern einfarbig", art: "Promiopteryx simplex" },
+          { t: "Rauchig, Längsadern schwarz punktiert", art: "Promiopteryx punctata" },
+        ] },
+      { titel: "Flecken in den Zellen des Deckflügels", nurWenn: "Nur bei verdickten Queräderchen.",
+        spalten: [
+          { t: "Keine bräunlichen Flecken", art: "Promiopteryx granadensis" },
+          { t: "Bräunliche Flecken; Vorderrandfeld nicht dunkler als das Mittelfeld", art: "Promiopteryx fallax" },
+          { t: "Bräunliche Flecken; Vorderrandfeld rauchiger als das Mittelfeld", art: "Promiopteryx stigmatica" },
+        ] },
+    ],
+    hinweis: "Nur Männchen bekannt (Weibchen vermutlich flügellos). Den vollständigen Schlüssel einschließlich P. punctata habe ich in der Originaltabelle nachgelesen.",
+  },
+
+  Myrcinus: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Myrcinus tuberosus": { farbe: "#3e2723" }, "Myrcinus octispinus": { farbe: "#a1887f" } },
+    merkmale: [
+      { titel: "Dornen an der Außenkante der Vorderschiene zählen", wo: "Lupe nötig.",
+        spalten: [ { t: "11 Dornen", art: "Myrcinus tuberosus" }, { t: "8 Dornen", art: "Myrcinus octispinus" } ] },
+    ],
+    fehlt: [{ art: "Myrcinus aspera", t: "Laut Giglio-Tos zweifelhaft und nur aus der kurzen Beschreibung von Stål bekannt: schwärzlich, Scheitel mit 4 Höckern, Deck- und Hinterflügel stark verkürzt; Philippinen (die anderen Arten: Borneo, Singapur).", q: "Giglio-Tos 1927" }],
+  },
+
+  Chroicoptera: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Chroicoptera vidua": { farbe: "#3e2723" }, "Chroicoptera longa": { farbe: "#8d6e63" } },
+    merkmale: [
+      { titel: "Innendornen des Vorderschenkels", wo: "Fangbein von innen.",
+        spalten: [
+          { t: "Ganz schwarz; Deckflügel der Weibchen nur etwas länger als der Halsschild", art: "Chroicoptera vidua" },
+          { t: "Nur an der Spitze schwarz; Deckflügel der Weibchen viel länger als der Halsschild", art: "Chroicoptera longa" },
+        ] },
+    ],
+    fehlt: [{ art: "Chroicoptera saussurei", t: "Bei Giglio-Tos (1927) noch als eigene Gattung Alphamantis geführt: „wie Chroicoptera, aber Halsschild weniger rautenförmig und schmaler, Seitenlappen gerundet; Deckflügel schmaler, Vorderrandfeld undurchsichtig“. Südliches Afrika.", q: "Giglio-Tos 1927 (Alphamantis saussurei)" }],
+  },
+
+  Eomantis: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Eomantis guttatipennis": { farbe: "#558b2f" }, "Eomantis iridipennis": { farbe: "#26a69a" } },
+    merkmale: [
+      { titel: "Dornen an der Außenkante der Vorderschiene zählen", wo: "Lupe nötig.",
+        spalten: [ { t: "9 Dornen (etwas größere Art)", art: "Eomantis guttatipennis" }, { t: "8 Dornen (kleinere Art)", art: "Eomantis iridipennis" } ] },
+    ],
+    fehlt: [{ art: "Eomantis yunnanensis", t: "1993 von Wang aus Yunnan (China) beschrieben, auch aus Thailand gemeldet. Keine vergleichende Beschreibung zugänglich; Fotos und Genitalabbildungen finden sich in einer thailändischen Abschlussarbeit (Mantodea Thailands, in der Sammlung).", q: "eigene Suche in der Sammlung" }],
+  },
+
+  Heterochaetula: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Heterochaetula tricolor": { farbe: "#6d4c41" }, "Heterochaetula fissispinis": { farbe: "#3e2723" } },
+    merkmale: [
+      { titel: "Augendorn und Endlappen der Laufbeine", wo: "Oben am Auge sitzt ein Dorn; dazu die Lappen am Ende der Mittel- und Hinterschenkel.",
+        spalten: [
+          { t: "Augendorn einfach; Endlappen der Schenkel kurz", art: "Heterochaetula tricolor" },
+          { t: "Augendorn zweispitzig; Endlappen verlängert und spitz", art: "Heterochaetula fissispinis" },
+        ] },
+    ],
+    fehlt: [{ art: "Heterochaetula straminea", t: "Keine vergleichende Beschreibung gefunden. Der Name („straminea“ = strohfarben) deutet auf eine helle, strohfarbene Färbung hin – nur eine Vermutung. Gemeldet aus China, Sri Lanka und Thailand.", q: "eigene Suche in der Sammlung" }],
+  },
+
+  Oligomantis: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Oligomantis orientalis": { farbe: "#558b2f" }, "Oligomantis mentaweiana": { farbe: "#8d6e63" } },
+    merkmale: [
+      { titel: "Seitenränder des Halsschilds", wo: "Lupe: Halsschild von oben.",
+        spalten: [ { t: "Mit schwarzen Höckerchen", art: "Oligomantis orientalis" }, { t: "Fast glatt", art: "Oligomantis mentaweiana" } ] },
+    ],
+    fehlt: [{ art: "Oligomantis hyalina", t: "Keine vergleichende Beschreibung gefunden (Werner 1916). Der Name („hyalina“ = glasklar) deutet auf durchsichtige Flügel hin – nur eine Vermutung.", q: "eigene Suche in der Sammlung" }],
+  },
+
+  Bantiella: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Bantiella trinitatis": { farbe: "#a1887f" }, "Bantiella pallida": { farbe: "#d7ccc8" }, "Bantiella fusca": { farbe: "#3e2723" }, "Bantiella columbina": { farbe: "#8d6e63" } },
+    merkmale: [
+      { titel: "Farbe der Vorderschenkel", wo: "Fangbein von außen.",
+        spalten: [
+          { t: "Gelbbraun", weiter: 2, arten: ["Bantiella trinitatis", "Bantiella pallida"] },
+          { t: "Mehr oder weniger schwärzlich", weiter: 3, arten: ["Bantiella fusca", "Bantiella columbina"] },
+        ] },
+      { titel: "Spitze der Hinterfüße", nurWenn: "Nur bei gelbbraunen Vorderschenkeln.",
+        spalten: [ { t: "Schwärzlich", art: "Bantiella trinitatis" }, { t: "Gelbbraun", art: "Bantiella pallida" } ] },
+      { titel: "Deckflügel der Männchen", nurWenn: "Nur bei schwärzlichen Vorderschenkeln.",
+        spalten: [ { t: "Rauchig", art: "Bantiella fusca" }, { t: "Gräulich gelbbraun", art: "Bantiella columbina" } ] },
+    ],
+    fehlt: [{ art: "Bantiella hyalina", t: "Erst 1942 von Beier beschrieben, nach dem Schlüssel. Keine vergleichende Beschreibung gefunden; der Name („hyalina“ = glasklar) deutet auf durchsichtige Deckflügel hin – nur eine Vermutung.", q: "eigene Suche in der Sammlung" }],
+  },
+
+  Photinella: {
+    kurzquelle: "Giglio-Tos 1927",
+    quellen: [{ t: "Giglio-Tos, E. (1927): Das Tierreich 50. Orthoptera Mantidae. Berlin & Leipzig: de Gruyter", u: GT }],
+    arten: { "Photinella biramosa": { farbe: "#a1887f" }, "Photinella magna": { farbe: "#3e2723" }, "Photinella media": { farbe: "#6d4c41" }, "Photinella brevis": { farbe: "#8d6e63" } },
+    merkmale: [
+      { titel: "Innenseite der Vorderschenkel", wo: "Fangbein von innen.",
+        spalten: [ { t: "Ohne schwarze Punkte", art: "Photinella biramosa" }, { t: "Mit schwarzen Punkten", weiter: 2, arten: ["Photinella magna", "Photinella media", "Photinella brevis"] } ] },
+      { titel: "Äste der Faltader im Analfeld des Deckflügels", nurWenn: "Nur mit schwarzen Punkten.", wo: "Lupe: hinterster Teil des Deckflügels.",
+        spalten: [ { t: "♂ 3 Äste, ♀ 2 Äste", weiter: 3, arten: ["Photinella magna", "Photinella media"] }, { t: "♂ 2 Äste, ♀ 1 Ast", art: "Photinella brevis" } ] },
+      { titel: "Hinterer gegen vorderen Teil des Halsschilds (Männchen)", nurWenn: "Nur bei 3 bzw. 2 Ästen.",
+        spalten: [ { t: "Hinterer Teil mehr als doppelt so lang wie der vordere", art: "Photinella magna" }, { t: "Hinterer Teil kaum doppelt so lang (♀: kürzer)", art: "Photinella media" } ] },
+    ],
+    fehlt: [{ art: "Photinella silvai", t: "1968 von Piza als Photiomantis silvai aus Paraíba (Brasilien) beschrieben. Keine vergleichende Beschreibung zugänglich.", q: "Typenliste in einer Doktorarbeit über Photininae (in der Sammlung)" }],
+  },
 };

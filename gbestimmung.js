@@ -38,7 +38,10 @@
     const g = GB[gattung]; if (!g) return "";
     const hier = opt.art || "";
     const uid = "gb" + Math.random().toString(36).slice(2, 8);
-    const n = Object.keys(g.arten).length, m = g.merkmale.length;
+    const fehlt = g.fehlt || [];
+    const n = Object.keys(g.arten).length + fehlt.length, m = g.merkmale.length;
+    const hierFehlt = fehlt.find((f) => f.art === hier);
+    const fehltHtml = fehlt.length ? `<div class="gb-fehlt"><b>⚠️ ${fehlt.length === 1 ? "Diese Art fehlt" : "Diese Arten fehlen"} im Schlüssel:</b>${fehlt.map((f) => `<div class="gb-fehlt-art${f.art === hier ? " hier" : ""}"><i>${esc(f.art)}</i>${f.art === hier ? " ✓ diese Art" : ""}<br><span>Möglicher Unterschied: ${esc(f.t)}</span>${f.q ? `<small>Quelle: ${esc(f.q)}</small>` : ""}</div>`).join("")}<p>Wer ein Tier über diesen Schlüssel bestimmt, sollte diese Art${fehlt.length > 1 ? "en" : ""} immer mitprüfen.</p></div>` : "";
     const merkmale = g.merkmale.map((M, i) => `
       <section class="gb-m" id="${uid}-${i + 1}">
         <h4><span class="gb-nr">${i + 1}</span> ${esc(M.titel)}</h4>
@@ -57,9 +60,11 @@
         }).join("")}</div>
       </section>`).join("");
     return `<div class="gb" id="${uid}">
-      <div class="gb-kopf"><b>🔎 Arten unterscheiden: <i>${esc(g.name)}</i></b> · ${n} Arten · ${m === 1 ? "1 Merkmal genügt" : m + " Merkmale genügen"}${hier ? ` · <span class="gb-hier-hinweis">✓ markiert: <i>${esc(kurz(g, hier))}</i></span>` : ""}</div>
+      <div class="gb-kopf"><b>🔎 Arten unterscheiden: <i>${esc(g.name)}</i></b> · ${n} Arten · ${m === 1 ? "1 Merkmal genügt" : m + " Merkmale genügen"}${hier && !hierFehlt ? ` · <span class="gb-hier-hinweis">✓ markiert: <i>${esc(kurz(g, hier))}</i></span>` : ""}</div>
       <p class="gb-ki">⚠️ <b>Mit KI erstellt.</b> Diese Kurzbestimmung wurde von einer KI aus der Fachliteratur abgeleitet und kann Fehler enthalten. Für eine verbindliche Bestimmung bitte immer die Originalarbeit verwenden (Link unten).</p>
+      ${hierFehlt ? fehltHtml : ""}
       ${merkmale}
+      ${hierFehlt ? "" : fehltHtml}
       ${g.hinweis ? `<p class="gb-hinweis">ℹ️ ${esc(g.hinweis)}</p>` : ""}
       <div class="gb-quelle"><b>📄 Originalarbeit – bitte für die verbindliche Bestimmung verwenden:</b>${g.quellen.map((q) => q.u
         ? `<a class="erst gb-pdf" href="${esc(q.u.replace(/([?&])dl=0/, "$1raw=1"))}" target="_blank" rel="noopener" title="${esc(q.t)}"><span class="pdf">PDF</span><span class="et"><b>Originalarbeit öffnen</b><span>${esc(q.t)}</span></span><span class="go">↗</span></a>`
