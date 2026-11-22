@@ -1033,7 +1033,7 @@
         <div id="d-assigned"></div>
       </section>
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
-      ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><h3 class="d-h">Arten der Gattung <i>${esc(s.g)}</i> unterscheiden</h3>${window.MANTODEA_GBK.html(s.g, { art: s.n })}</section>` : ""}
+      ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><button type="button" class="gb-auf" data-gbk="${esc(s.g)}" data-gbart="${esc(s.n)}" aria-expanded="false">🔎 Bestimmungsschlüssel: Arten der Gattung <i>${esc(s.g)}</i> unterscheiden <span class="gb-pfeil">▾</span></button><div class="gb-platz" hidden></div></section>` : ""}
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
         <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button></p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
@@ -1050,7 +1050,6 @@
     fillLiterature(s);
     fillKeyLit(s);
     fillSyn(s);
-    if (window.MANTODEA_GBK) setTimeout(() => window.MANTODEA_GBK.einpassen($("d-body")), 50);
     document.dispatchEvent(new CustomEvent("mantodea:detail", { detail: String(s.k) }));
   }
   $("d-body").addEventListener("click", (e) => {
@@ -1086,6 +1085,15 @@
     $("count").scrollIntoView({ behavior: "smooth" });
   });
   $("detail").addEventListener("click", (e) => { if (e.target === $("detail")) $("detail").close(); });
+  // Bestimmungsschlüssel im Steckbrief erst auf Knopfdruck aufklappen
+  $("d-body").addEventListener("click", (e) => {
+    const b = e.target.closest("button.gb-auf");
+    if (!b) return;
+    const platz = b.nextElementSibling, auf = b.getAttribute("aria-expanded") !== "true";
+    if (auf && !platz.innerHTML) platz.innerHTML = window.MANTODEA_GBK.html(b.dataset.gbk, { art: b.dataset.gbart });
+    platz.hidden = !auf; b.setAttribute("aria-expanded", String(auf));
+    if (auf) { window.MANTODEA_GBK.einpassen(platz); b.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  });
   // Ergebnis-Knopf der Kurz-Bestimmung: Art direkt öffnen
   document.addEventListener("click", (e) => {
     const a = e.target.closest("a.gb-erg[data-k]");

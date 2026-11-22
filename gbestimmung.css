@@ -43,3 +43,7 @@
   .gb-erg { font-size: 13px; padding: 5px 4px; }
   .gb-weiter { font-size: 12.5px; }
 }
+.gb-auf { width: 100%; display: flex; align-items: center; gap: 8px; text-align: left; background: #2f6b3a; color: #fff; border: 0; border-radius: 12px; padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; }
+.gb-auf:hover { filter: brightness(1.1); }
+.gb-auf .gb-pfeil { margin-left: auto; transition: transform .2s; }
+.gb-auf[aria-expanded="true"] .gb-pfeil { transform: rotate(180deg); }
