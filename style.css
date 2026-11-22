@@ -1096,3 +1096,8 @@ details.ung-p li, .ung-art li { margin: 3px 0; font-size: .9rem; overflow-wrap: 
 /* Schutz gegen Überlauf im Steckbrief: lange Namen, Zitate und Links umbrechen statt über den Rand zu laufen */
 #d-body { overflow-wrap: anywhere; }
 #d-body .d-card, #d-body dd, #d-body li { min-width: 0; }
+
+/* Bildschirmschoner-Knopf: Symbol Bildschirm mit Abspielen */
+.ss-btn { display: inline-flex; align-items: center; gap: 8px; }
+.ss-btn .ss-ico { flex: none; display: block; }
+@media (max-width: 700px) { .title-row .ss-btn .ss-ico { width: 22px; height: 22px; } }
