@@ -469,3 +469,19 @@ if (process.env.DIAG4) { const g = process.env.DIAG4; const t = gtSpeciesTree[g]
   console.log("Wege zur Art:", st);
 }
 if (process.env.DIAG5) { const g = process.env.DIAG5; const set = new Set(GEN[g]); for (const mt of modTrees[g] || []) { const t = prune(mt.t, set); console.log("mod", mt.q, t ? leaves(t).size : 0); } for (const i of altFor[g] || []) { const t = prune(altTrees[i], set); console.log("alt", i, ALT.k[i].t, t ? leaves(t).size : 0); } if (gtSpeciesTree[g]) { const t = prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null)); console.log("gt", t ? leaves(t).size : 0); } }
+// ---------- DIAG6: Gattungen, in denen EIN Quellschlüssel alle lebenden Arten rein über Merkmale trennt
+if (process.env.DIAG6) {
+  const out = [];
+  const bad = (n) => { if (isLeaf(n)) return n.taxa.length !== 1; return n.l.some((l) => /Fundort|Verbreitung|Genital|Präparat|Mikroskop|messen|mm\b/i.test(l.t) || l.w || bad(l.n)); };
+  const depth = (n) => (isLeaf(n) ? 0 : 1 + Math.max(...n.l.map((l) => depth(l.n))));
+  for (const [g, ks] of Object.entries(GEN)) {
+    if (ks.length < 2) continue;
+    const set = new Set(ks); const cands = [];
+    for (const mt of modTrees[g] || []) cands.push(["mod", mt.q, prune(mt.t, set)]);
+    for (const i of altFor[g] || []) cands.push(["alt", "alt" + i, prune(altTrees[i], set)]);
+    if (gtSpeciesTree[g]) cands.push(["gt", "gt", prune(gtSpeciesTree[g], set, (id) => (id.startsWith("N:") ? speciesKey(id.slice(2)) : null))]);
+    for (const [typ, q, t] of cands) { if (!t || isLeaf(t)) continue; if (leaves(t).size === ks.length && !bad(t)) { out.push({ g, n: ks.length, typ, q, d: depth(t) }); break; } }
+  }
+  fs.writeFileSync(process.env.DIAG6, JSON.stringify(out, null, 0));
+  console.log("Gattungen 100 %:", out.length);
+}
