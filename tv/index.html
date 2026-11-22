@@ -24,6 +24,8 @@
 <div id="unten" style="display:none"><i id="name"></i> <span id="auth"></span><small id="credit"></small></div>
 <script src="../data/species.js"></script>
 <script src="../data/remote.js"></script>
+<script src="../data/netzfotos.js"></script>
+<script src="../data/unfrei.js"></script>
 <script>
 // Bewusst sehr einfacher, alter JavaScript-Stil (ES5): läuft auch in den Browsern älterer Fernseher.
 (function () {
@@ -32,8 +34,20 @@
   var liste = [], i, s, r;
   for (i = 0; i < M.species.length; i++) {
     s = M.species[i]; r = R[s.k];
-    if (s.x || !s.p || !r || !r.f) continue;
-    liste.push({ n: s.n, a: s.a || "", u: r.f, by: s.p.by || "", l: LIZ[s.p.l] || s.p.l || "", q: s.p.src || "iNaturalist", w: (s.p.front ? 3 : 1) + Math.random() * 3 });
+    // Fotos aus dem Netz (frei lizenziert und ©), auch für Arten ohne eigenes Foto
+    var nz = ((window.MANTODEA_NETZ || {}).fotos || {})[s.k] || [], uf = (window.MANTODEA_UNFREI || {})[s.k] || [], m;
+    var ufAn = true; try { ufAn = localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) {}
+    for (m = 0; m < nz.length; m++) {
+      if (!nz[m].u && !nz[m].big) continue;
+      if (!nz[m].frei && !ufAn) continue;
+      liste.push({ n: s.n, a: s.a || "", u: (nz[m].u || "").replace(/\/full\/\^?\d+,\//, "/full/^1600,/") || nz[m].big, by: (nz[m].frei ? "" : "© ") + (nz[m].by || ""), l: nz[m].frei ? nz[m].l || "" : "alle Rechte vorbehalten", q: nz[m].src || "", w: Math.random() * 2 });
+    }
+    if (ufAn) for (m = 0; m < uf.length; m++) {
+      if (!uf[m].big && !uf[m].u) continue;
+      liste.push({ n: s.n, a: s.a || "", u: uf[m].big || uf[m].u, by: "© " + (uf[m].by || ""), l: "alle Rechte vorbehalten", q: uf[m].src || "iNaturalist", w: Math.random() * 2 });
+    }
+    if (!s.p || !r) continue;
+    if (r.f) liste.push({ n: s.n, a: s.a || "", u: r.f, by: s.p.by || "", l: LIZ[s.p.l] || s.p.l || "", q: s.p.src || "iNaturalist", w: (s.p.front ? 3 : 1) + Math.random() * 3 });
     // dazu alle Galeriefotos der Art (möglichst viele Bilder)
     var g = r.g || [], j;
     for (j = 0; j < g.length; j++) {

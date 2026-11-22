@@ -10,8 +10,16 @@
   const LIC = { "cc0": "CC0", "pd": "Public Domain", "cc-by": "CC BY", "cc-by-sa": "CC BY-SA", "cc-by-nd": "CC BY-ND", "cc-by-nc": "CC BY-NC", "cc-by-nc-sa": "CC BY-NC-SA", "cc-by-nc-nd": "CC BY-NC-ND" };
   const SHOW = 8000, MAX_MS = 60 * 60 * 1000;
   // schöne Auswahl zuerst: adulte Weibchen und häufig beobachtete Arten
-  const pool = UI.DATA.filter((s) => s.p && s.p.b != null && !s.x);
-  const weight = (s) => (s.p.front ? 4 : 1) + Math.min(4, Math.log10(1 + (s.io || 0)));
+  // alle Bilder: Titelbilder, Galerien, Fotos aus dem Netz (frei und – wenn nicht ausgeblendet – ©), auch fossile Arten
+  const RM = window.MANTODEA_REMOTE || {};
+  const hasTitle = (s) => !!(s.p && s.p.b != null);
+  const NETZ = {}, UNFREI = {};
+  for (const [k, arr] of Object.entries((window.MANTODEA_NETZ || {}).fotos || {})) for (const x of arr) ((x.frei ? NETZ : UNFREI)[k] = (x.frei ? NETZ : UNFREI)[k] || []).push(x);
+  for (const [k, arr] of Object.entries(window.MANTODEA_UNFREI || {})) for (const x of arr) (UNFREI[k] = UNFREI[k] || []).push(x);
+  const unfreiAn = () => { try { return localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) { return true; } };
+  const groesser = (u) => (u || "").replace(/\/full\/\^?\d+,\//, "/full/^1600,/");
+  const pool = UI.DATA.filter((s) => hasTitle(s) || ((RM[s.k] || {}).g || []).length || NETZ[s.k] || UNFREI[s.k]);
+  const weight = (s) => (s.p && s.p.front ? 4 : 1) + Math.min(4, Math.log10(1 + (s.io || 0)));
   let order = [], pos = -1, timer = null, cur = 0, running = false, paused = false, endTimer = null, lock = null;
   // ---------- Einstellungen: welche Fotos (gespeichert im Browser)
   const F0 = { cont: "", land: "", fam: "", gen: "", abc: "", front: false, order: "zufall", speed: 8 };
@@ -19,14 +27,15 @@
   try { F = { ...F0, ...JSON.parse(localStorage.getItem("mantodea-ss") || "{}") }; } catch (e) { /* egal */ }
   const coll = new Intl.Collator("de");
   const match = (s, f) => (!f.cont || (s.c || []).includes(f.cont)) && (!f.land || (s.ct || []).includes(f.land)) &&
-    (!f.fam || s.f === f.fam) && (!f.gen || s.g === f.gen) && (!f.abc || s.n[0].toUpperCase() === f.abc) && (!f.front || s.p.front);
+    (!f.fam || s.f === f.fam) && (!f.gen || s.g === f.gen) && (!f.abc || s.n[0].toUpperCase() === f.abc) && (!f.front || !!(s.p && s.p.front));
   // Möglichst viele Bilder: Titelbild jeder Art und – wo große Fassungen verfügbar sind (GitHub-Seite) – alle Galeriefotos
-  const RM = window.MANTODEA_REMOTE || {};
   function itemsOf(s) {
-    const out = [{ s, title: true }];
+    const out = hasTitle(s) ? [{ s, title: true }] : [];
     if (F.front) return out;                       // "nur adulte Weibchen": nur die ausgewählten Titelbilder
-    const g = (RM[s.k] || {}).g || [];
-    for (const x of g) if (x && x[0] && x[4] !== s.p.ref) out.push({ s, url: x[0], by: x[1], l: x[2], q: x[3], ref: x[4] });
+    const g = (RM[s.k] || {}).g || [], tref = s.p && s.p.ref;
+    for (const x of g) if (x && x[0] && x[4] !== tref) out.push({ s, url: x[0], by: x[1], l: x[2], q: x[3], ref: x[4] });
+    for (const x of NETZ[s.k] || []) if (x.u || x.big) out.push({ s, url: groesser(x.u) || x.big, by: x.by, l: x.l, q: x.src || "Quelle", ref: x.ref });
+    if (unfreiAn()) for (const x of UNFREI[s.k] || []) if (x.u || x.big) out.push({ s, url: x.big || x.u, by: x.by, l: "©", q: x.src || "iNaturalist", ref: x.ref, uf: true });
     return out;
   }
   const countItems = (list) => list.reduce((n, s) => n + itemsOf(s).length, 0);
@@ -103,9 +112,11 @@
       L.querySelector(".ss-fg").style.backgroundImage = `url("${src}")`;
       L.classList.remove("zoom"); void L.offsetWidth; L.classList.add("zoom");
       L.classList.add("on"); layers[1 - cur].classList.remove("on");
-      const land = (UI.ortOf && UI.ortOf(it.ref || s.p.ref)) || place(s);
+      const land = (UI.ortOf && UI.ortOf(it.ref || (s.p && s.p.ref))) || place(s);
       document.getElementById("ss-name").innerHTML = `<i>${UI.esc(s.n)}</i>${s.de || s.en ? ` · ${UI.esc(s.de || s.en)}` : ""}${land ? `<span class="ss-land">📍 ${UI.esc(land)}</span>` : ""}`;
       const c = it.url ? { by: it.by, l: it.l, src: it.q } : s.p;
+      if (it.uf) { document.getElementById("ss-credit").textContent = `© ${c.by || "Fotograf"} · alle Rechte vorbehalten · ${c.src}`; }
+      else
       document.getElementById("ss-credit").textContent = `Foto: ${c.by || "siehe Quelle"} · ${LIC[c.l] || c.l} · ${c.src || "iNaturalist"}`;
       // nächstes Foto schon vorladen
       const nx = order[(pos + 1) % order.length]; (nx.url ? Promise.resolve(nx.url) : UI.bigSrc(nx.s)).then((u) => { if (u) { const p = new Image(); p.src = u; } }).catch(() => {});
