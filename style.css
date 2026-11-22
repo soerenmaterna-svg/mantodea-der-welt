@@ -1074,3 +1074,5 @@ html.bk-offen, html.bk-offen body { overflow: hidden; }
 #d-best .bk-gruppe:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
 .bk-wechsel { align-self: flex-start; font: inherit; font-size: .9rem; padding: 6px 12px; margin-top: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--accent, #3f7d3a); cursor: pointer; }
 .bk-wechsel:disabled { color: var(--muted); cursor: default; }
+.netz-belege { margin: 4px 0 10px; padding-left: 18px; font-size: .9rem; }
+.netz-belege li { margin: 3px 0; }

@@ -109,9 +109,17 @@
   const UF = (SA && window.MANTODEA_UNFREI) || {};
   // nicht frei lizenzierte Fotos (©) nur in der GitHub-Fassung; ein-/ausblendbar über den Filter "Bildlizenz"
   let ufStart = true; try { ufStart = localStorage.getItem("mantodea-unfrei") !== "0"; } catch (e) { /* egal */ }
-  const ufOf = (s) => (SA && !state.license && UF[s.k] && UF[s.k].length ? UF[s.k] : null);
+  // Fotos aus dem Netz (data/netzfotos.js): frei lizenzierte immer, nicht frei lizenzierte (©) wie oben nur auf Wunsch
+  const NF = {};
+  if (SA && window.MANTODEA_NETZ) for (const [k, arr] of Object.entries(window.MANTODEA_NETZ.fotos || {})) for (const x of arr) {
+    if (x.frei) (NF[k] = NF[k] || []).push(x); else (UF[k] = UF[k] || []).push(x);
+  }
+  const ufOf = (s) => { if (!SA) return null; const a = [...(NF[s.k] || []), ...(!state.license && UF[s.k] ? UF[s.k] : [])]; return a.length ? a : null; };
   const ufImg = (x, alt) => `<img src="${esc(x.u)}" alt="${esc(alt || "")}" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
-  const ufCredit = (x) => `© ${esc(x.by || "Fotograf")} · alle Rechte vorbehalten · <a href="${esc(x.ref)}" target="_blank" rel="noopener">iNaturalist ↗</a>`;
+  const ufBadge = (x, big) => (x.frei ? "" : `<span class="cbadge${big ? " big" : ""}" title="nicht frei lizenziert">©</span>`);
+  const ufCredit = (x) => x.frei
+    ? `${x.art ? esc(x.art) + " · " : ""}Foto: ${esc(x.by || "unbekannt")} · ${esc(x.l)} · <a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src || "Quelle")} ↗</a>`
+    : `${x.art ? esc(x.art) + " · " : ""}© ${esc(x.by || "Fotograf")} · ${esc(x.l && x.l !== "©" ? x.l : "alle Rechte vorbehalten")} · <a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src || "iNaturalist")} ↗</a>`;
   const RM = window.MANTODEA_REMOTE || { u: {} };
   const smallUrl = (u) => !u ? u : u.replace("/large.", "/medium.").replace(/\/1024px-/, "/500px-").replace(/_b\.(jpg|png)$/, "_z.$1");
   const TITEL = window.MANTODEA_TITEL || {};
@@ -331,7 +339,7 @@
 
   function card(s) {
     return `<article class="card" tabindex="0" data-k="${esc(s.k)}">
-      <div class="img">${s.p ? imgTag(s, s.n) : ufOf(s) ? ufImg(ufOf(s)[0], s.n) + `<span class="cbadge" title="nicht frei lizenziert">©</span>` : PLACEHOLDER}</div>
+      <div class="img">${s.p ? imgTag(s, s.n) : ufOf(s) ? ufImg(ufOf(s)[0], s.n) + ufBadge(ufOf(s)[0]) : PLACEHOLDER}</div>
       ${s.p ? `<p class="credit">${credit(s.p, true)}</p>` : ufOf(s) ? `<p class="credit uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       <div class="body">
         <h3><i>${esc(s.n)}</i>${flags(s)}</h3>
@@ -770,9 +778,22 @@
     const box = $("d-gal");
     galItems = [];
     if (!box) return;
-    const ufHtml = () => { const u = ufOf(s); return u ? `<h4 class="g-group uf">Weitere Fotos – nicht frei lizenziert <small>${u.length}</small></h4>
-      <p class="muted small">Diese Fotos werden direkt von iNaturalist angezeigt; die Rechte liegen bei den Fotografen. Antippen öffnet die Beobachtung. In den Filtern lassen sie sich ausblenden.</p>
-      <div class="gallery ufgal">${u.map((x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="© ${esc(x.by)} – alle Rechte vorbehalten">${ufImg(x, s.n)}<span class="cbadge">©</span></a>`).join("")}</div>` : ""; };
+    const ufHtml = () => {
+      const all = ufOf(s) || [], fr = all.filter((x) => x.frei), u = all.filter((x) => !x.frei);
+      const th = (x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="${esc((x.art ? x.art + " – " : "") + (x.frei ? x.by + " · " + x.l : "© " + x.by + " – alle Rechte vorbehalten"))}">${ufImg(x, s.n)}${ufBadge(x)}</a>`;
+      return (fr.length ? `<h4 class="g-group">Fotos aus dem Netz – frei lizenziert <small>${fr.length}</small></h4>
+      <p class="muted small">Museumsbelege und Abbildungen aus Fachartikeln (GBIF, Zenodo/Plazi) mit freier Lizenz. Antippen öffnet die Quelle mit Lizenz und Urheber.</p>
+      <div class="gallery ufgal">${fr.map(th).join("")}</div>` : "") +
+      (u.length ? `<h4 class="g-group uf">Weitere Fotos – nicht frei lizenziert <small>${u.length}</small></h4>
+      <p class="muted small">Diese Fotos werden direkt von der Quelle angezeigt; die Rechte liegen bei den Urhebern. Antippen öffnet die Quelle. In den Filtern lassen sie sich ausblenden.</p>
+      <div class="gallery ufgal">${u.map(th).join("")}</div>` : "") + belegHtml();
+    };
+    const belegHtml = () => {
+      const b = SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k];
+      return b && b.length ? `<h4 class="g-group uf">Weitere Bilder im Netz – nur als Verweis <small>${b.length}</small></h4>
+      <p class="muted small">Bilder bei anderen Anbietern, deren Lizenz unbekannt ist oder die nicht frei lizenziert sind. Sie werden hier nicht angezeigt – der Link führt zur Quelle.</p>
+      <ul class="netz-belege">${b.map((x) => `<li><a href="${esc(x.ref)}" target="_blank" rel="noopener">${esc(x.src)} ↗</a> – ${esc(x.t)}${x.l ? ` <span class="muted">(${esc(x.l)})</span>` : ""}</li>`).join("")}</ul>` : "";
+    };
     if (!(s.gb || s.fb)) { box.innerHTML = ufHtml(); return; }
     const bundles = [s.gb, s.fb].filter(Boolean);
     let items;
@@ -1013,7 +1034,7 @@
     const fact = (label, val) => val ? `<div class="fact"><span>${label}</span><b>${val}</b></div>` : "";
     openDialog(`
       <div class="d-hero"${s.p ? ' data-zoom="front" title="Antippen zum Vergrößern"' : ""}>
-        <div class="d-img">${s.p ? imgTag(s, s.n) : ufOf(s) ? `<a href="${esc(ufOf(s)[0].ref)}" target="_blank" rel="noopener">${ufImg({ u: ufOf(s)[0].big }, s.n)}</a><span class="cbadge big">©</span>` : PLACEHOLDER}${s.p && s.p.front ? `<span class="front-tag">♀ adultes Weibchen</span>` : ""}${s.p ? `<span class="zoom-tag">🔍</span>` : ""}</div>
+        <div class="d-img">${s.p ? imgTag(s, s.n) : ufOf(s) ? `<a href="${esc(ufOf(s)[0].ref)}" target="_blank" rel="noopener">${ufImg({ u: ufOf(s)[0].big }, s.n)}</a>${ufBadge(ufOf(s)[0], true)}` : PLACEHOLDER}${s.p && s.p.front ? `<span class="front-tag">♀ adultes Weibchen</span>` : ""}${s.p ? `<span class="zoom-tag">🔍</span>` : ""}</div>
         ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
@@ -1026,7 +1047,7 @@
       </section>
       <section class="d-card">
         ${s.gb || s.fb ? `<h3 class="d-h">Fotos <small>${(s.gn || 0) + (s.fn || 0)} Fotos${s.fn ? ` (davon ${s.fn} von Flickr)` : ""} · antippen zum Vergrößern</small></h3><div id="d-gal"><p class="muted">Lade Fotos …</p></div>` :
-          (ufOf(s) ? `<h3 class="d-h">Fotos</h3><div id="d-gal"></div>` : `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`)}
+          (ufOf(s) || (SA && window.MANTODEA_NETZ && (window.MANTODEA_NETZ.belege || {})[s.k]) ? `<h3 class="d-h">Fotos</h3><div id="d-gal"></div>` : `<h3 class="d-h">Fotos</h3><p class="muted">Keine weiteren frei lizenzierten Fotos gefunden.</p>`)}
       </section>
       <section class="d-card">
         <h3 class="d-h">Fundorte</h3><div id="d-map" class="d-map"><p class="muted">Lade Karte …</p></div>
