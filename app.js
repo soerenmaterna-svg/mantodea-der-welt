@@ -929,6 +929,7 @@
     let idx = Math.min(start, list.length - 1);
     const lb = $("lightbox");
     lb.innerHTML = `<button type="button" class="close" aria-label="Schließen">×</button>
+      <div class="ztitle"><i>${esc(s.n)}</i>${s.de ? `<span>${esc(s.de)}</span>` : ""}</div>
       <div class="zstage"><a class="zlink" target="_blank" rel="noopener"><img alt="${esc(s.n)}" draggable="false"></a></div>
       ${list.length > 1 ? `<button type="button" class="znav prev" aria-label="Vorheriges Foto">‹</button><button type="button" class="znav next" aria-label="Nächstes Foto">›</button>` : ""}
       <div class="ztools"><button type="button" data-zz="out" aria-label="Verkleinern">－</button><button type="button" data-zz="reset" aria-label="Zurücksetzen">1:1</button><button type="button" data-zz="in" aria-label="Vergrößern">＋</button><span class="zcount"></span>${titleWritable ? `<button type="button" class="zset" hidden>🖼️ Als Hauptbild verwenden</button>` : ""}</div>
