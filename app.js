@@ -782,7 +782,7 @@
       const all = ufOf(s) || [], fr = all.filter((x) => x.frei), u = all.filter((x) => !x.frei);
       const th = (x) => `<a class="gthumb uf" href="${esc(x.ref)}" target="_blank" rel="noopener" title="${esc((x.art ? x.art + " – " : "") + (x.frei ? x.by + " · " + x.l : "© " + x.by + " – alle Rechte vorbehalten"))}">${ufImg(x, s.n)}${ufBadge(x)}</a>`;
       return (fr.length ? `<h4 class="g-group">Fotos aus dem Netz – frei lizenziert <small>${fr.length}</small></h4>
-      <p class="muted small">Museumsbelege und Abbildungen aus Fachartikeln und Büchern (Zenodo/Plazi, Literatursammlung) mit freier Lizenz oder gemeinfrei. Antippen öffnet die Quelle mit Lizenz und Urheber.</p>
+      <p class="muted small">Museumsbelege (NHM London, Tervuren, Lund, US-Sammlungen u. a.) und Abbildungen aus Fachartikeln und Büchern mit freier Lizenz oder gemeinfrei. Antippen öffnet die Quelle mit Lizenz und Urheber.</p>
       <div class="gallery ufgal">${fr.map(th).join("")}</div>` : "") +
       (u.length ? `<h4 class="g-group uf">Weitere Fotos – nicht frei lizenziert <small>${u.length}</small></h4>
       <p class="muted small">Diese Fotos werden direkt von der Quelle angezeigt; die Rechte liegen bei den Urhebern. Antippen öffnet die Quelle. In den Filtern lassen sie sich ausblenden.</p>
