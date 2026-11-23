@@ -16,7 +16,7 @@ REG = [  # Reihenfolge = Anzeige-Reihenfolge der Körperregionen
     ('kopf', 'Kopf', r'Kopf|Scheitel|Stirn|Auge|Ocell|Gesicht|Clypeus|Juxtaocular|Hinterhaupt|Mundwerk|Kiefer|Kopfschild'),
     ('fuehler', 'Fühler', r'Fühler|Antenn'),
     ('halsschild', 'Halsschild (Pronotum)', r'Halsschild|Pronot|Prozon|Metazon|Vorderbrust|Supracoxal|Prothorax'),
-    ('fangbeine', 'Fangbeine', r'Vorderhüft|Vordercox|Vorderschenkel|Vorderschien|Vorderfemur|Vordertibia|Fangbein|Scheibendorn|Discoidal|Klauenfurche|Vordertars|Vorderbein|Vorderfu|Femoraldorn|Tibialdorn|Vordertibi|Hüftgelenk|Außendorn|Innendorn'),
+    ('fangbeine', 'Fangbeine', r'Vorderhüft|Vordercox|Vorderschenkel|Vorderschien|Vorderfemur|Vordertibia|Fangbein|Scheibendorn|Discoidaldorn|Klauenfurche|Vordertars|Vorderbein|Vorderfu|Femoraldorn|Tibialdorn|Vordertibi|Hüftgelenk|Außendorn|Innendorn'),
     ('laufbeine', 'Laufbeine', r'Mittel- und Hinter|Mittelbein|Hinterbein|Mittelschenkel|Hinterschenkel|Mittelschien|Hinterschien|Laufbein|Tars|Metatars|Schenkel|Schiene|Beine'),
     ('fluegel', 'Flügel', r'Flügel|Tegmin|Elytr|Stigma|Ader|Analfeld|Costal|Vorderrandfeld|Discoidalfeld|geflügelt|flügellos|brachypter|Flugorgan'),
     ('abdomen', 'Hinterleib', r'Hinterleib|Abdomen|Tergit|Sternit|Segment|Subgenital|Supraanal|Lamina|Afterdeckplatte|Analplatte|Subgenitalplatte'),

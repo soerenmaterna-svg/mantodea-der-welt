@@ -53,9 +53,9 @@
   const st = { conts: new Set(), land: "", sel: {}, fam: "", gen: "", shown: 48, focus: null };
   const root = $("v-bestimmen");
   root.innerHTML = `
-    <div class="panel k-wahl">
+    <div class="panel k-wahl" id="k-wahl">
       <h2>⚖️ Arten vergleichen</h2>
-      <p class="muted">Wähle zwei oder mehr Arten aus und tippe auf „Vergleichen“. Die Merkmale erscheinen dann nebeneinander im Vollbild; Unterschiede sind farbig hervorgehoben. Im Vergleich kannst du weitere Arten hinzufügen oder entfernen.</p>
+      <p class="muted">Wähle zwei oder mehr Arten aus und tippe auf „Vergleichen“. Im Steckbrief einer Art kannst du sie mit „⚖️ Vergleichen“ hier vormerken. Die Merkmale erscheinen dann nebeneinander im Vollbild; Unterschiede sind farbig hervorgehoben. Im Vergleich kannst du weitere Arten hinzufügen oder entfernen.</p>
       <div class="k-wahl-such"><input type="search" id="k-wahl-q" placeholder="Art oder Gattung eingeben, z. B. Mantis religiosa" autocomplete="off"><ul id="k-wahl-vor" class="k-wahl-vor" hidden></ul></div>
       <div id="k-wahl-chips" class="k-wahl-chips"></div>
       <p class="k-wahl-los"><button type="button" id="k-wahl-go" class="primary" disabled>⚖️ Vergleichen</button> <span id="k-wahl-n" class="muted small"></span></p>
@@ -85,7 +85,9 @@
     <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>
     </div>`;
   // ---------- Arten für den Vergleich auswählen; "Vergleichen" öffnet das Vollbild-Fenster (app.js)
-  const wahl = [];
+  const VW = window.MANTODEA_VWAHL;
+  const wahl = VW ? VW.list.slice() : [];
+  const merken = () => { if (VW) VW.set(wahl); };
   const normT = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const wahlIdx = DATA.filter((s) => !s.x).map((s) => [normT(s.n + " " + (s.de || "") + " " + (s.en || "")), s]);
   let wahlTreffer = [];
@@ -107,12 +109,13 @@
   $("k-wahl-vor").addEventListener("mousedown", (e) => {
     const li = e.target.closest("li[data-wi]"); if (!li) return; e.preventDefault();
     const s = wahlTreffer[+li.dataset.wi]; if (s && !wahl.includes(s.k) && wahl.length < 8) wahl.push(s.k);
-    $("k-wahl-q").value = ""; $("k-wahl-vor").hidden = true; wahlZeichnen(); $("k-wahl-q").focus();
+    $("k-wahl-q").value = ""; $("k-wahl-vor").hidden = true; merken(); wahlZeichnen(); $("k-wahl-q").focus();
   });
   $("k-wahl-q").addEventListener("blur", () => setTimeout(() => { $("k-wahl-vor").hidden = true; }, 150));
-  $("k-wahl-chips").addEventListener("click", (e) => { const b = e.target.closest("[data-wahlweg]"); if (b) { wahl.splice(wahl.indexOf(b.dataset.wahlweg), 1); wahlZeichnen(); } });
+  $("k-wahl-chips").addEventListener("click", (e) => { const b = e.target.closest("[data-wahlweg]"); if (b) { wahl.splice(wahl.indexOf(b.dataset.wahlweg), 1); merken(); wahlZeichnen(); } });
   $("k-wahl-go").addEventListener("click", () => { if (window.MANTODEA_VGL) window.MANTODEA_VGL(wahl.slice()); });
-  document.addEventListener("mantodea:vglwahl", (e) => { wahl.length = 0; e.detail.filter((k) => BYKEY.get(k)).forEach((k) => wahl.push(k)); wahlZeichnen(); });
+  document.addEventListener("mantodea:vglliste", (e) => { wahl.length = 0; e.detail.forEach((k) => wahl.push(k)); wahlZeichnen(); });
+  wahlZeichnen();
 
   const coll = new Intl.Collator("de");
   const LIVE = DATA.filter((s) => !s.x);

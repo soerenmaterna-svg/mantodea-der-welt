@@ -116,11 +116,13 @@
         if (!a.some((x) => b.includes(x))) ver = true;
         if (da[i].key !== da[j].key) alleGleich = false;
       }
-      z.status = ver ? "verschieden" : alleGleich && !da.some((c) => c.var) ? "gleich" : "teilweise";
+      z.status = ver ? "verschieden" : alleGleich ? "gleich" : "teilweise";
     } else {
       const keys = new Set(da.map((c) => c.key));
       z.status = keys.size === 1 ? "gleich" : "verschieden";
     }
+    // Bedeutung für die Bestimmung: 2 = trennt die gewählten Arten, 1 = Merkmal aus einem Artenschlüssel (Literatur bestimmt damit Arten)
+    if (z.reg !== "allg") z.wichtig = z.status === "verschieden" ? 2 : z.opts && da.some((c) => c.lvl === "Art") ? 1 : 0;
     // Farbgruppen: gleiche Ausprägung = gleiche Farbe
     const gr = new Map();
     z.zellen.forEach((c) => { if (c && !gr.has(c.key)) gr.set(c.key, gr.size); });
@@ -200,6 +202,7 @@
       if (z.status === "einzeln" && !(st.leer || arten.length === 1)) return false;
       if (st.zeig === "unterschiede") return z.status === "verschieden" || z.status === "teilweise";
       if (st.zeig === "gemeinsam") return z.status === "gleich";
+      if (st.zeig === "bestimmung") return z.wichtig > 0;
       return true;
     });
     if (arten.length === 1) sicht = zeilen.filter((z) => z.n);
@@ -230,7 +233,7 @@
     };
     const regNamen = Object.fromEntries([["allg", "Überblick"], ["masse", "Körpermaße"], ...MM.regionen]);
     if (klapp) for (const reg of Object.keys(glZahl)) if (!sicht.some((z) => z.reg === reg)) sicht.push({ nurKopf: true, reg, regName: regNamen[reg] || reg });
-    if (st.sort === "region") sicht.sort((a, b) => ro(a) - ro(b) || (a.nurKopf ? -1 : b.nurKopf ? 1 : 0) || (a.lab || "").localeCompare(b.lab || "", "de"));
+    if (st.sort === "region") sicht.sort((a, b) => ro(a) - ro(b) || (a.nurKopf ? -1 : b.nurKopf ? 1 : 0) || (b.wichtig || 0) - (a.wichtig || 0) || (a.lab || "").localeCompare(b.lab || "", "de"));
     for (const z of sicht) {
       if (st.sort === "region" && z.reg !== letzteReg) {
         letzteReg = z.reg;
@@ -242,7 +245,7 @@
       const B = z.opts ? beschrift(z) : null;
       const lab = B ? B.lab : z.lab;
       const kurz = (t) => B.wert(t, " – oder – ");
-      körper += `<tr class="av-z st-${z.status}"><th class="av-lab" title="${esc(z.q ? "Quelle: " + z.q : "")}"><span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}</th>${z.zellen.map((c) => c
+      körper += `<tr class="av-z st-${z.status}${z.wichtig ? " w" + z.wichtig : ""}"><th class="av-lab" title="${esc(z.q ? "Quelle: " + z.q : "")}"><span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.wichtig === 2 ? ` <span class="av-key k2" title="Wichtig für die Artbestimmung: In diesem Merkmal unterscheiden sich die gewählten Arten">🔑 trennt diese Arten</span>` : z.wichtig === 1 ? ` <span class="av-key k1" title="Die Fachliteratur nutzt dieses Merkmal, um Arten zu bestimmen (aus einem Artenschlüssel)">🔑 Bestimmungsmerkmal</span>` : ""}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}</th>${z.zellen.map((c) => c
         ? `<td class="${z.status === "info" ? "" : z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
         : `<td class="nd">nicht dokumentiert</td>`).join("")}</tr>`;
     }
@@ -281,7 +284,7 @@
       const wert = (c) => B.wert(c.t, " oder ");
       return `<li><b>${esc(lab)}</b> <small class="av-grau">(${esc(z.regName)})</small><ul>${[...gr.values()].map((g) => `<li><span class="av-farbe f${g.c.farbe % FARBEN.length}"></span>${esc(wert(g.c))}: ${g.a.map(name).join(", ")}</li>`).join("")}</ul></li>`;
     }).join("");
-    return `<details class="av-kurz"${kurzOffen ? " open" : ""}><summary>Woran unterscheiden sich die Arten?</summary>${kopf}${li ? `<ol class="av-kz">${li}</ol>` : ""}${ds.length > 6 ? `<p class="av-grau av-kz-mehr">Alle ${ds.length} Unterschiede stehen in der Tabelle darunter (rot markiert); mit „Zeigen: Nur Unterschiede“ siehst du nur diese.</p>` : ""}</details>`;
+    return `<details class="av-kurz"${kurzOffen ? " open" : ""}><summary>🔑 Woran unterscheiden sich die Arten? <small class="av-grau">Die wichtigsten Bestimmungsmerkmale</small></summary>${kopf}${li ? `<ol class="av-kz">${li}</ol>` : ""}${ds.length > 6 ? `<p class="av-grau av-kz-mehr">Alle ${ds.length} Unterschiede stehen in der Tabelle darunter (rot markiert); mit „Zeigen: Nur Unterschiede“ siehst du nur diese.</p>` : ""}</details>`;
   }
 
   // ---------- Auswahl

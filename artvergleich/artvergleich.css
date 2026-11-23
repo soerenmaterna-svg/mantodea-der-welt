@@ -109,3 +109,11 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
 .av-klapp button { position: sticky; left: 7px; border: 0; background: none; color: var(--gruen); font: inherit; font-size: 13px; padding: 2px 0; cursor: pointer; }
 .av-aehn.un { color: var(--rot); background: #fbe9e6; }
 .st-info .av-st { background: #9aa39a; }
+/* Bestimmungsmerkmale */
+.av-key { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 4px; font-size: 10.5px; font-weight: 700; white-space: nowrap; vertical-align: 1px; }
+.av-key.k2 { background: #fde3dc; color: #9a2f1f; border: 1px solid #f0b6a8; }
+.av-key.k1 { background: #f3f0e3; color: #7a6a2e; border: 1px solid #e2dbb8; font-weight: 600; }
+.av-t tr.w2 > th.av-lab { box-shadow: inset 4px 0 0 var(--rot); }
+.av-t tr.w1 > th.av-lab { box-shadow: inset 4px 0 0 #d9c98a; }
+.av-kurz summary small { font-weight: 400; font-size: 13px; }
+.av-t { table-layout: fixed; }

@@ -1139,7 +1139,7 @@
         ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
-        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} <button type="button" class="d-vgl-k" data-vgl="${esc(s.k)}" title="Diese Art mit anderen Arten vergleichen">⚖️ Vergleichen</button></h2>
+        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} ${vglKnopf(s.k, "d-vgl-k")}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         <div id="d-erst"></div>
         <div id="d-typ"></div>
@@ -1160,7 +1160,7 @@
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
       ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><button type="button" class="gb-auf" data-gbk="${esc(s.g)}" data-gbart="${esc(s.n)}" aria-expanded="false"><span class="gb-auf-t"><b>Bestimmungsschlüssel</b><small>Arten der Gattung <i>${esc(s.g)}</i> unterscheiden</small></span><span class="gb-pfeil" aria-hidden="true">▾</span></button><div class="gb-platz" hidden></div></section>` : ""}
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
-        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button><button type="button" class="ghost" data-vgl="${esc(s.k)}">⚖️ Merkmale mit anderen Arten vergleichen</button></p>
+        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button>${vglKnopf(s.k, "ghost")}</p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
       <section class="d-card"><h3 class="d-h">Literatur</h3><div id="d-lit"><p class="muted">Lade Literatur …</p></div></section>
       <p class="links d-sources"><span class="muted">Datenquellen:</span> ${srcs.join("")}</p>
@@ -1370,14 +1370,51 @@
   // Nachrichten aus dem Vergleichsfenster: schließen bzw. Steckbrief einer Art öffnen
   window.addEventListener("message", (e) => {
     if (e.origin !== location.origin || !e.data || !e.data.mantodeaVgl) return;
-    if (e.data.mantodeaVgl === "auswahl") { document.dispatchEvent(new CustomEvent("mantodea:vglwahl", { detail: e.data.a || [] })); return; }
+    if (e.data.mantodeaVgl === "auswahl") { VW.set(e.data.a || []); return; }
     const d = $("vgl-dlg");
     if (d && d.open) d.close();
     if (e.data.mantodeaVgl === "art" && BYKEY.get(String(e.data.k))) detail(String(e.data.k));
   });
+  // Vergleichsliste: Arten aus dem Steckbrief vormerken (gespeichert), verglichen wird im Reiter "Artenvergleich"
+  const VW = {
+    list: (() => { try { return JSON.parse(localStorage.getItem("mantodea-vergleich") || "[]").filter((k) => BYKEY.get(String(k))).slice(0, 8); } catch (e) { return []; } })(),
+    has: (k) => VW.list.includes(String(k)),
+    set(arr) {
+      VW.list = [...new Set(arr.map(String))].filter((k) => BYKEY.get(k)).slice(0, 8);
+      try { localStorage.setItem("mantodea-vergleich", JSON.stringify(VW.list)); } catch (e) { /* egal */ }
+      document.querySelectorAll("[data-vglmerk]").forEach((b) => vglKnopfAkt(b));
+      const n = $("vgl-n"); if (n) { n.textContent = VW.list.length || ""; n.hidden = !VW.list.length; }
+      document.dispatchEvent(new CustomEvent("mantodea:vglliste", { detail: VW.list.slice() }));
+    },
+    toggle(k) { k = String(k); VW.set(VW.has(k) ? VW.list.filter((x) => x !== k) : [...VW.list, k]); return VW.has(k); },
+  };
+  window.MANTODEA_VWAHL = VW;
+  setTimeout(() => VW.set(VW.list), 0);
+  function vglKnopf(k, cls) { return `<button type="button" class="${cls}" data-vglmerk="${esc(k)}"></button>`; }
+  function vglKnopfAkt(b) {
+    const drin = VW.has(b.dataset.vglmerk), gross = b.classList.contains("ghost");
+    b.classList.toggle("drin", drin);
+    b.textContent = drin ? "✓ Zum Vergleich vorgemerkt" : gross ? "⚖️ Zum Artenvergleich vormerken" : "⚖️ Vergleichen";
+    b.title = drin ? "Vorgemerkt im Reiter „Artenvergleich“ – erneut tippen entfernt die Art wieder" : "Art für den Artenvergleich vormerken (verglichen wird im Reiter „Artenvergleich“)";
+  }
+  function vglHinweis(text) {
+    let t = $("vgl-toast");
+    if (!t) { t = document.createElement("div"); t.id = "vgl-toast"; t.className = "vgl-toast"; t.setAttribute("role", "status"); }
+    const d = $("detail"); (d && d.open ? d : document.body).appendChild(t);
+    t.innerHTML = text; t.classList.add("an");
+    clearTimeout(vglHinweis.t); vglHinweis.t = setTimeout(() => t.classList.remove("an"), 4500);
+  }
+  new MutationObserver(() => document.querySelectorAll("[data-vglmerk]:empty").forEach(vglKnopfAkt)).observe(document.body, { childList: true, subtree: true });
   document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-vgl]"); if (!b) return;
-    e.preventDefault(); openVgl(b.dataset.vgl ? [b.dataset.vgl] : []);
+    const g = e.target.closest("[data-vglgo]");
+    if (g) { e.preventDefault(); if ($("detail").open) $("detail").close(); location.hash = "bestimmen"; setTimeout(() => { const w = $("k-wahl"); if (w) w.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80); return; }
+    const b = e.target.closest("[data-vglmerk]"); if (!b) return;
+    e.preventDefault();
+    const k = b.dataset.vglmerk, s = BYKEY.get(k), vorher = VW.has(k);
+    if (!vorher && VW.list.length >= 8) { vglHinweis(`Höchstens 8 Arten lassen sich vergleichen. Entferne zuerst eine im <a href="#bestimmen" data-vglgo="1">Artenvergleich</a>.`); return; }
+    VW.toggle(k); const n = VW.list.length;
+    vglHinweis(!vorher ? `<b><i>${esc(s.n)}</i></b> ist zum Vergleich vorgemerkt (${n} ${n === 1 ? "Art" : "Arten"}). <a href="#bestimmen" data-vglgo="1">Zum Artenvergleich →</a>`
+      : `<i>${esc(s.n)}</i> wurde aus dem Vergleich entfernt (${n} ${n === 1 ? "Art" : "Arten"} vorgemerkt).`);
   });
 
   // ---------- Bereiche (Tabs)
