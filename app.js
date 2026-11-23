@@ -622,6 +622,19 @@
     }
     box.innerHTML = teile.join("");
   }
+  // Verbleib der Typusexemplare (data/typen.js): Museum, Status, Katalognummer, Quelle
+  async function fillTypen(s) {
+    const box = $("d-typ"); if (!box) return;
+    try { await loadScript("data/typen.js"); } catch (e) { return; }
+    if (!box.isConnected || $("d-body").dataset.k != s.k) return;
+    const T = ((window.MANTODEA_TYPEN || {}).t || {})[s.k];
+    const gbifSuche = `https://www.gbif.org/occurrence/search?q=${encodeURIComponent(s.n)}&type_status=HOLOTYPE&type_status=LECTOTYPE&type_status=SYNTYPE&type_status=TYPE&type_status=NEOTYPE`;
+    if (!T) { box.innerHTML = `<p class="d-typ muted small">🏛️ <b>Typusexemplare:</b> In GBIF und Plazi ist kein Verbleib verzeichnet. Angaben stehen meist in der Erstbeschreibung oder im Mantodea Species File. <a href="https://mantodea.speciesfile.org/" target="_blank" rel="noopener">Species File ↗</a></p>`; return; }
+    const ort = (r) => r.m ? `${esc(r.m)}${r.c ? ` <span class="muted">(${esc(r.c)})</span>` : ""}` : esc(r.c);
+    const li = (r) => `<li><b>${esc(r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s)}</b>${r.n > 1 ? ` <span class="muted">${r.sx || r.n + " Exemplare"}</span>` : r.sx ? " " + esc(r.sx) : ""} – ${ort(r)}${r.nr && r.nr.length ? ` <span class="muted small">· Nr. ${esc(r.nr.join(", "))}</span>` : ""}${r.als ? ` <span class="muted small">· beschrieben als <i>${esc(r.als)}</i></span>` : ""} <a class="small" href="${esc(r.u)}" target="_blank" rel="noopener"${r.x ? ` title="${esc(r.x)}"` : ""}>${esc(r.q)} ↗</a></li>`;
+    box.innerHTML = `<div class="d-typ"><p>🏛️ <b>Typusexemplare</b> <span class="muted small">– wo die Belegstücke der Beschreibung aufbewahrt werden</span></p><ul>${T.map(li).join("")}</ul>
+      <p class="muted small">Automatisch zusammengestellt aus den Sammlungsdaten der Museen (GBIF), aus Fachartikeln (Plazi) und MantID; nicht vollständig. Holo-, Lekto-, Neo- und Syntypen sind die namenstragenden Typen. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a></p></div>`;
+  }
   async function fillLiterature(s) {
     const box = $("d-lit");
     if (!box) return;
@@ -1125,6 +1138,7 @@
         <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         <div id="d-erst"></div>
+        <div id="d-typ"></div>
         <div id="d-ung"></div>
         ${s.u ? `<p class="note small">Diese Art steht nicht im Catalogue of Life. Sie kann neu beschrieben und dort noch nicht erfasst sein, oder der Name ist veraltet bzw. ein Synonym. Gefunden in: ${(s.src || []).map((q) => SRC_NAME[q]).join(", ")}.</p>` : ""}
         ${s.ct && s.ct.length ? `<p class="d-occ">📍 <b>Vorkommen:</b> ${s.ct.slice(0, 8).map(cname).map(esc).join(", ")}${s.ct.length > 8 ? ` und ${s.ct.length - 8} weitere · <a href="#" data-goto-c="1">alle auf der Karte</a>` : ""}</p>` : `<p class="d-occ muted">📍 Vorkommen: keine Länderangaben bekannt</p>`}
@@ -1154,6 +1168,7 @@
     loadHD(s.k).then((hd) => { const im = document.querySelector(".d-hero .d-img img"); if (hd && hd.f && im && $("d-body").dataset.k == s.k) { im.removeAttribute("data-ik"); im.src = hdSrc(hd.f); } });
     fillGallery(s);
     fillErst(s);
+    fillTypen(s);
     fillLiterature(s);
     fillKeyLit(s);
     fillSyn(s);

@@ -1112,3 +1112,10 @@ details.ung-p li, .ung-art li { margin: 3px 0; font-size: .9rem; overflow-wrap: 
 .netz-lit li { margin: 6px 0; line-height: 1.4; }
 .netz-lit .abb { color: var(--accent, #3f7d3a); font-weight: 600; }
 .lit .lic { margin-right: 3px; }
+
+/* Typusexemplare in der Artbeschreibung */
+.d-typ { margin: 8px 0 4px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(63,125,58,.05); font-size: .92rem; }
+.d-typ p { margin: 2px 0; }
+.d-typ ul { margin: 4px 0 4px; padding-left: 18px; }
+.d-typ li { margin: 2px 0; line-height: 1.4; }
+p.d-typ { background: none; border: 0; padding: 0 2px; }
