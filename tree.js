@@ -184,7 +184,7 @@
 
   // ---------- Stufenlose senkrechte Abbildung (Familien mit Mindesthöhe)
   let W = 0, H = 0, DPR = 1;
-  const view = { py: 0, rh: 1, x: 0 };
+  const view = { py: 0, rh: 1, x: 0, mx: 0, ax: 0 };   // x = automatische Verschiebung (ax) + Verschiebung von Hand (mx)
   let homeRH = 1, started = false;
   let SEG = [], TOTAL = 0, MINH = 24;
   function segments() {
@@ -223,17 +223,21 @@
     // maßgeblich ist der Zoom der Familie in der Bildmitte (kleine Familien sind schon früher groß)
     let zk = view.rh;
     if (SEG.length && H) { const c = view.py + H / 2; const g = SEG.find((x) => c >= x.top && c <= x.top + x.h); if (g) zk = Math.max(zk, g.k); }
-    const tz = Math.max(0, Math.min(1, narrow ? (zk - 2) / 10 : (zk - 4) / 14));
+    // Spalten bleiben beim Zoomen an ihrem Platz (gleichmäßige Abstände); wird es eng, wandert die Ansicht nach rechts
+    const tz = Math.max(0, Math.min(1, narrow ? (zk - 1.5) / 8 : (zk - 3) / 12));
     const x0 = narrow ? 14 : 22;
-    const genA = narrow ? W - 76 : Math.min(W - 180, 900), genB = narrow ? 96 : 300;
-    const genX = genA + (genB - genA) * tz;
-    // Gewichte je Rang: höhere Ebenen (bis Überfamilie) werden beim Hineinzoomen schmal, Familie bis Gattung breit
-    const wHi = 1 - 0.85 * Math.max(0, Math.min(1, narrow ? (zk - 0.8) / 1.6 : (zk - 1.5) / 6));
-    const w = RANKS.slice(0, RI.genus).map((r, i) => (i < RI.family ? wHi : 1));
+    // beim Hineinzoomen gehen die Spalten gleichmäßig auseinander (auf dem Handy stärker, dort ist es sonst zu eng)
+    const genBase = narrow ? Math.max(W - 76, 300) : Math.min(W - 180, 900);
+    const genX = genBase * (1 + tz * (narrow ? 0.6 : 0.15));
+    // höhere Ebenen (bis Überfamilie) etwas schmaler als Familie bis Gattung – unabhängig vom Zoom
+    const w = RANKS.slice(0, RI.genus).map((r, i) => (i < RI.family ? 0.7 : 1));
     const tot = w.reduce((a, b) => a + b, 0), cum = [0];
     for (const v of w) cum.push(cum[cum.length - 1] + v);
     colX = (ri) => { ri = Math.max(0, Math.min(ri, RI.genus)); const i = Math.floor(ri), f = ri - i; const c = cum[i] + (i < cum.length - 1 ? f * (cum[i + 1] - cum[i]) : 0); return x0 + (c / tot) * (genX - x0); };
     spX = genX + (narrow ? 118 : 190);
+    // Platz für Arten mit Fotos und Namen schaffen: Ansicht gleichmäßig mit dem Zoom nach rechts schieben
+    const need = Math.max(0, spX + (narrow ? 230 : 300) - W);
+    view.ax = need * tz;
   }
   function resize() {
     const r = cv.parentElement.getBoundingClientRect();
@@ -255,7 +259,9 @@
     if (TOTAL <= H) view.py = (TOTAL - H) / 2;
     else view.py = Math.max(-H * 0.25, Math.min(TOTAL - H * 0.75, view.py));
     columns();
-    view.x = Math.max(-W * 0.2, Math.min(Math.max(0, spX + 260 - W), view.x));
+    const xMax = Math.max(0, spX + (narrow ? 230 : 300) - W);
+    view.mx = Math.max(-W * 0.2 - view.ax, Math.min(xMax - view.ax, view.mx));
+    view.x = view.ax + view.mx;
   }
 
   // ---------- Zeichnen
@@ -305,7 +311,7 @@
   function render() {
     raf = 0;
     if (!built || !W) return;
-    columns();
+    columns(); view.x = view.ax + view.mx;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = TH().bg; ctx.fillRect(0, 0, W, H);
@@ -451,11 +457,11 @@
   let anim = 0;
   function flyTo(row, rh, x) {
     cancelAnimationFrame(anim);
-    const r0 = yOf(H / 2), k0 = view.rh, x0 = view.x, t0 = performance.now(), T = 700, tx = x === undefined ? 0 : x;
+    const r0 = yOf(H / 2), k0 = view.rh, x0 = view.mx, t0 = performance.now(), T = 700, tx = x === undefined ? 0 : x;
     const step = (t) => {
       const u = Math.min(1, (t - t0) / T), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
       view.rh = Math.exp(Math.log(k0) + (Math.log(rh) - Math.log(k0)) * e); clamp();
-      view.py = P(r0 + (row - r0) * e) - H / 2; view.x = x0 + (tx - x0) * e; clamp(); draw();
+      view.py = P(r0 + (row - r0) * e) - H / 2; view.mx = x0 + (tx - x0) * e; clamp(); draw();
       if (u < 1) anim = requestAnimationFrame(step);
     };
     anim = requestAnimationFrame(step);
@@ -470,7 +476,7 @@
   cv.addEventListener("wheel", (e) => {
     e.preventDefault();
     const r = cv.getBoundingClientRect();
-    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { view.x += (e.deltaX || e.deltaY); clamp(); draw(); return; }
+    if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) { view.mx += (e.deltaX || e.deltaY); clamp(); draw(); return; }
     zoomAt(e.clientY - r.top, Math.exp(-Math.max(-120, Math.min(120, e.deltaY)) * 0.0015));
   }, { passive: false });
   const ptr = new Map();
@@ -482,7 +488,7 @@
     if (ptr.size === 1) {
       const dx = e.clientX - prev[0], dy = e.clientY - prev[1];
       if (Math.abs(dx) + Math.abs(dy) > 1) moved = true;
-      view.py -= dy; view.x -= dx; clamp(); draw();
+      view.py -= dy; view.mx -= dx; clamp(); draw();
     } else if (ptr.size === 2) {
       moved = true;
       const [a, b] = [...ptr.values()], d = Math.max(30, Math.hypot(a[0] - b[0], a[1] - b[1]));
