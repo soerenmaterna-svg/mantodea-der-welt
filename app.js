@@ -1139,7 +1139,7 @@
         ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
-        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} ${vglKnopf(s.k, "d-vgl-k")}</h2>
+        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} ${vglKnopf(s.k, "d-vgl-k")} <button type="button" class="d-vgl-k d-teilen" data-teilen="${esc(s.k)}" title="Link zu dieser Art teilen (WhatsApp, E-Mail …)">🔗 Teilen</button></h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         <div id="d-erst"></div>
         <div id="d-typ"></div>
@@ -1404,6 +1404,23 @@
     t.innerHTML = text; t.classList.add("an");
     clearTimeout(vglHinweis.t); vglHinweis.t = setTimeout(() => t.classList.remove("an"), 4500);
   }
+  // Art teilen: Teilen-Menü des Geräts (WhatsApp, Signal, E-Mail …), sonst Link kopieren + WhatsApp/E-Mail
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-teilen]"); if (!b) return;
+    e.preventDefault();
+    const s = BYKEY.get(b.dataset.teilen); if (!s) return;
+    const url = location.origin + location.pathname + "#art=" + encodeURIComponent(s.k);
+    const titel = s.n + (s.de ? " (" + s.de + ")" : "");
+    const text = `${titel} – Gottesanbeterin bei „Mantodea der Welt“`;
+    if (navigator.share) {
+      try { await navigator.share({ title: titel, text, url }); return; } catch (err) { if (err && err.name === "AbortError") return; }
+    }
+    let kopiert = false;
+    try { await navigator.clipboard.writeText(url); kopiert = true; } catch (err) { /* nicht erlaubt */ }
+    const wa = "https://wa.me/?text=" + encodeURIComponent(text + " " + url);
+    const mail = "mailto:?subject=" + encodeURIComponent(titel) + "&body=" + encodeURIComponent(text + "\n" + url);
+    vglHinweis(`${kopiert ? "Link kopiert." : `Link: <span class="teil-url">${esc(url)}</span>`} Teilen über <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp ↗</a> · <a href="${esc(mail)}">E-Mail ↗</a>`);
+  });
   new MutationObserver(() => document.querySelectorAll("[data-vglmerk]:empty").forEach(vglKnopfAkt)).observe(document.body, { childList: true, subtree: true });
   document.addEventListener("click", (e) => {
     const g = e.target.closest("[data-vglgo]");
