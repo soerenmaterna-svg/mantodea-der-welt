@@ -218,7 +218,7 @@
     if (st.sort === "region") sicht.sort((a, b) => ro(a) - ro(b) || (a.lab || "").localeCompare(b.lab || "", "de"));
     else { const R = RANG[st.sort]; sicht.sort((a, b) => (a.reg === "allg") - (b.reg === "allg") || R[a.status] - R[b.status] || ro(a) - ro(b)); }
     // Kopf
-    const MOB = matchMedia("(max-width: 700px)").matches, SP_ = arten.length + (MOB ? 0 : 1);
+    const MOB = !!(window.matchMedia && window.matchMedia("(max-width: 700px)").matches), SP_ = arten.length + (MOB ? 0 : 1);
     const kopf = `<tr>${MOB ? "" : '<th class="av-ecke">Merkmal</th>'}${arten.map((s, i) => `<th class="av-art" style="--ac:${ARTFARBE[i % ARTFARBE.length]}"><div class="av-artkopf">
         <img alt="" loading="lazy" hidden data-fk="${esc(s.k)}">
         <div class="av-ak-t"><a href="index.html#art=${encodeURIComponent(s.k)}" class="av-name"><i>${esc(s.n)}</i></a><small>${esc(s.a || "")}</small>
@@ -357,7 +357,8 @@
     document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); an({ t: "art", k: decodeURIComponent(a.href.split("#art=")[1]) }); } }, true);
   }
   // beim Wechsel zwischen Handy- und Breitansicht neu aufbauen
-  matchMedia("(max-width: 700px)").addEventListener("change", () => zeichnen());
+  const mq = window.matchMedia ? window.matchMedia("(max-width: 700px)") : null;
+  if (mq && mq.addEventListener) mq.addEventListener("change", () => zeichnen()); else if (mq && mq.addListener) mq.addListener(() => zeichnen());
   lesen(); zeichnen();
   window.__avTest = { vergleich, profil, BYK, st, zeichnen };
 })();
