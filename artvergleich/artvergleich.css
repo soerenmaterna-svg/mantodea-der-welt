@@ -189,3 +189,6 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
   .av-artkopf .av-weg { position: static; align-self: flex-end; width: auto; height: auto; padding: 2px 6px; margin-top: 2px; border: 1px solid var(--rand); border-radius: 999px; background: #fff; font-size: 11px; order: 3; }
   .av-artkopf .av-weg::after { content: " entfernen"; }
 }
+/* Fotos im Artkopf quadratisch (1:1) */
+.av-artkopf img { aspect-ratio: 1 / 1; object-fit: cover; }
+@media (max-width: 700px) { .av-artkopf img { width: 100%; height: auto; max-height: none; } }
