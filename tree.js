@@ -21,6 +21,8 @@
     <details class="tree-src" id="tr-src"></details>
     <div class="tree-info" id="tr-info" hidden>
       <b>So liest man den Baum:</b> Jede Verzweigung ist eine Abspaltung in der Stammesgeschichte. <b>Oben</b> stehen die Linien, die sich <b>früh</b> abgespalten haben und viele <b>ursprüngliche</b> Merkmale zeigen: Chaeteessidae, Mantoididae und Metallyticidae. Je tiefer eine Gruppe verschachtelt ist, desto später hat sie sich abgespalten, man spricht von <b>abgeleiteten</b> Gruppen. Danach teilen sich die Mantiden in die Amerimantodea (Neue Welt) und die Cernomantodea (vor allem Alte Welt). Wie die 20 Familien der Cernomantodea untereinander verwandt sind, ist noch nicht sicher geklärt. Sie stehen deshalb gleichrangig nebeneinander, ebenso die Arten innerhalb einer Gattung.
+      <br><b>Orange Sterne ★:</b> In den Stammbäumen aus Studien (Svenson &amp; Whiting 2009, Wieland 2013, Schwarz &amp; Roy 2019, Casadei-Ferreira u. a. 2026) sind die Arten, die in der jeweiligen Studie tatsächlich untersucht wurden, mit einem orangen Stern und einem orangen Ring um das Foto markiert. Bei Proben, die nur bis zur Gattung bestimmt waren, trägt die Gattung den Stern. Die Zahl „★ 12 untersucht“ an einer Familie oder Gattung nennt, wie viele ihrer Arten die Studie untersucht hat. Ein <b>oranger Ring um eine Familie</b> heißt: Diese Familie steht in diesem Stammbaum anders als im Vergleichsbaum.
+      <br><b>Pfad oben:</b> Über jeder Spalte steht, welche Gruppe, Familie, Unterfamilie, Tribus oder Gattung gerade zu sehen ist; das Band wandert beim Verschieben mit. Antippen holt die Stufe heran.
       <br><b>Quellen:</b> Klassifikation des Mantodea Species File im Catalogue of Life, nach Schwarz &amp; Roy (2019), gestützt auf die Stammbaumstudie von Svenson &amp; Whiting (2009, Cladistics 25: 468–514) und spätere Arbeiten. Die Linienlängen sind keine Zeitangaben.
       <br><b>Bedienung:</b> zwei Finger, Doppeltipp, Mausrad oder ＋/－ zum Zoomen, ein Finger zum Verschieben. Antippen holt eine Gruppe heran, eine Art öffnet den Steckbrief. ⌂ zeigt wieder alles.</div>
     <div class="tree-wrap"><div class="tree-path" id="tr-path"></div><canvas id="tr-canvas" aria-label="Zoombarer Verwandtschafts-Stammbaum der Mantodea"></canvas>
@@ -306,7 +308,7 @@
   const xOf = (n) => (n.rank === "species" ? spX : colX(n.ri));
   const padOf = (n) => 34 + Math.min(6, n.ri) * 3;
 
-  let raf = 0, pathKey = "", pathNodes = [];
+  let raf = 0, pathKey = "", pathNodes = [], bandItems = [];
   function draw() { if (!raf) raf = requestAnimationFrame(render); }
   function render() {
     raf = 0;
@@ -420,27 +422,42 @@
       cur = k;
     }
     const named = lineage(cur).filter((n) => n.name);
-    const key = curTree + "|" + named.map((n) => n.name).join("/") + (view.rh <= homeRH * 1.05 ? "|home" : "");
+    const home = view.rh <= homeRH * 1.05 || named.length <= 1;
+    const key = curTree + "|" + (home ? "home" : "band");
     if (key !== pathKey) {
-      pathKey = key; pathNodes = named;
-      const item = (n, i) => `<button type="button" class="tp-i tp-${n.rank}" data-pi="${i}" title="${esc((RDE[n.rank] || "Gruppe") + " " + n.name)} – antippen zum Heranholen"><small>${esc(RDE[n.rank] || "Gruppe")}</small><span>${n.rank === "genus" ? `<i>${esc(n.name)}</i>` : esc(n.name)}</span></button>`;
-      document.getElementById("tr-path").innerHTML = view.rh <= homeRH * 1.05 || named.length <= 1
-        ? `<span class="tp-sum">Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten – zum Erkunden hineinzoomen oder eine Familie antippen</span>`
-        : named.map(item).join('<span class="tp-sep" aria-hidden="true">›</span>');
+      pathKey = key;
+      document.getElementById("tr-path").innerHTML = home
+        ? `<span class="tp-sum">Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten – zum Erkunden hineinzoomen oder eine Familie antippen</span>` : "";
     }
-    // Spaltenköpfe: welcher Rang in welcher Spalte steht (sobald die Spalten auseinandergezogen sind)
-    const heads = [["family", "Familie"], ["subfamily", "Unterfamilie"], ["tribe", "Tribus"], ["genus", "Gattung"]];
-    const hy = (document.getElementById("tr-path").offsetHeight || 26) + 4;
-    let lastHX = -1e9;
+    // Kopfband: der Pfad steht genau über den Spalten des Baums und wandert beim Verschieben mit
+    bandItems = [];
     ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (view.rh > homeRH * 2) {
-      ctx.fillStyle = "rgba(251,253,247,.88)"; ctx.fillRect(0, hy - 2, W, 18);
-      for (const [r, t] of [...heads, ["species", "Art"]]) {
-        const x = (r === "species" ? spX : colX(RI[r])) - view.x;
-        if (x < 4 || x > W - 20 || x - lastHX < 62) continue;
-        lastHX = x;
-        ctx.font = "700 10.5px system-ui, sans-serif"; ctx.fillStyle = "#5b6b55"; ctx.textAlign = "left"; ctx.textBaseline = "top";
-        ctx.fillText(t.toUpperCase(), x, hy + 1);
+    if (!home) {
+      const BH = 40;
+      ctx.fillStyle = "rgba(251,253,247,.96)"; ctx.fillRect(0, 0, W, BH);
+      ctx.fillStyle = "rgba(0,0,0,.08)"; ctx.fillRect(0, BH, W, 1);
+      // Einträge: Abstammungslinie, dazu leere Spaltenköpfe (Unterfamilie, Tribus, Gattung, Art), wo kein Knoten steht
+      const items = named.map((n) => ({ x: xOf(n) - view.x, cap: RDE[n.rank] || "Gruppe", name: n.name, n }));
+      const ranks = new Set(named.map((n) => n.rank));
+      for (const [r, t] of [["family", "Familie"], ["subfamily", "Unterfamilie"], ["tribe", "Tribus"], ["genus", "Gattung"], ["species", "Art"]])
+        if (!ranks.has(r)) items.push({ x: (r === "species" ? spX : colX(RI[r])) - view.x, cap: t, name: "", n: null });
+      items.sort((a, b) => a.x - b.x);
+      // links aus dem Bild gerutschte Stufen: die letzte davon am linken Rand mit "‹"
+      const off = items.filter((it) => it.x < 2 && it.name);
+      let shown = items.filter((it) => it.x >= 2);
+      if (off.length) shown = [{ ...off[off.length - 1], x: 2, more: off.length > 1 }, ...shown];
+      for (let k = 0; k < shown.length; k++) {
+        const it = shown[k], next = shown.slice(k + 1).find((o) => o.name || !it.name);
+        const x = it.x + 4, room = (next ? next.x : W) - x - 6;
+        if (room < 18) continue;
+        // feine senkrechte Hilfslinie zur Spalte
+        ctx.fillStyle = "rgba(46,93,39,.25)"; ctx.fillRect(Math.round(it.x), 4, 1, BH - 8);
+        label((it.more ? "‹ " : "") + it.cap.toUpperCase(), x, 12, 9.5, "#6b7a64", 700, false, room, "middle");
+        if (it.name) {
+          const fam = it.n && it.n.rank === "family";
+          label(it.name, x, 28, it.n && it.n.rank === "genus" ? 12.5 : 12, fam ? "#12300d" : "#1b3a12", fam ? 800 : 600, it.n && it.n.rank === "genus", room, "middle");
+          bandItems.push({ x0: it.x, x1: it.x + Math.max(room, 30), node: it.more ? off[off.length - 2] && off[off.length - 2].n : it.n, self: it.n });
+        }
       }
     }
     ctx.restore();
@@ -501,6 +518,7 @@
     ptr.delete(e.pointerId); if (ptr.size < 2) pinch0 = null;
     if (moved || ptr.size) return;
     const r = cv.getBoundingClientRect(), px = e.clientX - r.left + view.x, py = e.clientY - r.top, now = Date.now();
+    if (py < 42 && bandItems.length) { const sx = e.clientX - r.left, b = bandItems.find((it) => sx >= it.x0 && sx <= it.x1); if (b) { focus(b.self || b.node); return; } }
     if (now - lastTap < 300) { lastTap = 0; flyTo(yOf(py), Math.min(90, view.rh * 2.5)); return; }
     lastTap = now;
     const hit = pick(px, py);
@@ -543,7 +561,7 @@
     document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life (aktuell)" : p.titel)}</span></button>`).join("");
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.kurztext || SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.kurztext || SHORT[m.art] || "")}</span>${m.studie ? `<span class="tr-leg" title="Orange Sterne und Ringe markieren die Arten, die in dieser Studie untersucht wurden; ein oranger Ring um eine Familie zeigt, dass sie hier anders steht als im Vergleichsbaum."><b>★</b> = in der Studie untersucht</span>` : ""}<span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
       <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }
