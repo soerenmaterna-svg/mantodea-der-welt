@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arten vergleichen – Mantodea der Welt</title>
 <link rel="icon" href="favicon.png">
-<link rel="stylesheet" href="artvergleich/artvergleich.css?v=202611231430">
+<link rel="stylesheet" href="artvergleich/artvergleich.css?v=202611231530">
 </head>
 <body>
 <header class="av-kopf">
@@ -18,18 +18,21 @@
       <ul id="av-vorschlag" class="av-vorschlag" hidden></ul>
     </div>
   </div>
-  <div class="av-z2">
-    <div id="av-chips" class="av-chips"></div>
-    <div id="av-schnell" class="av-schnell"></div>
-  </div>
   <div id="av-steuer" class="av-z3" hidden>
-    <label><span class="av-l">Zeigen</span> <select id="av-zeig"><option value="alle">Alles</option><option value="unterschiede">Nur Unterschiede</option><option value="gemeinsam">Nur Gemeinsamkeiten</option><option value="bestimmung">Nur Bestimmungsmerkmale 🔑</option></select></label>
-    <label><span class="av-l">Sortieren</span> <select id="av-sort"><option value="region">Nach Körperregion</option><option value="unterschiede">Unterschiede zuerst</option><option value="gemeinsam">Gemeinsamkeiten zuerst</option></select></label>
-    <label class="av-cb"><input type="checkbox" id="av-leer"> nur bei einer Art dokumentierte Merkmale</label>
-    <label class="av-cb"><input type="checkbox" id="av-aehnl"> Arten nach Ähnlichkeit ordnen</label>
-    <button type="button" id="av-info-k" class="av-info-k" title="Woher stammen die Merkmale?">ⓘ</button>
-    <span id="av-bilanz" class="av-bilanz"></span>
+    <label class="av-sel"><span>Zeigen</span><select id="av-zeig"><option value="alle">Alle Merkmale</option><option value="bestimmung">Nur Bestimmungsmerkmale 🔑</option><option value="unterschiede">Nur Unterschiede</option><option value="gemeinsam">Nur Gemeinsamkeiten</option></select></label>
+    <label class="av-sel"><span>Sortieren</span><select id="av-sort"><option value="region">Nach Körperregion</option><option value="unterschiede">Unterschiede zuerst</option><option value="gemeinsam">Gemeinsamkeiten zuerst</option></select></label>
   </div>
+  <div id="av-mehr" class="av-z4" hidden>
+    <span id="av-bilanz" class="av-bilanz"></span>
+    <span class="av-opt">
+      <label class="av-cb"><input type="checkbox" id="av-aehnl"> Arten nach Ähnlichkeit ordnen</label>
+      <label class="av-cb"><input type="checkbox" id="av-leer"> auch Merkmale, die nur bei einer Art dokumentiert sind</label>
+      <span id="av-schnell" class="av-schnell"></span>
+      <button type="button" id="av-alle-weg" class="av-link">Alle Arten entfernen</button>
+      <button type="button" id="av-info-k" class="av-link" title="Woher stammen die Merkmale?">ⓘ Erklärung</button>
+    </span>
+  </div>
+  <div id="av-chips" hidden></div>
   <div id="av-info" class="av-info" hidden>
     <p>Die Merkmale stammen aus den Bestimmungsschlüsseln der Fachliteratur, die auch der Bestimmungsschlüssel dieser Seite verwendet (z. B. Giglio-Tos 1927 und zahlreiche Gattungsrevisionen). Jede Art erhält die Ausprägungen der Schlüsselstellen, über die man zu ihr gelangt; Merkmale der Familie bzw. Gattung sind so gekennzeichnet. Körpermaße stammen aus Artbeschreibungen (Soothsayer, Plazi). „Nicht dokumentiert“ heißt: in den ausgewerteten Quellen steht nichts dazu – nicht, dass das Merkmal fehlt.</p>
     <p><b class="st-verschieden">≠ unterschiedlich</b>: mindestens zwei Arten haben verschiedene Ausprägungen · <b class="st-teilweise">≈ teilweise</b>: variabel oder überschneidend · <b class="st-gleich">= gleich</b>. Gleiche Zellfarbe = gleiche Ausprägung. „vermutlich“: die Art ist laut Schlüssel nur möglicherweise so.</p>
@@ -37,10 +40,10 @@
   </div>
 </header>
 <main id="av-tabelle" class="av-tabelle"></main>
-<script src="data/species.js?v=202611231430"></script>
-<script src="data/merkmale.js?v=202611231430"></script>
-<script src="data/typen.js?v=202611231430"></script>
-<script src="data/netzfotos.js?v=202611231430"></script>
-<script src="artvergleich/artvergleich.js?v=202611231430"></script>
+<script src="data/species.js?v=202611231530"></script>
+<script src="data/merkmale.js?v=202611231530"></script>
+<script src="data/typen.js?v=202611231530"></script>
+<script src="data/netzfotos.js?v=202611231530"></script>
+<script src="artvergleich/artvergleich.js?v=202611231530"></script>
 </body>
 </html>

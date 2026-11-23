@@ -179,10 +179,10 @@
   function zeichnen() {
     schreiben(); chips(); schnell();
     const box = $("av-tabelle");
-    $("av-steuer").hidden = st.arten.length < 2;
+    $("av-steuer").hidden = st.arten.length < 2; $("av-mehr").hidden = !st.arten.length;
     $("av-zeig").value = st.zeig; $("av-sort").value = st.sort;
     $("av-leer").checked = st.leer; $("av-aehnl").checked = st.aehnl;
-    if (!st.arten.length) { box.innerHTML = `<p class="av-leerhinweis">Wähle oben zwei oder mehr Arten aus. Die Merkmale erscheinen dann nebeneinander; Unterschiede werden farbig hervorgehoben.</p>`; $("av-bilanz").textContent = ""; return; }
+    if (!st.arten.length) { box.innerHTML = `<p class="av-leerhinweis">Wähle oben über das Suchfeld zwei oder mehr Arten aus. Die Merkmale erscheinen dann nebeneinander; Unterschiede werden farbig hervorgehoben.<br><br>${box.dataset.bsp || ""}</p>`; $("av-bilanz").textContent = ""; return; }
     let arten = st.arten.map((k) => BYK.get(k));
     let zeilen = vergleich(arten);
     if (st.aehnl && arten.length > 2) {
@@ -249,9 +249,9 @@
       const labHtml = `<span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.wichtig === 2 ? ` <span class="av-key k2" title="Wichtig für die Artbestimmung: In diesem Merkmal unterscheiden sich die gewählten Arten">🔑 trennt diese Arten</span>` : z.wichtig === 1 ? ` <span class="av-key k1" title="Die Fachliteratur nutzt dieses Merkmal, um Arten zu bestimmen (aus einem Artenschlüssel)">🔑 Bestimmungsmerkmal</span>` : ""}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}`;
       const zk = `st-${z.status}${z.wichtig ? " w" + z.wichtig : ""}`, qt = esc(z.q ? "Quelle: " + z.q : "");
       körper += (MOB ? `<tr class="av-lrow ${zk}"><th colspan="${SP_}" class="av-lab-m" title="${qt}"><span class="av-lab-in">${labHtml}</span></th></tr><tr class="av-z ${zk}">`
-        : `<tr class="av-z ${zk}"><th class="av-lab" title="${qt}">${labHtml}</th>`) + `${z.zellen.map((c) => c
-        ? `<td class="${z.status === "info" ? "" : z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
-        : `<td class="nd">nicht dokumentiert</td>`).join("")}</tr>`;
+        : `<tr class="av-z ${zk}"><th class="av-lab" title="${qt}">${labHtml}</th>`) + `${z.zellen.map((c, ci) => c
+        ? `<td style="--ac:${ARTFARBE[ci % ARTFARBE.length]}" class="sp${ci % 2} ${z.status === "info" ? "" : z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
+        : `<td style="--ac:${ARTFARBE[ci % ARTFARBE.length]}" class="sp${ci % 2} nd">nicht dokumentiert</td>`).join("")}</tr>`;
     }
     const kurzfassung = arten.length > 1 ? kurzHtml(zeilen, arten) : "";
     box.innerHTML = `<div class="av-scroll">${kurzfassung}<table class="av-t" style="--n:${arten.length}"><thead>${kopf}</thead><tbody>${körper}</tbody></table></div>`;
@@ -271,7 +271,7 @@
 
   // ---------- Kurzfassung: die wichtigsten Unterschiede in Worten (artgenaue Merkmale zuerst)
   const offen = new Set();
-  let kurzOffen = true;
+  let kurzOffen = false;
   function kurzHtml(zeilen, arten) {
     const lvlRang = (z) => Math.min(...z.zellen.filter(Boolean).map((c) => (c.lvl === "Art" || !c.lvl ? 0 : c.lvl === "Gattung" ? 1 : 2)));
     const regOrd = ["masse", ...MM.regionen.map((r) => r[0])];
@@ -293,16 +293,16 @@
 
   // ---------- Auswahl
   const ARTFARBE = ["#2f6b3a", "#2b5fa8", "#c27a12", "#8e44ad", "#c0392b", "#16857c", "#8a7a10", "#555b57"];
-  function chips() {
+  function chips() { return;
     $("av-chips").innerHTML = st.arten.map((k, i) => { const s = BYK.get(k); return `<span class="av-chip" style="--ac:${ARTFARBE[i % ARTFARBE.length]}"><i>${esc(s.n)}</i><button type="button" data-weg="${esc(k)}" aria-label="entfernen">✕</button></span>`; }).join("")
       + (st.arten.length ? `<button type="button" class="av-chip leeren" id="av-alle-weg">Auswahl leeren</button>` : "");
   }
   function schnell() {
     const s = st.arten.length ? BYK.get(st.arten[0]) : null;
-    if (!s) { $("av-schnell").innerHTML = `<span class="av-grau">Beispiele:</span> ${[["Mantis religiosa", "Sphodromantis viridis", "Hierodula membranacea"], ["Sphodropoda tristis", "Sphodropoda viridis", "Sphodropoda quinquedens", "Sphodropoda lepida"], ["Empusa pennata", "Empusa fasciata", "Idolomantis diabolica"]]
+    if (!s) { $("av-schnell").innerHTML = ""; $("av-tabelle").dataset.bsp = `<span class="av-grau">Beispiele:</span> ${[["Mantis religiosa", "Sphodromantis viridis", "Hierodula membranacea"], ["Sphodropoda tristis", "Sphodropoda viridis", "Sphodropoda quinquedens", "Sphodropoda lepida"], ["Empusa pennata", "Empusa fasciata", "Idolomantis diabolica"]]
       .map((b) => b.filter((n) => SP.some((x) => x.n === n))).filter((b) => b.length > 1).map((b) => `<button type="button" class="av-bsp" data-bsp="${esc(b.join("|"))}">${b.map((n) => `<i>${esc(n)}</i>`).join(" · ")}</button>`).join("")}`; return; }
     const gat = SP.filter((x) => x.g === s.g && !st.arten.includes(x.k));
-    $("av-schnell").innerHTML = gat.length ? `<button type="button" class="av-bsp" data-gat="${esc(s.g)}">+ weitere Arten der Gattung <i>${esc(s.g)}</i> (${gat.length})</button>` : "";
+    $("av-schnell").innerHTML = gat.length && st.arten.length < MAX ? `<button type="button" class="av-link" data-gat="${esc(s.g)}">+ weitere Arten der Gattung <i>${esc(s.g)}</i> (${gat.length})</button>` : "";
   }
   function dazu(k) { if (!st.arten.includes(k) && st.arten.length < MAX) st.arten.push(k); zeichnen(); }
 
