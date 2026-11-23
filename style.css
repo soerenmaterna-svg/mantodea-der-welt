@@ -1136,7 +1136,18 @@ details.d-zeile.ung-art { background: transparent; border-color: var(--line); }
 .d-actions a.d-av { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card, #fff); color: var(--ink); text-decoration: none; }
 
 /* Arten vergleichen: Einstieg im Reiter, kleiner Knopf am Artnamen, Vollbild-Fenster */
-.k-sub { margin: 4px 0 10px; }
+.k-wahl h2 { margin: 0 0 4px; }
+.k-wahl-such { position: relative; margin: 8px 0 6px; }
+#k-wahl-q { width: 100%; font: inherit; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: #111; }
+.k-wahl-vor { position: absolute; left: 0; right: 0; top: 100%; z-index: 20; margin: 2px 0 0; padding: 4px 0; list-style: none; background: #fff; color: #111; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.15); max-height: 50vh; overflow: auto; }
+.k-wahl-vor li { padding: 6px 12px; cursor: pointer; }
+.k-wahl-vor li:hover { background: #eef4ec; }
+.k-wahl-vor li small { color: #6b7470; }
+.k-wahl-vor li.drin { opacity: .5; }
+.k-wahl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.k-chip { display: inline-flex; align-items: center; gap: 6px; background: #eef4ec; color: #1d2420; border: 1px solid #cfe0ca; border-radius: 999px; padding: 2px 3px 2px 11px; }
+.k-chip button { border: 0; background: #fff; border-radius: 50%; width: 20px; height: 20px; padding: 0; line-height: 1; color: #6b7470; cursor: pointer; }
+.k-wahl-los { margin: 10px 0 2px; }
 .k-vgl-auf { width: 100%; font: inherit; font-weight: 600; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; text-align: left; }
 .k-vgl-auf small { font-weight: 400; opacity: .9; }
 .d-vgl-k { font: 600 .78rem/1 system-ui, sans-serif; vertical-align: middle; margin-left: 6px; padding: 4px 8px; border: 1px solid var(--accent); border-radius: 999px; background: transparent; color: var(--accent); cursor: pointer; white-space: nowrap; }

@@ -1370,6 +1370,7 @@
   // Nachrichten aus dem Vergleichsfenster: schließen bzw. Steckbrief einer Art öffnen
   window.addEventListener("message", (e) => {
     if (e.origin !== location.origin || !e.data || !e.data.mantodeaVgl) return;
+    if (e.data.mantodeaVgl === "auswahl") { document.dispatchEvent(new CustomEvent("mantodea:vglwahl", { detail: e.data.a || [] })); return; }
     const d = $("vgl-dlg");
     if (d && d.open) d.close();
     if (e.data.mantodeaVgl === "art" && BYKEY.get(String(e.data.k))) detail(String(e.data.k));

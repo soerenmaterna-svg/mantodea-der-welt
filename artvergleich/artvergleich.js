@@ -27,6 +27,7 @@
     if (st.leer) p.set("leer", "1");
     if (st.aehnl) p.set("aehnl", "1");
     history.replaceState(null, "", "#" + p.toString());
+    if (window.top !== window) window.parent.postMessage({ mantodeaVgl: "auswahl", a: st.arten.slice() }, location.origin);
   }
 
   // ---------- Merkmalsprofil einer Art: Familie < Gattung < Art (das Genauere gilt)

@@ -53,7 +53,13 @@
   const st = { conts: new Set(), land: "", sel: {}, fam: "", gen: "", shown: 48, focus: null };
   const root = $("v-bestimmen");
   root.innerHTML = `
-    <div class="k-sub"><button type="button" class="k-vgl-auf" data-vgl="">⚖️ Arten vergleichen <small>– Merkmale mehrerer Arten nebeneinander, im Vollbild</small></button></div>
+    <div class="panel k-wahl">
+      <h2>⚖️ Arten vergleichen</h2>
+      <p class="muted">Wähle zwei oder mehr Arten aus und tippe auf „Vergleichen“. Die Merkmale erscheinen dann nebeneinander im Vollbild; Unterschiede sind farbig hervorgehoben. Im Vergleich kannst du weitere Arten hinzufügen oder entfernen.</p>
+      <div class="k-wahl-such"><input type="search" id="k-wahl-q" placeholder="Art oder Gattung eingeben, z. B. Mantis religiosa" autocomplete="off"><ul id="k-wahl-vor" class="k-wahl-vor" hidden></ul></div>
+      <div id="k-wahl-chips" class="k-wahl-chips"></div>
+      <p class="k-wahl-los"><button type="button" id="k-wahl-go" class="primary" disabled>⚖️ Vergleichen</button> <span id="k-wahl-n" class="muted small"></span></p>
+    </div>
     <div id="k-best">
     <div class="intro">
       <h2>Bestimmen</h2>
@@ -78,7 +84,35 @@
     </div>
     <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>
     </div>`;
-  // "Arten vergleichen" öffnet das bildschirmfüllende Vergleichsfenster (app.js)
+  // ---------- Arten für den Vergleich auswählen; "Vergleichen" öffnet das Vollbild-Fenster (app.js)
+  const wahl = [];
+  const normT = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const wahlIdx = DATA.filter((s) => !s.x).map((s) => [normT(s.n + " " + (s.de || "") + " " + (s.en || "")), s]);
+  let wahlTreffer = [];
+  const wahlZeichnen = () => {
+    $("k-wahl-chips").innerHTML = wahl.map((k) => { const s = BYKEY.get(k); return `<span class="k-chip"><i>${esc(s.n)}</i><button type="button" data-wahlweg="${esc(k)}" aria-label="entfernen">✕</button></span>`; }).join("");
+    $("k-wahl-go").disabled = wahl.length < 1;
+    $("k-wahl-n").textContent = wahl.length ? `${wahl.length} von höchstens 8 Arten ausgewählt` + (wahl.length < 2 ? " – wähle mindestens eine weitere" : "") : "";
+  };
+  $("k-wahl-q").addEventListener("input", (e) => {
+    const q = normT(e.target.value.trim()), ul = $("k-wahl-vor");
+    if (q.length < 2) { ul.hidden = true; return; }
+    const teile = q.split(/\s+/);
+    wahlTreffer = wahlIdx.filter(([t]) => teile.every((x) => t.includes(x))).map((x) => x[1])
+      .sort((a, b) => (normT(a.n).startsWith(q) ? 0 : 1) - (normT(b.n).startsWith(q) ? 0 : 1) || a.n.localeCompare(b.n)).slice(0, 12);
+    ul.innerHTML = wahlTreffer.length ? wahlTreffer.map((s, i) => `<li data-wi="${i}"${wahl.includes(s.k) ? ' class="drin"' : ""}><i>${esc(s.n)}</i> <small>${esc(s.a || "")} · ${esc(s.f)}</small></li>`).join("") : `<li class="nix">Keine Art gefunden</li>`;
+    ul.hidden = false;
+  });
+  $("k-wahl-q").addEventListener("keydown", (e) => { if (e.key === "Enter" && wahlTreffer[0]) { e.preventDefault(); $("k-wahl-vor").querySelector("li[data-wi]").dispatchEvent(new MouseEvent("mousedown", { bubbles: true })); } });
+  $("k-wahl-vor").addEventListener("mousedown", (e) => {
+    const li = e.target.closest("li[data-wi]"); if (!li) return; e.preventDefault();
+    const s = wahlTreffer[+li.dataset.wi]; if (s && !wahl.includes(s.k) && wahl.length < 8) wahl.push(s.k);
+    $("k-wahl-q").value = ""; $("k-wahl-vor").hidden = true; wahlZeichnen(); $("k-wahl-q").focus();
+  });
+  $("k-wahl-q").addEventListener("blur", () => setTimeout(() => { $("k-wahl-vor").hidden = true; }, 150));
+  $("k-wahl-chips").addEventListener("click", (e) => { const b = e.target.closest("[data-wahlweg]"); if (b) { wahl.splice(wahl.indexOf(b.dataset.wahlweg), 1); wahlZeichnen(); } });
+  $("k-wahl-go").addEventListener("click", () => { if (window.MANTODEA_VGL) window.MANTODEA_VGL(wahl.slice()); });
+  document.addEventListener("mantodea:vglwahl", (e) => { wahl.length = 0; e.detail.filter((k) => BYKEY.get(k)).forEach((k) => wahl.push(k)); wahlZeichnen(); });
 
   const coll = new Intl.Collator("de");
   const LIVE = DATA.filter((s) => !s.x);
