@@ -51,11 +51,10 @@
     ["Familie", (s) => s.f],
     ["Unterfamilie", (s) => (s.sf && !s.sf.startsWith("(") ? s.sf : "")],
     ["Gattung", (s) => s.g],
-    ["Beschrieben von", (s) => s.a || ""],
-    ["Jahr der Beschreibung", (s) => ((s.a || "").match(/\d{4}/) || [""])[0]],
+    ["Beschrieben von (Autor, Jahr)", (s) => (s.a || "").replace(/^\((.*)\)$/, "$1"), 1],
     ["Erdteile", (s) => (s.c || []).map((c) => ERD[c] || c).join(", ")],
-    ["Länder", (s) => (s.ct || []).length ? (s.ct.length > 6 ? s.ct.length + " Länder" : s.ct.map(landName).join(", ")) : ""],
-    ["Typusexemplare", (s) => typKurz(s.k)],
+    ["Länder", (s) => (s.ct || []).length ? (s.ct.length > 6 ? s.ct.length + " Länder" : s.ct.map(landName).join(", ")) : "", 1],
+    ["Typusexemplare", (s) => typKurz(s.k), 1],
   ];
   const MASSE = [["koerper", "Körperlänge"], ["kopfbreite", "Kopfbreite"], ["pronotum_l", "Pronotumlänge (Halsschild)"], ["pronotum_b", "Pronotumbreite"], ["prozona", "Prozona (vorderer Halsschild)"], ["metazona", "Metazona (hinterer Halsschild)"],
     ["vfl", "Vorderflügellänge (Tegmen)"], ["hfl", "Hinterflügellänge"], ["procoxa", "Vorderhüftlänge (Procoxa)"], ["profemur", "Vorderschenkellänge (Profemur)"], ["protibia", "Vorderschienenlänge (Protibia)"],
@@ -66,9 +65,11 @@
   function vergleich(arten) {
     const P = arten.map(profil), zeilen = [];
     // Überblick
-    for (const [lab, f] of ALLG) {
+    for (const [lab, f, info] of ALLG) {
       const w = arten.map((s) => f(s) || null);
-      zeilen.push(bewerte({ reg: "allg", regName: "Überblick", lab, zellen: w.map((x) => (x ? { t: x, key: x } : null)) }));
+      const z = bewerte({ reg: "allg", regName: "Überblick", lab, zellen: w.map((x) => (x ? { t: x, key: x } : null)) });
+      if (info) z.status = "info";
+      zeilen.push(z);
     }
     // Körpermaße
     for (const [feld, lab] of MASSE) {
@@ -126,6 +127,19 @@
     z.zellen.forEach((c) => { if (c) c.farbe = z.status === "gleich" ? 0 : gr.get(c.key); });
     return z;
   }
+  // Zahl der Merkmale, in denen sich jede Art von der ersten unterscheidet
+  function unterschiede(zeilen, n) {
+    const out = Array(n).fill(0);
+    for (const z of zeilen) {
+      if (z.reg === "allg" || z.status === "einzeln") continue;
+      const a = z.zellen[0]; if (!a) continue;
+      for (let j = 1; j < n; j++) {
+        const b = z.zellen[j]; if (!b) continue;
+        if (z.opts ? !a.set.some((x) => b.set.includes(x)) : z.mass ? z.status === "verschieden" && a.key !== b.key : a.key !== b.key) out[j]++;
+      }
+    }
+    return out;
+  }
   // Ähnlichkeit jeder Art zur ersten (Anteil gleicher unter den gemeinsam dokumentierten Merkmalen)
   function aehnlichkeit(zeilen, n) {
     const out = Array(n).fill(null);
@@ -171,13 +185,14 @@
     let zeilen = vergleich(arten);
     if (st.aehnl && arten.length > 2) {
       const ae = aehnlichkeit(zeilen, arten.length);
-      const ord = [0, ...arten.map((_, i) => i).slice(1).sort((a, b) => ((ae[b] || { p: -1 }).p - (ae[a] || { p: -1 }).p))];
+      const un = unterschiede(zeilen, arten.length);
+      const ord = [0, ...arten.map((_, i) => i).slice(1).sort((a, b) => un[a] - un[b] || ((ae[b] || { p: -1 }).p - (ae[a] || { p: -1 }).p))];
       arten = ord.map((i) => arten[i]); zeilen = vergleich(arten);
     }
-    const ae = aehnlichkeit(zeilen, arten.length);
-    const zaehl = { verschieden: 0, teilweise: 0, gleich: 0, einzeln: 0 };
-    zeilen.forEach((z) => zaehl[z.status]++);
-    $("av-bilanz").innerHTML = arten.length < 2 ? "" : `<b class="st-verschieden">${zaehl.verschieden} unterschiedlich</b> · <b class="st-teilweise">${zaehl.teilweise} teilweise</b> · <b class="st-gleich">${zaehl.gleich} gleich</b> <span class="av-grau">von ${zeilen.filter((z) => z.status !== "einzeln").length} vergleichbaren Merkmalen</span>`;
+    const un = unterschiede(zeilen, arten.length);
+    const zaehl = { verschieden: 0, teilweise: 0, gleich: 0, einzeln: 0, info: 0 };
+    zeilen.forEach((z) => { if (z.reg !== "allg") zaehl[z.status]++; });
+    $("av-bilanz").innerHTML = arten.length < 2 ? "" : `<b class="st-verschieden">${zaehl.verschieden} unterschiedlich</b> · <b class="st-teilweise">${zaehl.teilweise} teilweise</b> · <b class="st-gleich">${zaehl.gleich} gleich</b> <span class="av-grau">von ${zeilen.filter((z) => z.reg !== "allg" && z.status !== "einzeln").length} vergleichbaren Körpermerkmalen</span>`;
     // Filtern
     let sicht = zeilen.filter((z) => {
       if (z.reg === "allg") return true;
@@ -188,6 +203,12 @@
       return true;
     });
     if (arten.length === 1) sicht = zeilen.filter((z) => z.n);
+    const ohneMasse = !zeilen.some((z) => z.reg === "masse" && z.n);
+    if (ohneMasse) sicht = sicht.filter((z) => z.reg !== "masse");
+    // Übereinstimmende Merkmale je Körperregion eingeklappt (Ansicht "Alles", nach Körperregion)
+    const klapp = st.sort === "region" && st.zeig === "alle" && arten.length > 1;
+    const glZahl = {};
+    if (klapp) sicht = sicht.filter((z) => { if (z.reg !== "allg" && z.status === "gleich" && !offen.has(z.reg)) { glZahl[z.reg] = (glZahl[z.reg] || 0) + 1; return false; } return true; });
     // Sortieren
     const regOrd = ["allg", "masse", ...MM.regionen.map((r) => r[0])];
     const ro = (z) => regOrd.indexOf(z.reg);
@@ -197,27 +218,70 @@
     const kopf = `<tr><th class="av-ecke">Merkmal</th>${arten.map((s, i) => `<th class="av-art"><div class="av-artkopf">
         <img alt="" loading="lazy" hidden data-fk="${esc(s.k)}">
         <div class="av-ak-t"><a href="index.html#art=${encodeURIComponent(s.k)}" class="av-name"><i>${esc(s.n)}</i></a><small>${esc(s.a || "")}</small>
-        ${i > 0 && ae[i] ? `<span class="av-aehn" title="Anteil gleicher Ausprägungen unter ${ae[i].vg} Merkmalen, die bei beiden Arten dokumentiert sind (Bezug: ${esc(arten[0].n)})">${ae[i].p} % gleich</span>` : i === 0 && arten.length > 1 ? `<span class="av-aehn ref">Bezugsart</span>` : ""}
+        ${i > 0 ? `<span class="av-aehn${un[i] ? " un" : ""}" title="Merkmale, in denen sich diese Art von ${esc(arten[0].n)} (erste Spalte) unterscheidet">${un[i] ? un[i] + (un[i] === 1 ? " Unterschied" : " Unterschiede") : "kein Unterschied"} zur ersten Art</span>` : arten.length > 1 ? `<span class="av-aehn ref">erste Art (Bezug)</span>` : ""}
         </div><button type="button" class="av-weg" data-weg="${esc(s.k)}" title="Aus dem Vergleich entfernen">✕</button></div></th>`).join("")}</tr>`;
-    let körper = "", letzteReg = null;
+    let körper = "", letzteReg = null, masseHinweis = false;
+    const regKopf = (reg, name) => {
+      const c = zeilen.filter((y) => y.reg === reg && y.status !== "einzeln" && y.status !== "info");
+      const v = c.filter((y) => y.status === "verschieden").length, g = c.filter((y) => y.status === "gleich").length;
+      return `<tr class="av-reg"><th colspan="${arten.length + 1}">${esc(name)}${reg !== "allg" ? ` <small>${v ? `<b class="st-verschieden">${v} unterschiedlich</b> · ` : ""}${c.length} verglichen</small>` : ""}</th></tr>`
+        + (glZahl[reg] ? `<tr class="av-klapp"><td colspan="${arten.length + 1}"><button type="button" data-auf="${reg}">▸ ${glZahl[reg]} ${glZahl[reg] === 1 ? "Merkmal stimmt" : "Merkmale stimmen"} bei allen Arten überein – anzeigen</button></td></tr>`
+          : offen.has(reg) && g ? `<tr class="av-klapp"><td colspan="${arten.length + 1}"><button type="button" data-zu="${reg}">▾ übereinstimmende Merkmale wieder einklappen</button></td></tr>` : "");
+    };
+    const regNamen = Object.fromEntries([["allg", "Überblick"], ["masse", "Körpermaße"], ...MM.regionen]);
+    if (klapp) for (const reg of Object.keys(glZahl)) if (!sicht.some((z) => z.reg === reg)) sicht.push({ nurKopf: true, reg, regName: regNamen[reg] || reg });
+    if (st.sort === "region") sicht.sort((a, b) => ro(a) - ro(b) || (a.nurKopf ? -1 : b.nurKopf ? 1 : 0) || (a.lab || "").localeCompare(b.lab || "", "de"));
     for (const z of sicht) {
       if (st.sort === "region" && z.reg !== letzteReg) {
         letzteReg = z.reg;
-        const c = zeilen.filter((y) => y.reg === z.reg && y.status !== "einzeln");
-        const v = c.filter((y) => y.status === "verschieden").length;
-        körper += `<tr class="av-reg"><th colspan="${arten.length + 1}">${esc(z.regName)}${z.reg !== "allg" ? ` <small>${c.length} verglichen${v ? ` · ${v} unterschiedlich` : ""}</small>` : ""}</th></tr>`;
+        if (z.reg !== "allg" && !masseHinweis && ohneMasse) { masseHinweis = true; körper += `<tr class="av-reg"><th colspan="${arten.length + 1}">Körpermaße <small>für diese Arten sind in den ausgewerteten Quellen keine Maße dokumentiert</small></th></tr>`; }
+        körper += regKopf(z.reg, z.regName);
       }
-      const [stName, stZ] = STATUS[z.status];
-      const pre = z.lab && z.lab.endsWith(" …") ? z.lab.slice(0, -2) : "";
-      const lab = pre || z.lab || (z.opts ? z.opts[0].split(/[:,(]| mit | ohne /)[0] : "");
-      const gross = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-      const kurz = (t) => t.split(" / oder: ").map((x) => (pre && x.startsWith(pre + " ") ? gross(x.slice(pre.length + 1)) : x)).join(" – oder – ");
+      if (z.nurKopf) continue;
+      const [stName, stZ] = STATUS[z.status] || ["Angabe", "i"];
+      const B = z.opts ? beschrift(z) : null;
+      const lab = B ? B.lab : z.lab;
+      const kurz = (t) => B.wert(t, " – oder – ");
       körper += `<tr class="av-z st-${z.status}"><th class="av-lab" title="${esc(z.q ? "Quelle: " + z.q : "")}"><span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}</th>${z.zellen.map((c) => c
-        ? `<td class="${z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
+        ? `<td class="${z.status === "info" ? "" : z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
         : `<td class="nd">nicht dokumentiert</td>`).join("")}</tr>`;
     }
-    box.innerHTML = `<div class="av-scroll"><table class="av-t" style="--n:${arten.length}"><thead>${kopf}</thead><tbody>${körper}</tbody></table></div>`;
+    const kurzfassung = arten.length > 1 ? kurzHtml(zeilen, arten) : "";
+    box.innerHTML = `<div class="av-scroll">${kurzfassung}<table class="av-t" style="--n:${arten.length}"><thead>${kopf}</thead><tbody>${körper}</tbody></table></div>`;
     box.querySelectorAll("img[data-fk]").forEach((im) => foto(BYK.get(im.dataset.fk), im));
+  }
+
+  // Beschriftung eines Merkmals: gemeinsamer Anfang der Ausprägungen, aber nur wenn er auf ein Hauptwort endet
+  function beschrift(z) {
+    let pre = z.lab && z.lab.endsWith(" …") ? z.lab.slice(0, -2).trim() : "";
+    if (pre && !/[A-ZÄÖÜ][\wäöüß\-]*$/.test(pre)) pre = "";
+    const nomen = () => { const w = []; for (const t of z.opts || []) for (const m of t.match(/\b[A-ZÄÖÜ][a-zäöüß\-]{3,}/g) || []) if (!w.includes(m) && !/^(Männchen|Weibchen|Beim|Die|Der|Das|Zwischen|Innen|Außen|Ohne|Mit|Nicht|Kein|Keine|Sehr|Über|Unter|Hinter|Oben|Unten|Etwa|Fast|Ganz|Deutlich|Stark|Schwach)$/.test(m)) w.push(m); return w.slice(0, 3).join(", "); };
+    const lab = pre || (z.lab && !z.lab.endsWith(" …") ? z.lab : "") || nomen() || z.regName;
+    const gross = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    const wert = (t, trenn) => t.split(" / oder: ").map((x) => (pre && x.startsWith(pre) ? gross(x.slice(pre.length).replace(/^[\s:,;]+/, "")) : x)).join(trenn);
+    return { lab, wert };
+  }
+
+  // ---------- Kurzfassung: die wichtigsten Unterschiede in Worten (artgenaue Merkmale zuerst)
+  const offen = new Set();
+  let kurzOffen = true;
+  function kurzHtml(zeilen, arten) {
+    const lvlRang = (z) => Math.min(...z.zellen.filter(Boolean).map((c) => (c.lvl === "Art" || !c.lvl ? 0 : c.lvl === "Gattung" ? 1 : 2)));
+    const regOrd = ["masse", ...MM.regionen.map((r) => r[0])];
+    const ds = zeilen.filter((z) => z.reg !== "allg" && z.status === "verschieden")
+      .sort((a, b) => lvlRang(a) - lvlRang(b) || regOrd.indexOf(a.reg) - regOrd.indexOf(b.reg));
+    const name = (i) => `<i>${esc(arten[i].n)}</i>`;
+    const fam = new Set(arten.map((s) => s.f)), gat = new Set(arten.map((s) => s.g));
+    const kopf = `<p class="av-kz-satz">${arten.length} Arten aus ${gat.size === 1 ? `derselben Gattung <i>${esc([...gat][0])}</i>` : fam.size === 1 ? `${gat.size} Gattungen derselben Familie ${esc([...fam][0])}` : `${fam.size} Familien`}. ${ds.length ? `Sie unterscheiden sich in <b>${ds.length}</b> dokumentierten ${ds.length === 1 ? "Merkmal" : "Merkmalen"}${ds.length > 6 ? "; die wichtigsten:" : ":"}` : "In den ausgewerteten Quellen sind keine eindeutigen Unterschiede zwischen diesen Arten dokumentiert."}</p>`;
+    const li = ds.slice(0, 6).map((z) => {
+      const B = z.opts ? beschrift(z) : { lab: z.lab, wert: (t) => t };
+      const lab = B.lab;
+      const gr = new Map();
+      z.zellen.forEach((c, i) => { if (c) { if (!gr.has(c.key)) gr.set(c.key, { c, a: [] }); gr.get(c.key).a.push(i); } });
+      const wert = (c) => B.wert(c.t, " oder ");
+      return `<li><b>${esc(lab)}</b> <small class="av-grau">(${esc(z.regName)})</small><ul>${[...gr.values()].map((g) => `<li><span class="av-farbe f${g.c.farbe % FARBEN.length}"></span>${esc(wert(g.c))}: ${g.a.map(name).join(", ")}</li>`).join("")}</ul></li>`;
+    }).join("");
+    return `<details class="av-kurz"${kurzOffen ? " open" : ""}><summary>Woran unterscheiden sich die Arten?</summary>${kopf}${li ? `<ol class="av-kz">${li}</ol>` : ""}${ds.length > 6 ? `<p class="av-grau av-kz-mehr">Alle ${ds.length} Unterschiede stehen in der Tabelle darunter (rot markiert); mit „Zeigen: Nur Unterschiede“ siehst du nur diese.</p>` : ""}</details>`;
   }
 
   // ---------- Auswahl
@@ -264,9 +328,12 @@
     const b = e.target.closest("[data-bsp]"); if (b) { st.arten = b.dataset.bsp.split("|").map((n) => SP.find((x) => x.n === n)).filter(Boolean).map((s) => s.k); zeichnen(); return; }
     const g = e.target.closest("[data-gat]"); if (g) { SP.filter((x) => x.g === g.dataset.gat).forEach((x) => { if (!st.arten.includes(x.k) && st.arten.length < MAX) st.arten.push(x.k); }); zeichnen(); return; }
     if (e.target.id === "av-info-k") $("av-info").hidden = !$("av-info").hidden;
+    const auf = e.target.closest("[data-auf]"); if (auf) { offen.add(auf.dataset.auf); zeichnen(); return; }
+    const zu = e.target.closest("[data-zu]"); if (zu) { offen.delete(zu.dataset.zu); zeichnen(); return; }
   });
   $("av-zeig").addEventListener("change", (e) => { st.zeig = e.target.value; zeichnen(); });
   $("av-sort").addEventListener("change", (e) => { st.sort = e.target.value; zeichnen(); });
+  document.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("av-kurz")) kurzOffen = e.target.open; }, true);
   $("av-leer").addEventListener("change", (e) => { st.leer = e.target.checked; zeichnen(); });
   $("av-aehnl").addEventListener("change", (e) => { st.aehnl = e.target.checked; zeichnen(); });
   $("av-zurueck").onclick = () => { if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back(); else location.href = "index.html"; };

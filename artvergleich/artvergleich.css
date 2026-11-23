@@ -91,3 +91,21 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
 .eingebettet body { background: #fff; }
 .eingebettet .av-tabelle { padding: 6px 0 0; }
 @media (max-width: 700px) { .av-z3 select { max-width: 44vw; } }
+
+/* Kurzfassung oben in der Tabelle */
+.av-kurz { position: sticky; left: 0; max-width: min(100%, 1100px); margin: 8px 10px 10px; padding: 8px 12px; border: 1px solid #e6cbc4; border-left: 4px solid var(--rot); border-radius: 10px; background: #fffaf8; font-size: 14px; }
+.av-kurz summary { cursor: pointer; font-weight: 700; font-size: 15px; }
+.av-kz-satz { margin: 6px 0; }
+.av-kz { margin: 4px 0 2px; padding-left: 22px; }
+.av-kz > li { margin: 6px 0; }
+.av-kz ul { list-style: none; margin: 2px 0 0; padding: 0; }
+.av-kz ul li { margin: 1px 0; }
+.av-farbe { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.15); }
+.av-farbe.f0 { background: #d8ecd3; } .av-farbe.f1 { background: #d6e4f5; } .av-farbe.f2 { background: #f8e1c4; } .av-farbe.f3 { background: #ecd9f2; }
+.av-farbe.f4 { background: #f6d5d5; } .av-farbe.f5 { background: #d9f0ee; } .av-farbe.f6 { background: #f2efc6; } .av-farbe.f7 { background: #e3e3e3; }
+.av-kz-mehr { margin: 4px 0 0; font-size: 13px; }
+/* eingeklappte übereinstimmende Merkmale */
+.av-klapp td { padding: 2px 7px 4px; background: #fbfbf7; }
+.av-klapp button { position: sticky; left: 7px; border: 0; background: none; color: var(--gruen); font: inherit; font-size: 13px; padding: 2px 0; cursor: pointer; }
+.av-aehn.un { color: var(--rot); background: #fbe9e6; }
+.st-info .av-st { background: #9aa39a; }
