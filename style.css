@@ -1119,3 +1119,15 @@ details.ung-p li, .ung-art li { margin: 3px 0; font-size: .9rem; overflow-wrap: 
 .d-typ ul { margin: 4px 0 4px; padding-left: 18px; }
 .d-typ li { margin: 2px 0; line-height: 1.4; }
 p.d-typ { background: none; border: 0; padding: 0 2px; }
+
+/* Aufklappbare Einzeilen in der Artbeschreibung (Typus, Literatur-Abweichungen) */
+details.d-zeile { margin: 6px 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 8px; background: transparent; font-size: .92rem; }
+details.d-zeile > summary { cursor: pointer; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; list-style-position: inside; }
+details.d-zeile[open] > summary { white-space: normal; margin-bottom: 4px; }
+details.d-zeile .dz-t { font-weight: 600; }
+details.d-zeile > summary small { color: var(--muted); font-weight: 500; }
+details.d-zeile ul { margin: 4px 0; padding-left: 18px; }
+details.d-zeile li { margin: 2px 0; line-height: 1.4; }
+details.d-zeile p { margin: 4px 0 2px; }
+details.d-zeile.ung-art { background: transparent; border-color: var(--line); }
+@media (prefers-color-scheme: dark) { details.d-zeile.ung-art { background: transparent; border-color: var(--line); } }

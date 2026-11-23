@@ -629,11 +629,15 @@
     if (!box.isConnected || $("d-body").dataset.k != s.k) return;
     const T = ((window.MANTODEA_TYPEN || {}).t || {})[s.k];
     const gbifSuche = `https://www.gbif.org/occurrence/search?q=${encodeURIComponent(s.n)}&type_status=HOLOTYPE&type_status=LECTOTYPE&type_status=SYNTYPE&type_status=TYPE&type_status=NEOTYPE`;
-    if (!T) { box.innerHTML = `<p class="d-typ muted small">🏛️ <b>Typusexemplare:</b> In GBIF, Plazi und im Species File ist kein Verbleib verzeichnet. Angaben stehen meist in der Erstbeschreibung oder im Mantodea Species File. <a href="https://mantodea.speciesfile.org/" target="_blank" rel="noopener">Species File ↗</a></p>`; return; }
+    if (!T) { box.innerHTML = `<details class="d-zeile d-typ leer"><summary>🏛️ <span class="dz-t">Typus:</span> <span class="muted">Verbleib nicht verzeichnet</span></summary><p class="muted small">In GBIF, Plazi und im Species File ist kein Verbleib der Typusexemplare verzeichnet. Angaben stehen meist in der Erstbeschreibung. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a> · <a href="https://mantodea.speciesfile.org/" target="_blank" rel="noopener">Species File ↗</a></p></details>`; return; }
     const ort = (r) => r.m ? `${esc(r.m)}${r.c ? ` <span class="muted">(${esc(r.c)})</span>` : ""}` : esc(r.c);
     const li = (r) => `<li><b>${esc(r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s)}</b>${r.n > 1 ? ` <span class="muted">${r.sx || r.n + " Exemplare"}</span>` : r.sx ? " " + esc(r.sx) : ""} – ${ort(r)}${r.nr && r.nr.length ? ` <span class="muted small">· Nr. ${esc(r.nr.join(", "))}</span>` : ""}${r.als ? ` <span class="muted small">· beschrieben als <i>${esc(r.als)}</i></span>` : ""}${r.fo ? ` <span class="muted small">· Fundort: ${esc(r.fo)}</span>` : ""} <a class="small" href="${esc(r.u)}" target="_blank" rel="noopener"${r.x ? ` title="${esc(r.x)}"` : ""}>${esc(r.q)} ↗</a></li>`;
-    box.innerHTML = `<div class="d-typ"><p>🏛️ <b>Typusexemplare</b> <span class="muted small">– wo die Belegstücke der Beschreibung aufbewahrt werden</span></p><ul>${T.map(li).join("")}</ul>
-      <p class="muted small">Automatisch zusammengestellt aus den Sammlungsdaten der Museen (GBIF), aus dem Mantodea Species File, aus Fachartikeln (Plazi) und MantID; nicht vollständig. Holo-, Lekto-, Neo- und Syntypen sind die namenstragenden Typen. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a></p></div>`;
+    const kurz = (r) => r.c || (r.m || "").split(",")[0];
+    const stw = (r) => (r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s);
+    const zus = [...new Map(T.map((r) => [stw(r) + "|" + kurz(r), r])).values()];
+    const zeile = zus.slice(0, 3).map((r) => `${esc(stw(r))}${r.sx && r.n === 1 ? " " + esc(r.sx) : ""} <b>${esc(kurz(r))}</b>`).join(" · ") + (zus.length > 3 ? ` · +${zus.length - 3}` : "");
+    box.innerHTML = `<details class="d-zeile d-typ"><summary>🏛️ <span class="dz-t">Typus:</span> ${zeile}</summary><ul>${T.map(li).join("")}</ul>
+      <p class="muted small">Automatisch zusammengestellt aus den Sammlungsdaten der Museen (GBIF), aus dem Mantodea Species File, aus Fachartikeln (Plazi) und MantID; nicht vollständig. Holo-, Lekto-, Neo- und Syntypen sind die namenstragenden Typen. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a></p></details>`;
   }
   async function fillLiterature(s) {
     const box = $("d-lit");
@@ -810,15 +814,15 @@
     if (!hits || !hits.length || !box.isConnected || $("d-body").dataset.k != s.k) return;
     const zeilen = hits.map(([pi, fi]) => { const p = U.p[pi];
       return `<li><b>${esc(p.t)}:</b> ${esc(p.f[fi])} <a href="#ung-${p.id}" data-ung="${p.id}">Erklärung (${p.id}) →</a></li>`; }).join("");
-    box.innerHTML = `<details class="ung-art"><summary>⚠️ Hinweis: Ungereimtheiten in den Daten <small>${hits.length}</small></summary>
+    box.innerHTML = `<details class="d-zeile ung-art"><summary>📚 <span class="dz-t">Literatur:</span> abweichende Angaben <small>${hits.length}</small></summary>
       <ul>${zeilen}</ul>
-      <p class="muted small">Ergebnis einer automatischen Prüfung (Stand ${esc(U.stand)}): ein Hinweis zum Nachprüfen, keine bestätigte Korrektur. <a href="#ungereimtheiten" data-ung="">Alle Ungereimtheiten mit Erklärung ansehen →</a></p></details>`;
+      <p class="muted small">In der Literatur und den Datenbanken weichen Angaben zu dieser Art voneinander ab (automatischer Abgleich, Stand ${esc(U.stand)}) – zum Nachprüfen, keine bestätigte Korrektur. <a href="#ungereimtheiten" data-ung="">Alle Abweichungen mit Erklärung →</a></p></details>`;
   }
   async function renderUng() {
     const body = $("ung-body"); if (!body || body.dataset.done) return;
     try { await loadScript("data/ungereimtheiten.js"); } catch (e) { body.innerHTML = `<p class="muted">Liste konnte nicht geladen werden.</p>`; return; }
     const U = window.MANTODEA_UNG; body.dataset.done = 1;
-    body.innerHTML = `<p>Die Beschreibungen der Gottesanbeterinnen stammen aus über 250 Jahren. Frühere Bearbeiter kannten die Arbeiten der anderen oft nicht: Arten wurden doppelt beschrieben, Namen mehrfach vergeben oder falsch zugeordnet, und heutige Datenbanken übernehmen solche Widersprüche. Eine automatische Prüfung aller ${fmt.format(DATA.length)} Arten (Artenliste, Originalbeschreibungen, Fachliteratur, Synonyme, Erstbeschreibungs-PDFs, Gattungsjahre) hat die folgenden Ungereimtheiten gefunden. Jeder Punkt ist ein Hinweis zum Prüfen, keine fertige Korrektur – manche Abweichungen sind fachlich begründet (z. B. Druck- gegenüber Erscheinungsjahr oder geschützte Namen). Bei den betroffenen Arten steht ein aufklappbarer Hinweis.</p>
+    body.innerHTML = `<p>Die Beschreibungen der Gottesanbeterinnen stammen aus über 250 Jahren. Frühere Bearbeiter kannten die Arbeiten der anderen oft nicht: Arten wurden doppelt beschrieben, Namen mehrfach vergeben oder falsch zugeordnet, und heutige Datenbanken übernehmen solche Widersprüche. Eine automatische Prüfung aller ${fmt.format(DATA.length)} Arten (Artenliste, Originalbeschreibungen, Fachliteratur, Synonyme, Erstbeschreibungs-PDFs, Gattungsjahre) hat die folgenden Abweichungen gefunden. Jeder Punkt ist ein Hinweis zum Prüfen, keine fertige Korrektur – manche Abweichungen sind fachlich begründet (z. B. Druck- gegenüber Erscheinungsjahr oder geschützte Namen). Bei den betroffenen Arten steht eine aufklappbare Zeile „Literatur: abweichende Angaben“.</p>
       <p class="muted small">Stand der Prüfung: ${esc(U.stand)} · ${fmt.format(Object.keys(U.a).length)} Arten mit mindestens einem Hinweis</p>
       ${U.p.map((p) => `<details class="ung-p" id="ung-${p.id}"><summary><b>${p.id}</b> ${esc(p.t)}${p.f.length ? ` <small>${fmt.format(p.f.length)}</small>` : ""}</summary>
         <p>${esc(p.e)}</p>${p.f.length ? `<ul>${p.f.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}</details>`).join("")}`;
