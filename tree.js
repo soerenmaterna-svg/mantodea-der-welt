@@ -25,7 +25,7 @@
       <br><b>Pfad oben:</b> Über jeder Spalte steht, welche Gruppe, Familie, Unterfamilie, Tribus oder Gattung gerade zu sehen ist; das Band wandert beim Verschieben mit. Antippen holt die Stufe heran.
       <br><b>Quellen:</b> Klassifikation des Mantodea Species File im Catalogue of Life, nach Schwarz &amp; Roy (2019), gestützt auf die Stammbaumstudie von Svenson &amp; Whiting (2009, Cladistics 25: 468–514) und spätere Arbeiten. Die Linienlängen sind keine Zeitangaben.
       <br><b>Bedienung:</b> zwei Finger, Doppeltipp, Mausrad oder ＋/－ zum Zoomen, ein Finger zum Verschieben. Antippen holt eine Gruppe heran, eine Art öffnet den Steckbrief. ⌂ zeigt wieder alles.</div>
-    <div class="tree-wrap"><div class="tree-path" id="tr-path"></div><canvas id="tr-canvas" aria-label="Zoombarer Verwandtschafts-Stammbaum der Mantodea"></canvas>
+    <div class="tree-wrap"><div class="tree-path" id="tr-path"></div><canvas id="tr-canvas" tabindex="-1" autofocus aria-label="Zoombarer Verwandtschafts-Stammbaum der Mantodea"></canvas>
       <div class="tree-hint" id="tr-hint">Zoomen, um Gattungen und Arten mit Fotos zu sehen</div></div>
   </dialog>`);
   const dlg = document.getElementById("tree-dlg");
@@ -595,7 +595,13 @@
     build(); started = false; drawPick(); setTimeout(resize, 20);
   });
   async function open() {
-    if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); }
+    if (!dlg.open) {
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+      // keine Tastatur beim Öffnen: Fokus auf den Baum statt auf das Suchfeld
+      const q = document.getElementById("tr-q");
+      if (document.activeElement === q) q.blur();
+      try { cv.focus({ preventScroll: true }); } catch (e) { /* egal */ }
+    }
     if (!built) {
       try { await Promise.all([loadScript("data/stammbaum.js"), loadScript("data/stammbaeume.js").catch(() => null), loadScript("data/gattungen.js").catch(() => null)]); }
       catch (e) { document.getElementById("tr-path").textContent = "Stammbaum konnte nicht geladen werden."; return; }
