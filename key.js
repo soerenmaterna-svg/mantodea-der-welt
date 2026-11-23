@@ -53,6 +53,9 @@
   const st = { conts: new Set(), land: "", sel: {}, fam: "", gen: "", shown: 48, focus: null };
   const root = $("v-bestimmen");
   root.innerHTML = `
+    <div class="k-sub" role="tablist"><button type="button" class="on" data-ksub="best" role="tab">🔍 Bestimmen</button><button type="button" data-ksub="vgl" role="tab">⚖️ Arten vergleichen</button></div>
+    <div id="k-vgl" class="k-vgl" hidden></div>
+    <div id="k-best">
     <div class="intro">
       <h2>Bestimmen</h2>
       <p>Klicke alles an, was du an deiner Mantis siehst: <b>1× = trifft zu</b> (grün), <b>2× = trifft nicht zu</b> (rot), <b>3× = egal</b>. Jedes Merkmal grenzt die Liste unten weiter ein; die Zahl am Merkmal zeigt, wie viele Arten dann übrig blieben. Das ist eine <strong>vereinfachte Hilfe</strong>: Die Merkmale sind Familien und Gattungen zugeordnet, einzelne Arten können abweichen. Sicher bestimmen lassen sich viele Arten nur mit Fachliteratur. Lade dein Foto zusätzlich auf <a href="https://www.inaturalist.org/observations/upload" target="_blank" rel="noopener">iNaturalist</a> hoch.</p>
@@ -74,8 +77,21 @@
       <p class="more-wrap"><button type="button" id="k-more" hidden>Weitere anzeigen</button></p>
       <p class="muted">Nichts Passendes gefunden? Trag den Fund unter <a href="#unbestimmt">Unbestimmte Mantiden</a> ein oder lade ihn auf iNaturalist hoch.</p>
     </div>
-    <div class="panel k-av"><h3>⚖️ Arten vergleichen</h3><p>Mehrere Arten nebeneinander: Körpermaße und Merkmale aus den Bestimmungsschlüsseln der Fachliteratur, Unterschiede farbig hervorgehoben, nach Unterschieden oder Gemeinsamkeiten sortierbar.</p><p><a class="primary k-av-go" href="artvergleich.html">Vergleich öffnen →</a></p></div>
-    <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>`;
+    <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>
+    </div>`;
+  // ---------- Unterbereich "Arten vergleichen": eingebettete Vergleichsseite, füllt den Reiter
+  const vgl = (arten) => {
+    root.querySelectorAll("[data-ksub]").forEach((b) => b.classList.toggle("on", b.dataset.ksub === (arten === null ? "best" : "vgl")));
+    $("k-best").hidden = arten !== null; $("k-vgl").hidden = arten === null;
+    if (arten === null) return;
+    let fr = $("k-vgl").querySelector("iframe");
+    const ziel = "artvergleich.html?eingebettet=1#" + (arten && arten.length ? "a=" + arten.join(",") : "");
+    if (!fr) { $("k-vgl").innerHTML = `<iframe title="Arten vergleichen" src="${ziel}"></iframe>`; }
+    else if (arten && arten.length) fr.contentWindow.location.replace(new URL(ziel, location.href).href);
+    root.scrollIntoView({ block: "start" });
+  };
+  window.MANTODEA_VGL = vgl;
+  root.querySelector(".k-sub").addEventListener("click", (e) => { const b = e.target.closest("[data-ksub]"); if (b) vgl(b.dataset.ksub === "vgl" ? [] : null); });
 
   const coll = new Intl.Collator("de");
   const LIVE = DATA.filter((s) => !s.x);
