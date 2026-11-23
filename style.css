@@ -1131,3 +1131,7 @@ details.d-zeile li { margin: 2px 0; line-height: 1.4; }
 details.d-zeile p { margin: 4px 0 2px; }
 details.d-zeile.ung-art { background: transparent; border-color: var(--line); }
 @media (prefers-color-scheme: dark) { details.d-zeile.ung-art { background: transparent; border-color: var(--line); } }
+
+/* Einstieg in den Artenvergleich */
+.d-actions a.d-av { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card, #fff); color: var(--ink); text-decoration: none; }
+.k-av .k-av-go { display: inline-block; padding: 8px 16px; border-radius: 10px; text-decoration: none; }

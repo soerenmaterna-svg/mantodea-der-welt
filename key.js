@@ -74,6 +74,7 @@
       <p class="more-wrap"><button type="button" id="k-more" hidden>Weitere anzeigen</button></p>
       <p class="muted">Nichts Passendes gefunden? Trag den Fund unter <a href="#unbestimmt">Unbestimmte Mantiden</a> ein oder lade ihn auf iNaturalist hoch.</p>
     </div>
+    <div class="panel k-av"><h3>⚖️ Arten vergleichen</h3><p>Mehrere Arten nebeneinander: Körpermaße und Merkmale aus den Bestimmungsschlüsseln der Fachliteratur, Unterschiede farbig hervorgehoben, nach Unterschieden oder Gemeinsamkeiten sortierbar.</p><p><a class="primary k-av-go" href="artvergleich.html">Vergleich öffnen →</a></p></div>
     <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>`;
 
   const coll = new Intl.Collator("de");

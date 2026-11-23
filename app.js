@@ -1160,7 +1160,7 @@
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
       ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><button type="button" class="gb-auf" data-gbk="${esc(s.g)}" data-gbart="${esc(s.n)}" aria-expanded="false"><span class="gb-auf-t"><b>Bestimmungsschlüssel</b><small>Arten der Gattung <i>${esc(s.g)}</i> unterscheiden</small></span><span class="gb-pfeil" aria-hidden="true">▾</span></button><div class="gb-platz" hidden></div></section>` : ""}
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
-        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button></p>
+        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button><a class="ghost d-av" href="artvergleich.html#a=${encodeURIComponent(s.k)}">⚖️ Merkmale mit anderen Arten vergleichen</a></p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
       <section class="d-card"><h3 class="d-h">Literatur</h3><div id="d-lit"><p class="muted">Lade Literatur …</p></div></section>
       <p class="links d-sources"><span class="muted">Datenquellen:</span> ${srcs.join("")}</p>

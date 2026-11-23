@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arten vergleichen – Mantodea der Welt</title>
+<link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="artvergleich/artvergleich.css?v=202611230900">
+</head>
+<body>
+<header class="av-top">
+  <div class="av-wrap av-top-in">
+    <button id="av-zurueck" class="av-btn" type="button">← Zurück</button>
+    <div class="av-titel">⚖️ Arten vergleichen</div>
+  </div>
+</header>
+<main class="av-wrap">
+  <section class="av-wahl">
+    <label for="av-suche" class="av-lab">Arten auswählen <small>(bis zu 8)</small></label>
+    <div class="av-suchfeld">
+      <input id="av-suche" type="search" placeholder="Art oder Gattung eingeben, z. B. Mantis religiosa" autocomplete="off">
+      <ul id="av-vorschlag" class="av-vorschlag" hidden></ul>
+    </div>
+    <div id="av-chips" class="av-chips"></div>
+    <div id="av-schnell" class="av-schnell"></div>
+  </section>
+  <section id="av-steuer" class="av-steuer" hidden>
+    <div class="av-gruppe" role="group" aria-label="Anzeige">
+      <span>Zeigen:</span>
+      <button type="button" data-zeig="alle" class="an">Alles</button>
+      <button type="button" data-zeig="unterschiede">Nur Unterschiede</button>
+      <button type="button" data-zeig="gemeinsam">Nur Gemeinsamkeiten</button>
+    </div>
+    <div class="av-gruppe" role="group" aria-label="Sortierung">
+      <span>Sortieren:</span>
+      <button type="button" data-sort="region" class="an">Nach Körperregion</button>
+      <button type="button" data-sort="unterschiede">Unterschiede zuerst</button>
+      <button type="button" data-sort="gemeinsam">Gemeinsamkeiten zuerst</button>
+    </div>
+    <div class="av-gruppe">
+      <label><input type="checkbox" id="av-leer"> auch Merkmale zeigen, die nur bei einer Art dokumentiert sind</label>
+      <label><input type="checkbox" id="av-aehnl"> Arten nach Ähnlichkeit zur ersten Art ordnen</label>
+    </div>
+    <p id="av-bilanz" class="av-bilanz"></p>
+  </section>
+  <div id="av-tabelle" class="av-tabelle"></div>
+  <section class="av-info">
+    <details>
+      <summary>Woher stammen die Merkmale?</summary>
+      <p>Die Merkmale stammen aus den Bestimmungsschlüsseln der Fachliteratur, die auch der Bestimmungsschlüssel dieser Seite verwendet (z. B. Giglio-Tos 1927, Ehrmann 2002 und zahlreiche Gattungsrevisionen). Jede Art erhält die Ausprägungen der Schlüsselstellen, über die man zu ihr gelangt; Merkmale der Familie und der Gattung gelten für alle ihre Arten, sofern der Schlüssel der Gattung nichts anderes sagt.
+      Körpermaße stammen aus Artbeschreibungen (Soothsayer, Plazi). Die Angaben sind automatisch zusammengestellt und unvollständig: „nicht dokumentiert“ heißt, dass in den ausgewerteten Quellen nichts dazu steht – nicht, dass das Merkmal fehlt.</p>
+      <p><b>Gleich</b>: alle Arten, für die das Merkmal dokumentiert ist, stimmen überein. <b>Unterschiedlich</b>: mindestens zwei Arten haben verschiedene Ausprägungen. <b>Teilweise</b>: die Art ist variabel oder die Angaben überschneiden sich. Die Farbe einer Zelle zeigt, welche Arten dieselbe Ausprägung haben.</p>
+    </details>
+  </section>
+</main>
+<script src="data/species.js?v=202611230900"></script>
+<script src="data/merkmale.js?v=202611230900"></script>
+<script src="data/typen.js?v=202611230900"></script>
+<script src="data/netzfotos.js?v=202611230900"></script>
+<script src="artvergleich/artvergleich.js?v=202611230900"></script>
+</body>
+</html>
