@@ -1252,3 +1252,5 @@ html.mdw-gast dialog#detail::backdrop { background: #1a2b17; }
 .d-vgl-zeile { margin: 6px 0 2px; }
 .d-vgl-zeile .d-vgl-k { margin-left: 0; display: inline-block; }
 @media (max-width: 700px) { .d-vgl-zeile .d-vgl-k { margin: 0; } }
+.d-typ-zitat { display: inline-block; font-style: italic; overflow-wrap: anywhere; margin-top: 1px; }
+html.mdw-gast dialog#vgl-dlg::backdrop { background: #1a2b17; }

@@ -16,6 +16,8 @@
     try { sessionStorage.setItem(KEY, HASH); } catch (e2) {}
   }
   if (gespeichert()) return;
+  // im Vergleichsfenster einer Gastansicht (geteilter Vergleich): keine eigene Abfrage, die Hauptseite regelt das
+  try { if (window.top !== window && window.parent.MANTODEA_GAST) { window.MANTODEA_GAST = window.parent.MANTODEA_GAST; root.className += " mdw-gast"; return; } } catch (e) {}
 
   /* ---------- SHA-256 (ohne Abhängigkeiten, läuft auch auf alten TV-Browsern) ---------- */
   function sha256(str) {
@@ -227,10 +229,10 @@
     baueGate();
   }
   // Gastansicht: geteilter Link auf eine Art (#art=...) – ohne Passwort nur diese Art; alles andere führt zur Passwort-Abfrage
-  var m = /^#art=([^&]+)/.exec(location.hash || "");
+  var m = /^#(art=[^&]+|vergleich=[^&]+)/.exec(location.hash || "");
   window.MANTODEA_GATE = { zeigen: zeigen };
   if (m) {
-    window.MANTODEA_GAST = decodeURIComponent(m[1]);
+    window.MANTODEA_GAST = m[1].indexOf("art=") === 0 ? decodeURIComponent(m[1].slice(4)) : "vergleich";
     root.className += " mdw-gast";
   } else {
     (doc.head || root).appendChild(hide);

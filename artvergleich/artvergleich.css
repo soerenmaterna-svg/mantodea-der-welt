@@ -225,3 +225,16 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
   .av-tabelle { padding: 3px; }
 }
 @media (max-width: 700px) { .av-aehn { white-space: nowrap; font-size: 10px; } }
+/* Teilen */
+.av-teilen { flex: none; width: 30px; height: 30px; border: 1px solid #cfe0ca; border-radius: 50%; background: #fff; padding: 0; display: inline-grid; place-items: center; cursor: pointer; }
+.av-teilen svg { width: 15px; height: 15px; fill: none; stroke: var(--gruen, #3f7d3a); stroke-width: 2; stroke-linecap: round; }
+.av-teilen svg circle { fill: var(--gruen, #3f7d3a); stroke: none; }
+.av-toast { position: fixed; left: 50%; bottom: 16px; transform: translate(-50%, 30px); opacity: 0; pointer-events: none; transition: .25s; z-index: 50;
+  max-width: min(520px, 92vw); background: #1f3a1c; color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.av-toast.an { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.av-toast a { color: #cfe9a8; }
+.av-url { overflow-wrap: anywhere; font-size: 12px; }
+/* geteilter Vergleich ohne Zugang: Auswahl nicht änderbar */
+html.av-gast .av-suchfeld, html.av-gast [data-weg], html.av-gast #av-alle-weg, html.av-gast #av-schnell { display: none !important; }
+html.av-gast .av-titel { flex: 1; }
+html.av-gast .av-teilen { margin-left: auto; }

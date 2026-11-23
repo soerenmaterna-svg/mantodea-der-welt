@@ -629,15 +629,15 @@
     if (!box.isConnected || $("d-body").dataset.k != s.k) return;
     const T = ((window.MANTODEA_TYPEN || {}).t || {})[s.k];
     const gbifSuche = `https://www.gbif.org/occurrence/search?q=${encodeURIComponent(s.n)}&type_status=HOLOTYPE&type_status=LECTOTYPE&type_status=SYNTYPE&type_status=TYPE&type_status=NEOTYPE`;
-    if (!T) { box.innerHTML = `<details class="d-zeile d-typ leer"><summary>🏛️ <span class="dz-t">Typus:</span> <span class="muted">Verbleib nicht verzeichnet</span></summary><p class="muted small">In GBIF, Plazi und im Species File ist kein Verbleib der Typusexemplare verzeichnet. Angaben stehen meist in der Erstbeschreibung. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a> · <a href="https://mantodea.speciesfile.org/" target="_blank" rel="noopener">Species File ↗</a></p></details>`; return; }
+    if (!T) { box.innerHTML = `<details class="d-zeile d-typ leer"><summary>🏛️ <span class="dz-t">Typus:</span> <span class="muted">Verbleib nicht verzeichnet</span></summary><p class="muted small">Weder in GBIF, iDigBio, Plazi und im Species File noch in der verlinkten Erstbeschreibung ließ sich der Verbleib der Typusexemplare finden (ältere Beschreibungen nennen oft kein Museum). <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a> · <a href="https://mantodea.speciesfile.org/" target="_blank" rel="noopener">Species File ↗</a></p></details>`; return; }
     const ort = (r) => r.m ? `${esc(r.m)}${r.c ? ` <span class="muted">(${esc(r.c)})</span>` : ""}` : esc(r.c);
-    const li = (r) => `<li><b>${esc(r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s)}</b>${r.n > 1 ? ` <span class="muted">${r.sx || r.n + " Exemplare"}</span>` : r.sx ? " " + esc(r.sx) : ""} – ${ort(r)}${r.nr && r.nr.length ? ` <span class="muted small">· Nr. ${esc(r.nr.join(", "))}</span>` : ""}${r.als ? ` <span class="muted small">· beschrieben als <i>${esc(r.als)}</i></span>` : ""}${r.fo ? ` <span class="muted small">· Fundort: ${esc(r.fo)}</span>` : ""} <a class="small" href="${esc(r.u)}" target="_blank" rel="noopener"${r.x ? ` title="${esc(r.x)}"` : ""}>${esc(r.q)} ↗</a></li>`;
+    const li = (r) => `<li><b>${esc(r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s)}</b>${r.n > 1 ? ` <span class="muted">${r.sx || r.n + " Exemplare"}</span>` : r.sx ? " " + esc(r.sx) : ""} – ${ort(r)}${r.nr && r.nr.length ? ` <span class="muted small">· Nr. ${esc(r.nr.join(", "))}</span>` : ""}${r.als ? ` <span class="muted small">· beschrieben als <i>${esc(r.als)}</i></span>` : ""}${r.fo ? ` <span class="muted small">· Fundort: ${esc(r.fo)}</span>` : ""} <a class="small" href="${esc(r.u)}" target="_blank" rel="noopener"${r.x ? ` title="${esc(r.x)}"` : ""}>${esc(r.q)} ↗</a>${r.q === "Erstbeschreibung" && r.x ? `<br><span class="muted small d-typ-zitat">automatisch aus dem Text gelesen – ${esc(r.x)}</span>` : ""}</li>`;
     const kurz = (r) => r.c || (r.m || "").split(",")[0];
     const stw = (r) => (r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s);
     const zus = [...new Map(T.map((r) => [stw(r) + "|" + kurz(r), r])).values()];
     const zeile = zus.slice(0, 3).map((r) => `${esc(stw(r))}${r.sx && r.n === 1 ? " " + esc(r.sx) : ""} <b>${esc(kurz(r))}</b>`).join(" · ") + (zus.length > 3 ? ` · +${zus.length - 3}` : "");
     box.innerHTML = `<details class="d-zeile d-typ"><summary>🏛️ <span class="dz-t">Typus:</span> ${zeile}</summary><ul>${T.map(li).join("")}</ul>
-      <p class="muted small">Automatisch zusammengestellt aus den Sammlungsdaten der Museen (GBIF), aus dem Mantodea Species File, aus Fachartikeln (Plazi) und MantID; nicht vollständig. Holo-, Lekto-, Neo- und Syntypen sind die namenstragenden Typen. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a></p></details>`;
+      <p class="muted small">Automatisch zusammengestellt aus den Sammlungsdaten der Museen (GBIF, iDigBio), aus dem Mantodea Species File, aus Fachartikeln (Plazi), den Erstbeschreibungen und MantID; nicht vollständig. Holo-, Lekto-, Neo- und Syntypen sind die namenstragenden Typen. <a href="${gbifSuche}" target="_blank" rel="noopener">Bei GBIF suchen ↗</a></p></details>`;
   }
   async function fillLiterature(s) {
     const box = $("d-lit");
@@ -1363,7 +1363,7 @@
     if (!d) {
       d = document.createElement("dialog"); d.id = "vgl-dlg"; d.className = "vgl-dlg";
       document.body.appendChild(d);
-      d.addEventListener("close", () => { d.innerHTML = ""; });
+      d.addEventListener("close", () => { d.innerHTML = ""; document.dispatchEvent(new CustomEvent("mantodea:vglzu")); });
     }
     d.innerHTML = `<iframe title="Arten vergleichen" src="${vq("artvergleich.html?eingebettet=1")}#${arten && arten.length ? "a=" + arten.join(",") : ""}"></iframe>`;
     if (!d.open) d.showModal();
@@ -1372,9 +1372,10 @@
   // Nachrichten aus dem Vergleichsfenster: schließen bzw. Steckbrief einer Art öffnen
   window.addEventListener("message", (e) => {
     if (e.origin !== location.origin || !e.data || !e.data.mantodeaVgl) return;
-    if (e.data.mantodeaVgl === "auswahl") { VW.set(e.data.a || []); return; }
+    if (e.data.mantodeaVgl === "auswahl") { if (!window.MANTODEA_GAST) VW.set(e.data.a || []); return; }
     const d = $("vgl-dlg");
     if (d && d.open) d.close();
+    if (window.MANTODEA_GAST) return;
     if (e.data.mantodeaVgl === "art" && BYKEY.get(String(e.data.k))) detail(String(e.data.k));
   });
   // Vergleichsliste: Arten aus dem Steckbrief vormerken (gespeichert), verglichen wird im Reiter "Artenvergleich"
@@ -1470,15 +1471,17 @@
   }
   // Gastansicht (geteilter Link ohne Zugang): nur der Steckbrief; Weiternavigieren oder Schließen führt zur Passwort-Abfrage
   if (window.MANTODEA_GAST) {
-    const sperre = () => { if (window.MANTODEA_GAST && window.MANTODEA_GATE) window.MANTODEA_GATE.zeigen(); };
+    const sperre = () => { if (window.MANTODEA_GAST && window.MANTODEA_GATE) { const v = $("vgl-dlg"); if (v && v.open) v.close(); window.MANTODEA_GATE.zeigen(); } };
     $("detail").addEventListener("close", sperre);
+    // geteilter Vergleich: Schließen des Vergleichsfensters oder Öffnen einer Art führt zur Passwort-Abfrage
+    document.addEventListener("mantodea:vglzu", sperre);
     document.addEventListener("click", (e) => {
       if (!window.MANTODEA_GAST) return;
       const t = e.target.closest('[data-fam],[data-gen],[data-genfam],[data-goto-c],[data-country],[data-ung],[data-key],[data-vglmerk],[data-vgl],[data-vglgo],a[href^="#"],a[href^="index.html"],a[href^="artvergleich"]');
       if (!t) return;
       e.preventDefault(); e.stopImmediatePropagation(); sperre();
     }, true);
-    if (!BYKEY.get(String(window.MANTODEA_GAST))) setTimeout(sperre, 300);
+    if (window.MANTODEA_GAST !== "vergleich" && !BYKEY.get(String(window.MANTODEA_GAST))) setTimeout(sperre, 300);
   }
   window.addEventListener("hashchange", route);
 

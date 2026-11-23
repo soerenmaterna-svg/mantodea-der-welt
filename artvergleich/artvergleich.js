@@ -177,6 +177,7 @@
   const STATUS = { verschieden: ["Unterschiedlich", "≠"], teilweise: ["Teilweise", "≈"], gleich: ["Gleich", "="], einzeln: ["Nur eine Art dokumentiert", "·"] };
   const RANG = { unterschiede: { verschieden: 0, teilweise: 1, gleich: 2, einzeln: 3 }, gemeinsam: { gleich: 0, teilweise: 1, verschieden: 2, einzeln: 3 } };
   function zeichnen() {
+    { const tb = document.getElementById("av-teilen"); if (tb) tb.hidden = st.arten.length < 2; }
     schreiben(); chips(); schnell();
     const box = $("av-tabelle");
     $("av-steuer").hidden = st.arten.length < 2; $("av-mehr").hidden = !st.arten.length;
@@ -357,6 +358,30 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("av-vorschlag").hidden) an({ t: "zu" }); });
     document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); an({ t: "art", k: decodeURIComponent(a.href.split("#art=")[1]) }); } }, true);
   }
+  // Vergleich teilen: Link auf die Hauptseite (#vergleich=…); ohne Zugang sieht man dort nur diesen Vergleich
+  const GAST = !!window.MANTODEA_GAST;
+  if (GAST) document.documentElement.classList.add("av-gast");
+  function hinweis(html) {
+    let t = $("av-toast");
+    if (!t) { t = document.createElement("div"); t.id = "av-toast"; t.className = "av-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.innerHTML = html; t.classList.add("an");
+    clearTimeout(hinweis.t); hinweis.t = setTimeout(() => t.classList.remove("an"), 6000);
+  }
+  $("av-teilen").addEventListener("click", async () => {
+    if (!st.arten.length) return;
+    const url = new URL("index.html", location.href).href.split("#")[0].split("?")[0] + "#vergleich=" + st.arten.map(encodeURIComponent).join(",");
+    const namen = st.arten.map((k) => BYK.get(k).n);
+    const titel = "Artenvergleich: " + namen.join(" · ");
+    const text = `${titel} – „Mantodea der Welt“`;
+    if (navigator.share) {
+      try { await navigator.share({ title: titel, text, url }); return; } catch (err) { if (err && err.name === "AbortError") return; }
+    }
+    let kopiert = false;
+    try { await navigator.clipboard.writeText(url); kopiert = true; } catch (err) { /* nicht erlaubt */ }
+    const wa = "https://wa.me/?text=" + encodeURIComponent(text + " " + url);
+    const mail = "mailto:?subject=" + encodeURIComponent(titel) + "&body=" + encodeURIComponent(text + "\n" + url);
+    hinweis(`${kopiert ? "Link kopiert." : `Link: <span class="av-url">${esc(url)}</span>`} Teilen über <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp ↗</a> · <a href="${esc(mail)}">E-Mail ↗</a>`);
+  });
   // beim Wechsel zwischen Handy- und Breitansicht neu aufbauen
   const mq = window.matchMedia ? window.matchMedia("(max-width: 700px)") : null;
   if (mq && mq.addEventListener) mq.addEventListener("change", () => zeichnen()); else if (mq && mq.addListener) mq.addListener(() => zeichnen());
