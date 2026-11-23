@@ -60,7 +60,6 @@
   var css = doc.createElement("style");
   css.id = "mdw-gate-css";
   css.textContent =
-    "body{display:none!important}" +
     "#mdw-gate{position:fixed;inset:0;top:0;left:0;right:0;bottom:0;z-index:2147483647;overflow:hidden;" +
     "font-family:Georgia,'Iowan Old Style','Palatino Linotype',serif;color:#eef5e4;" +
     "background:radial-gradient(ellipse at 50% 42%,#2f6b35 0%,#17401d 38%,#0a2410 70%,#04140a 100%);}" +
@@ -196,6 +195,9 @@
       if (ev && ev.preventDefault) ev.preventDefault();
       if (sha256(feld.value) === HASH) {
         merken();
+        window.MANTODEA_GAST = null;
+        root.className = root.className.replace(/\s*mdw-gast\b/g, "");
+        if (hide.parentNode) hide.parentNode.removeChild(hide);
         fehler.textContent = "";
         g.className = "offen";
         var s = doc.getElementById("mdw-gate-css");
@@ -215,5 +217,23 @@
     };
   }
 
-  baueGate();
+  var GATE_CSS = css.textContent;
+  var hide = doc.createElement("style");
+  hide.id = "mdw-gate-hide";
+  hide.textContent = "body{display:none!important}";
+  function zeigen() {
+    if (!hide.parentNode) (doc.head || root).appendChild(hide);
+    var s = doc.getElementById("mdw-gate-css"); if (s && !s.textContent) s.textContent = GATE_CSS;
+    baueGate();
+  }
+  // Gastansicht: geteilter Link auf eine Art (#art=...) – ohne Passwort nur diese Art; alles andere führt zur Passwort-Abfrage
+  var m = /^#art=([^&]+)/.exec(location.hash || "");
+  window.MANTODEA_GATE = { zeigen: zeigen };
+  if (m) {
+    window.MANTODEA_GAST = decodeURIComponent(m[1]);
+    root.className += " mdw-gast";
+  } else {
+    (doc.head || root).appendChild(hide);
+    baueGate();
+  }
 })();

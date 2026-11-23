@@ -1239,3 +1239,6 @@ dialog.vgl-dlg iframe { display: block; width: 100%; height: 100%; border: 0; }
 @media (max-width: 600px) { .kc-bar { padding-right: 10px !important; flex-wrap: wrap; } }
 .d-teilen { margin-left: 4px; }
 .vgl-toast .teil-url { word-break: break-all; font-size: .8rem; opacity: .9; }
+/* Gastansicht (geteilter Link ohne Zugang): nur der Steckbrief ist sichtbar */
+html.mdw-gast body > *:not(dialog):not(.vgl-toast):not(script) { visibility: hidden !important; }
+html.mdw-gast dialog#detail::backdrop { background: #1a2b17; }

@@ -1466,6 +1466,18 @@
     if (tab === "mitmachen") renderStatus();
     document.dispatchEvent(new CustomEvent("mantodea:tab", { detail: tab }));
   }
+  // Gastansicht (geteilter Link ohne Zugang): nur der Steckbrief; Weiternavigieren oder Schließen führt zur Passwort-Abfrage
+  if (window.MANTODEA_GAST) {
+    const sperre = () => { if (window.MANTODEA_GAST && window.MANTODEA_GATE) window.MANTODEA_GATE.zeigen(); };
+    $("detail").addEventListener("close", sperre);
+    document.addEventListener("click", (e) => {
+      if (!window.MANTODEA_GAST) return;
+      const t = e.target.closest('[data-fam],[data-gen],[data-genfam],[data-goto-c],[data-country],[data-ung],[data-key],[data-vglmerk],[data-vgl],[data-vglgo],a[href^="#"],a[href^="index.html"],a[href^="artvergleich"]');
+      if (!t) return;
+      e.preventDefault(); e.stopImmediatePropagation(); sperre();
+    }, true);
+    if (!BYKEY.get(String(window.MANTODEA_GAST))) setTimeout(sperre, 300);
+  }
   window.addEventListener("hashchange", route);
 
   // Für community.js
