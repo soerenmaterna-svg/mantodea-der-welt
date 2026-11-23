@@ -1200,3 +1200,14 @@ dialog.vgl-dlg iframe { display: block; width: 100%; height: 100%; border: 0; }
   .tree-pick button .lg { font-size: .74rem !important; line-height: 1.2 !important; }
   .tree-head { gap: 5px !important; padding: 5px 8px !important; }
 }
+/* Stammbaum-Kopf: Art · i mehr · Stern-Erklärung; Auswahl passt auf die Handybreite */
+.tree-src summary { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tree-src .tr-leg { margin-left: 4px; display: inline !important; }
+.tree-pick .sh { display: none; }
+@media (max-width: 700px) {
+  .tree-pick { overflow-x: visible !important; flex-wrap: nowrap !important; gap: 3px !important; width: 100%; }
+  .tree-pick button { flex: 1 1 0 !important; min-width: 0 !important; white-space: normal !important; text-align: center; justify-content: center; padding: 3px 2px !important; }
+  .tree-pick button .lg { display: none !important; }
+  .tree-pick button .sh { display: inline !important; font-size: .68rem; font-weight: 700; line-height: 1.12; }
+  .tree-src .tr-leg { font-size: .72rem; }
+}

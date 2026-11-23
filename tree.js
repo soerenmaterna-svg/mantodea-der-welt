@@ -436,8 +436,7 @@
     const key = curTree + "|" + (home ? "home" : "band");
     if (key !== pathKey) {
       pathKey = key;
-      document.getElementById("tr-path").innerHTML = home
-        ? `<span class="tp-sum">Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten – zum Erkunden hineinzoomen oder eine Familie antippen</span>` : "";
+      document.getElementById("tr-path").innerHTML = "";
     }
     // Kopfband: der Pfad steht genau über den Spalten des Baums und wandert beim Verschieben mit
     bandItems = []; bandH = 0;
@@ -582,12 +581,12 @@
   function drawPick() {
     const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P.find((p) => p.id === "katalog") || P[0];
     const cls = (p) => (p.id === "wieland2013" ? "wie" : p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
-    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life (aktuell)" : p.titel)}</span></button>`).join("");
+    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life (aktuell)" : p.titel)}</span><span class="sh">${esc(p.titel === "Katalog" ? "Katalog" : p.titel.split(/[ &]/)[0].replace(/-.*/, "") + " " + p.jahr)}</span></button>`).join("");
     const sel = document.querySelector('#tr-pick [aria-selected="true"]'); if (sel && sel.scrollIntoView) setTimeout(() => sel.scrollIntoView({ block: "nearest", inline: "center" }), 30);
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.kurztext || SHORT[m.art] || "")}</span>${m.studie ? `<span class="tr-leg" title="Orange Sterne und Ringe markieren die Arten, die in dieser Studie untersucht wurden; ein oranger Ring um eine Familie zeigt, dass sie hier anders steht als im Vergleichsbaum."><b>★</b> = in der Studie untersucht</span>` : ""}<span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum aufklappen" title="Information zu diesem Stammbaum auf- und zuklappen">i</span><span class="ibtn-pf" aria-hidden="true"></span></summary>
-      <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum aufklappen" title="Information zu diesem Stammbaum auf- und zuklappen">i</span><span class="ibtn-pf" aria-hidden="true"></span>${m.studie ? `<span class="tr-leg" title="Orange Sterne und Ringe markieren die Arten, die in dieser Studie untersucht wurden; ein oranger Ring um eine Familie zeigt, dass sie hier anders steht als im Vergleichsbaum."><b>★</b> = in der Studie untersucht</span>` : ""}</summary>
+      <div class="src-body">${m.kurztext || SHORT[m.art] ? `<p><b>${esc(m.kurztext || SHORT[m.art])}</b></p>` : ""}<p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }
   document.getElementById("tr-pick").addEventListener("click", (e) => {
