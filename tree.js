@@ -16,7 +16,7 @@
       <div class="tree-pick" id="tr-pick" role="tablist" aria-label="Stammbaum nach Autor"></div>
       <input type="search" id="tr-q" list="tr-names" placeholder="🔍 Gruppe, Gattung, Art" autocomplete="off">
       <datalist id="tr-names"></datalist>
-      <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" data-z="info" aria-label="Erklärung">ⓘ</button><button type="button" class="tr-close" aria-label="Schließen">×</button></span>
+      <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" class="tr-close tr-zurueck" aria-label="Zurück">← Zurück</button></span>
     </div>
     <details class="tree-src" id="tr-src"></details>
     <div class="tree-info" id="tr-info" hidden>
@@ -573,6 +573,10 @@
     if (b.dataset.z === "info") { const i = document.getElementById("tr-info"); i.hidden = !i.hidden; setTimeout(resize, 20); }
     if (b.classList.contains("tr-close")) dlg.close();
   });
+  document.getElementById("tr-src").addEventListener("click", (e) => {
+    if (!e.target.closest("[data-lesen]")) return;
+    const i = document.getElementById("tr-info"); i.hidden = !i.hidden; setTimeout(resize, 20);
+  });
   document.getElementById("tr-path").addEventListener("click", (e) => {
     const b = e.target.closest("[data-pi]"); if (!b) return;
     const n = pathNodes[+b.dataset.pi]; if (n) focus(n);
@@ -591,7 +595,7 @@
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
     src.innerHTML = m.zitat ? `<summary><b class="tr-wer" title="${esc(m.autoren || m.titel)}">${esc(m.titel === "Katalog" ? "Catalogue of Life" : m.titel)}</b><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum aufklappen" title="Information zu diesem Stammbaum auf- und zuklappen">i</span><span class="ibtn-pf" aria-hidden="true"></span>${m.studie ? `<span class="tr-leg" title="Orange Sterne und Ringe markieren die Arten, die in dieser Studie untersucht wurden; ein oranger Ring um eine Familie zeigt, dass sie hier anders steht als im Vergleichsbaum."><b>★</b><span class="tr-leg-l"> = in der Studie untersucht</span><span class="tr-leg-k"> untersucht</span></span>` : ""}</summary>
-      <div class="src-body">${m.kurztext || SHORT[m.art] ? `<p><b>${esc(m.kurztext || SHORT[m.art])}</b></p>` : ""}<p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
+      <div class="src-body">${m.kurztext || SHORT[m.art] ? `<p><b>${esc(m.kurztext || SHORT[m.art])}</b></p>` : ""}<p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p><button type="button" class="tr-lesen" data-lesen="1">📖 So liest man den Baum und bedient ihn</button></p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }
   document.getElementById("tr-pick").addEventListener("click", (e) => {
