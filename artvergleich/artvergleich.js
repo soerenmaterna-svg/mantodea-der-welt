@@ -336,6 +336,7 @@
     const b = e.target.closest("[data-bsp]"); if (b) { st.arten = b.dataset.bsp.split("|").map((n) => SP.find((x) => x.n === n)).filter(Boolean).map((s) => s.k); zeichnen(); return; }
     const g = e.target.closest("[data-gat]"); if (g) { SP.filter((x) => x.g === g.dataset.gat).forEach((x) => { if (!st.arten.includes(x.k) && st.arten.length < MAX) st.arten.push(x.k); }); zeichnen(); return; }
     if (e.target.id === "av-info-k") $("av-info").hidden = !$("av-info").hidden;
+    if (e.target.closest("#av-mehr-k")) { const o = !document.body.classList.contains("mehr-offen"); document.body.classList.toggle("mehr-offen", o); $("av-mehr-k").setAttribute("aria-expanded", o); $("av-mehr-k").textContent = o ? "⚙️ Weniger" : "⚙️ Mehr"; }
     const auf = e.target.closest("[data-auf]"); if (auf) { offen.add(auf.dataset.auf); zeichnen(); return; }
     const zu = e.target.closest("[data-zu]"); if (zu) { offen.delete(zu.dataset.zu); zeichnen(); return; }
   });
@@ -351,7 +352,7 @@
   if (EIN) {
     document.documentElement.classList.add("eingebettet");
     const an = (m) => window.parent.postMessage(Object.assign({ mantodeaVgl: m.t }, m), location.origin);
-    $("av-zurueck").textContent = "✕ Schließen"; $("av-zurueck").title = "Vergleich schließen";
+    $("av-zurueck").innerHTML = "✕<span class='av-l2'> Schließen</span>"; $("av-zurueck").title = "Vergleich schließen";
     $("av-zurueck").onclick = () => an({ t: "zu" });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("av-vorschlag").hidden) an({ t: "zu" }); });
     document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); an({ t: "art", k: decodeURIComponent(a.href.split("#art=")[1]) }); } }, true);

@@ -194,3 +194,34 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
 @media (max-width: 700px) { .av-artkopf img { width: 100%; height: auto; max-height: none; } }
 /* Smartphone: Foto quadratisch, 30 % der Spaltenbreite */
 @media (max-width: 700px) { .av-artkopf img { width: 30%; min-width: 36px; height: auto; aspect-ratio: 1 / 1; } }
+
+/* ===== Platz sparen ===== */
+.av-z3 { grid-template-columns: 1fr 1fr auto; align-items: end; }
+.av-mehr-k { border: 1px solid var(--rand); background: #fff; border-radius: 8px; padding: 5px 10px; font-size: 13px; color: var(--tinte); white-space: nowrap; height: 32px; }
+@media (min-width: 701px) { .av-mehr-k { display: none; } .av-z3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 700px) {
+  .av-kopf { gap: 4px; padding: 5px 6px 4px; }
+  .av-sel > span { display: none; }
+  .av-sel select { padding: 4px 4px !important; font-size: 13px !important; height: 32px; }
+  .av-z3 { gap: 5px; }
+  body:not(.mehr-offen) .av-z4 { display: none !important; }
+  .av-z4 { padding-top: 2px; }
+  /* Artkopf: Foto links, Name rechts */
+  .av-artkopf { flex-direction: row; align-items: flex-start; gap: 5px; padding-right: 14px; position: relative; }
+  .av-artkopf img { width: 34px !important; min-width: 34px; height: 34px !important; flex: none; border-radius: 5px; }
+  .av-ak-t { min-width: 0; }
+  .av-name { font-size: 12px; -webkit-line-clamp: 3; }
+  .av-aehn { margin-top: 1px; }
+  .av-artkopf .av-weg { position: absolute; top: -3px; right: -3px; order: 0; align-self: auto; width: 20px; height: 20px; padding: 0; border: 0; background: transparent; font-size: 12px; margin: 0; }
+  .av-artkopf .av-weg::after { content: none; }
+  .av-t thead th.av-art { padding: 4px 4px 4px; }
+  .av-reg th { padding: 2px 6px; font-size: 12.5px; }
+  .av-klapp td { padding: 1px 6px 2px; }
+  .av-klapp button { padding: 3px 0; font-size: 12.5px; }
+  .av-lrow th.av-lab-m { padding: 4px 6px 1px; }
+  .av-kurz { margin: 4px; padding: 4px 8px; }
+  .av-kurz summary { font-size: 13.5px; }
+  .av-kurz summary small { display: none; }
+  .av-tabelle { padding: 3px; }
+}
+@media (max-width: 700px) { .av-aehn { white-space: nowrap; font-size: 10px; } }
