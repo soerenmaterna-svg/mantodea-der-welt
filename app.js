@@ -1139,8 +1139,10 @@
         ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
-        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} ${vglKnopf(s.k, "d-vgl-k")} <button type="button" class="d-vgl-k d-teilen" data-teilen="${esc(s.k)}" title="Link zu dieser Art teilen (WhatsApp, E-Mail …)">🔗 Teilen</button></h2>
+        <button type="button" class="d-teilen" data-teilen="${esc(s.k)}" title="Link zu dieser Art teilen (WhatsApp, E-Mail …)" aria-label="Teilen"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.7l6.8-4M8.6 13.3l6.8 4"/></svg></button>
+        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
+        <p class="d-vgl-zeile">${vglKnopf(s.k, "d-vgl-k")}</p>
         <div id="d-erst"></div>
         <div id="d-typ"></div>
         <div id="d-ung"></div>
