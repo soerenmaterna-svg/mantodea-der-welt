@@ -449,7 +449,12 @@
       const items = named.map((n) => ({ x: xOf(n) - view.x, cap: RDE[n.rank] || "Gruppe", name: n.name, n }));
       const ranks = new Set(named.map((n) => n.rank));
       for (const [r, t] of [["family", "Familie"], ["subfamily", "Unterfamilie"], ["tribe", "Tribus"], ["genus", "Gattung"], ["species", "Art"]])
-        if (!ranks.has(r)) items.push({ x: (r === "species" ? spX : colX(RI[r])) - view.x, cap: t, name: "", n: null });
+        if (!ranks.has(r)) {
+          // leere Spalte "Art" bzw. "Gattung": Anzahl in der gezeigten Gruppe
+          const nG = (x) => (x.rank === "genus" ? 1 : x.rank === "species" ? 0 : x.kids.reduce((a, k) => a + nG(k), 0));
+          const name = r === "species" ? `${fmt.format(cur.n || 0)} ${cur.n === 1 ? "Art" : "Arten"} vorhanden` : r === "genus" ? `${fmt.format(nG(cur))} ${nG(cur) === 1 ? "Gattung" : "Gattungen"}` : "";
+          items.push({ x: (r === "species" ? spX : colX(RI[r])) - view.x, cap: t, name, n: null, count: !!name });
+        }
       items.sort((a, b) => a.x - b.x);
       // links aus dem Bild gerutschte Stufen: die letzte davon am linken Rand mit "‹"
       const off = items.filter((it) => it.x < 2 && it.name);
@@ -477,7 +482,7 @@
         label((it.more ? "‹ " : "") + it.cap.toUpperCase(), x + 4, top + 11, 9.5, "#6b7a64", 700, false, W - x - 8, "middle");
         if (it.name) {
           const fam = it.n && it.n.rank === "family";
-          label(it.name, x + 4, top + 25, 12, fam ? "#12300d" : "#1b3a12", fam ? 800 : 600, it.n && it.n.rank === "genus", W - x - 8, "middle");
+          label(it.name, x + 4, top + 25, it.count ? 11.5 : 12, it.count ? "#5b6b55" : fam ? "#12300d" : "#1b3a12", it.count ? 600 : fam ? 800 : 600, it.n && it.n.rank === "genus", W - x - 8, "middle");
           bandItems.push({ x0: x, x1: x + w, y0: top, y1: top + rowH, node: it.more ? off[off.length - 2] && off[off.length - 2].n : it.n, self: it.n });
         }
       }
@@ -541,7 +546,7 @@
     ptr.delete(e.pointerId); if (ptr.size < 2) pinch0 = null;
     if (moved || ptr.size) return;
     const r = cv.getBoundingClientRect(), px = e.clientX - r.left + view.x, py = e.clientY - r.top, now = Date.now();
-    if (py < bandH + 2 && bandItems.length) { const sx = e.clientX - r.left, b = bandItems.find((it) => sx >= it.x0 && sx <= it.x1 && py >= it.y0 && py <= it.y1 + 2); if (b) { focus(b.self || b.node); return; } }
+    if (py < bandH + 2 && bandItems.length) { const sx = e.clientX - r.left, b = bandItems.find((it) => sx >= it.x0 && sx <= it.x1 && py >= it.y0 && py <= it.y1 + 2); if (b && (b.self || b.node)) { focus(b.self || b.node); return; } }
     if (now - lastTap < 300) { lastTap = 0; flyTo(yOf(py), Math.min(90, view.rh * 2.5)); return; }
     lastTap = now;
     const hit = pick(px, py);
