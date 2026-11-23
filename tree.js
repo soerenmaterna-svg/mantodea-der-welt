@@ -308,7 +308,7 @@
   const xOf = (n) => (n.rank === "species" ? spX : colX(n.ri));
   const padOf = (n) => 34 + Math.min(6, n.ri) * 3;
 
-  let raf = 0, pathKey = "", pathNodes = [], bandItems = [];
+  let raf = 0, pathKey = "", pathNodes = [], bandItems = [], bandH = 0;
   function draw() { if (!raf) raf = requestAnimationFrame(render); }
   function render() {
     raf = 0;
@@ -405,7 +405,7 @@
       else { ctx.beginPath(); ctx.arc(x, y, n.ri <= RI.family ? 4 : 3, 0, Math.PI * 2); ctx.fillStyle = n.fam ? n.color : TH().line; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = "#fff"; ctx.stroke(); }
       // Familie steht anders als im Vergleichsbaum: oranger Ring
       if (n.diff) { ctx.beginPath(); ctx.arc(x, y, famPhoto ? Math.min(span * 0.4, 15) + 4 : 8, 0, Math.PI * 2); ctx.lineWidth = 2.5; ctx.strokeStyle = "#e8890c"; ctx.stroke(); }
-      const fs = n.rank === "genus" ? Math.max(11, Math.min(15, 10 + rh * 0.12)) : isFam ? Math.max(11, Math.min(15, 10 + span * 0.02)) : 11.5;
+      const fs = n.rank === "genus" ? Math.max(11, Math.min(15, 10 + rh * 0.12)) : isFam ? Math.max(11, Math.min(15, 10 + span * 0.02)) : (narrow ? 10.5 : 11.5);
       const lk = Math.round(n.ri * 2);
       if (lastY[lk] !== undefined && Math.abs(y - lastY[lk]) < fs * 2) continue;
       if (n.rank === "genus" && span < 9 && rh < 6) continue;
@@ -440,7 +440,7 @@
         ? `<span class="tp-sum">Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten – zum Erkunden hineinzoomen oder eine Familie antippen</span>` : "";
     }
     // Kopfband: der Pfad steht genau über den Spalten des Baums und wandert beim Verschieben mit
-    bandItems = [];
+    bandItems = []; bandH = 0;
     ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     if (!home) {
       const BH = 40;
@@ -456,19 +456,33 @@
       const off = items.filter((it) => it.x < 2 && it.name);
       let shown = items.filter((it) => it.x >= 2);
       if (off.length) shown = [{ ...off[off.length - 1], x: 2, more: off.length > 1 }, ...shown];
-      for (let k = 0; k < shown.length; k++) {
-        const it = shown[k], next = shown.slice(k + 1).find((o) => o.name || !it.name);
-        const x = it.x + 4, room = (next ? next.x : W) - x - 6;
-        if (room < 18) continue;
-        // feine senkrechte Hilfslinie zur Spalte
-        ctx.fillStyle = "rgba(46,93,39,.25)"; ctx.fillRect(Math.round(it.x), 4, 1, BH - 8);
-        label((it.more ? "‹ " : "") + it.cap.toUpperCase(), x, 12, 9.5, "#6b7a64", 700, false, room, "middle");
+      // Breite je Eintrag messen; passt er nicht hinter den vorigen, kommt er in die zweite Zeile (versetzt)
+      const meas = (it) => { ctx.font = "700 9.5px system-ui, sans-serif"; const a = ctx.measureText((it.more ? "‹ " : "") + it.cap.toUpperCase()).width; ctx.font = `${it.n && it.n.rank === "genus" ? "italic " : ""}700 12px system-ui, sans-serif`; return Math.max(a, it.name ? ctx.measureText(it.name).width : 0) + 10; };
+      const rowEnd = [-1e9, -1e9], placed = [];
+      for (const it of shown) {
+        const w = meas(it);
+        let r = rowEnd[0] <= it.x ? 0 : rowEnd[1] <= it.x ? 1 : (rowEnd[0] <= rowEnd[1] ? 0 : 1);
+        if (!narrow && rowEnd[0] > it.x && !it.name) continue;     // leere Spaltenköpfe nicht in die zweite Zeile
+        const x = Math.max(it.x, rowEnd[r]);
+        rowEnd[r] = x + w + 4;
+        placed.push({ it, x, r, w });
+      }
+      const two = placed.some((p) => p.r === 1);
+      const rowH = 30, BH2 = two ? rowH * 2 + 4 : BH;
+      if (two) { ctx.fillStyle = "rgba(251,253,247,.96)"; ctx.fillRect(0, BH, W, BH2 - BH); ctx.fillStyle = "rgba(0,0,0,.08)"; ctx.fillRect(0, BH2, W, 1); }
+      for (const { it, x, r, w } of placed) {
+        const top = r * rowH;
+        // feine senkrechte Hilfslinie von der Spalte zum Eintrag
+        ctx.fillStyle = "rgba(46,93,39,.28)"; ctx.fillRect(Math.round(it.x), top + 4, 1, BH2 - top - 6);
+        if (x > it.x + 1) ctx.fillRect(Math.round(it.x), top + 5, x - it.x, 1);
+        label((it.more ? "‹ " : "") + it.cap.toUpperCase(), x + 4, top + 11, 9.5, "#6b7a64", 700, false, W - x - 8, "middle");
         if (it.name) {
           const fam = it.n && it.n.rank === "family";
-          label(it.name, x, 28, it.n && it.n.rank === "genus" ? 12.5 : 12, fam ? "#12300d" : "#1b3a12", fam ? 800 : 600, it.n && it.n.rank === "genus", room, "middle");
-          bandItems.push({ x0: it.x, x1: it.x + Math.max(room, 30), node: it.more ? off[off.length - 2] && off[off.length - 2].n : it.n, self: it.n });
+          label(it.name, x + 4, top + 25, 12, fam ? "#12300d" : "#1b3a12", fam ? 800 : 600, it.n && it.n.rank === "genus", W - x - 8, "middle");
+          bandItems.push({ x0: x, x1: x + w, y0: top, y1: top + rowH, node: it.more ? off[off.length - 2] && off[off.length - 2].n : it.n, self: it.n });
         }
       }
+      bandH = BH2;
     }
     ctx.restore();
     document.getElementById("tr-hint").style.opacity = view.rh > homeRH * 3 ? "0" : "1";
@@ -528,7 +542,7 @@
     ptr.delete(e.pointerId); if (ptr.size < 2) pinch0 = null;
     if (moved || ptr.size) return;
     const r = cv.getBoundingClientRect(), px = e.clientX - r.left + view.x, py = e.clientY - r.top, now = Date.now();
-    if (py < 42 && bandItems.length) { const sx = e.clientX - r.left, b = bandItems.find((it) => sx >= it.x0 && sx <= it.x1); if (b) { focus(b.self || b.node); return; } }
+    if (py < bandH + 2 && bandItems.length) { const sx = e.clientX - r.left, b = bandItems.find((it) => sx >= it.x0 && sx <= it.x1 && py >= it.y0 && py <= it.y1 + 2); if (b) { focus(b.self || b.node); return; } }
     if (now - lastTap < 300) { lastTap = 0; flyTo(yOf(py), Math.min(90, view.rh * 2.5)); return; }
     lastTap = now;
     const hit = pick(px, py);
@@ -569,6 +583,7 @@
     const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P.find((p) => p.id === "katalog") || P[0];
     const cls = (p) => (p.id === "wieland2013" ? "wie" : p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
     document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life (aktuell)" : p.titel)}</span></button>`).join("");
+    const sel = document.querySelector('#tr-pick [aria-selected="true"]'); if (sel && sel.scrollIntoView) setTimeout(() => sel.scrollIntoView({ block: "nearest", inline: "center" }), 30);
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
     src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.kurztext || SHORT[m.art] || "")}</span>${m.studie ? `<span class="tr-leg" title="Orange Sterne und Ringe markieren die Arten, die in dieser Studie untersucht wurden; ein oranger Ring um eine Familie zeigt, dass sie hier anders steht als im Vergleichsbaum."><b>★</b> = in der Studie untersucht</span>` : ""}<span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum aufklappen" title="Information zu diesem Stammbaum auf- und zuklappen">i</span><span class="ibtn-pf" aria-hidden="true"></span></summary>

@@ -1193,3 +1193,10 @@ dialog.vgl-dlg iframe { display: block; width: 100%; height: 100%; border: 0; }
 .tree-src .ibtn-pf::after { content: "▾ mehr"; }
 .tree-src[open] .ibtn-pf::after { content: "▴ weniger"; }
 .tree-src summary { cursor: pointer; }
+/* Handy: Stammbaum-Auswahl niedrig und eng, einzeilig (waagerecht wischbar) */
+@media (max-width: 700px) {
+  .tree-pick { flex-wrap: nowrap !important; overflow-x: auto !important; gap: 4px !important; width: 100%; padding-bottom: 1px; }
+  .tree-pick button { flex: none !important; white-space: nowrap !important; padding: 3px 9px !important; border-width: 1.5px !important; border-radius: 999px !important; min-height: 0; line-height: 1.2 !important; }
+  .tree-pick button .lg { font-size: .74rem !important; line-height: 1.2 !important; }
+  .tree-head { gap: 5px !important; padding: 5px 8px !important; }
+}
