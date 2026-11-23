@@ -218,18 +218,19 @@
     if (st.sort === "region") sicht.sort((a, b) => ro(a) - ro(b) || (a.lab || "").localeCompare(b.lab || "", "de"));
     else { const R = RANG[st.sort]; sicht.sort((a, b) => (a.reg === "allg") - (b.reg === "allg") || R[a.status] - R[b.status] || ro(a) - ro(b)); }
     // Kopf
-    const kopf = `<tr><th class="av-ecke">Merkmal</th>${arten.map((s, i) => `<th class="av-art"><div class="av-artkopf">
+    const MOB = matchMedia("(max-width: 700px)").matches, SP_ = arten.length + (MOB ? 0 : 1);
+    const kopf = `<tr>${MOB ? "" : '<th class="av-ecke">Merkmal</th>'}${arten.map((s, i) => `<th class="av-art" style="--ac:${ARTFARBE[i % ARTFARBE.length]}"><div class="av-artkopf">
         <img alt="" loading="lazy" hidden data-fk="${esc(s.k)}">
         <div class="av-ak-t"><a href="index.html#art=${encodeURIComponent(s.k)}" class="av-name"><i>${esc(s.n)}</i></a><small>${esc(s.a || "")}</small>
-        ${i > 0 ? `<span class="av-aehn${un[i] ? " un" : ""}" title="Merkmale, in denen sich diese Art von ${esc(arten[0].n)} (erste Spalte) unterscheidet">${un[i] ? un[i] + (un[i] === 1 ? " Unterschied" : " Unterschiede") : "kein Unterschied"} zur ersten Art</span>` : arten.length > 1 ? `<span class="av-aehn ref">erste Art (Bezug)</span>` : ""}
+        ${i > 0 ? `<span class="av-aehn${un[i] ? " un" : ""}" title="Merkmale, in denen sich diese Art von ${esc(arten[0].n)} (erste Spalte) unterscheidet">${un[i] ? un[i] + (un[i] === 1 ? " Unterschied" : " Unterschiede") : "kein Unterschied"}<span class="av-l2"> zur ersten Art</span></span>` : arten.length > 1 ? `<span class="av-aehn ref">erste Art<span class="av-l2"> (Bezug)</span></span>` : ""}
         </div><button type="button" class="av-weg" data-weg="${esc(s.k)}" title="Aus dem Vergleich entfernen">✕</button></div></th>`).join("")}</tr>`;
     let körper = "", letzteReg = null, masseHinweis = false;
     const regKopf = (reg, name) => {
       const c = zeilen.filter((y) => y.reg === reg && y.status !== "einzeln" && y.status !== "info");
       const v = c.filter((y) => y.status === "verschieden").length, g = c.filter((y) => y.status === "gleich").length;
-      return `<tr class="av-reg"><th colspan="${arten.length + 1}">${esc(name)}${reg !== "allg" ? ` <small>${v ? `<b class="st-verschieden">${v} unterschiedlich</b> · ` : ""}${c.length} verglichen</small>` : ""}</th></tr>`
-        + (glZahl[reg] ? `<tr class="av-klapp"><td colspan="${arten.length + 1}"><button type="button" data-auf="${reg}">▸ ${glZahl[reg]} ${glZahl[reg] === 1 ? "Merkmal stimmt" : "Merkmale stimmen"} bei allen Arten überein – anzeigen</button></td></tr>`
-          : offen.has(reg) && g ? `<tr class="av-klapp"><td colspan="${arten.length + 1}"><button type="button" data-zu="${reg}">▾ übereinstimmende Merkmale wieder einklappen</button></td></tr>` : "");
+      return `<tr class="av-reg"><th colspan="${SP_}">${esc(name)}${reg !== "allg" ? ` <small>${v ? `<b class="st-verschieden">${v} unterschiedlich</b> · ` : ""}${c.length} verglichen</small>` : ""}</th></tr>`
+        + (glZahl[reg] ? `<tr class="av-klapp"><td colspan="${SP_}"><button type="button" data-auf="${reg}">▸ ${glZahl[reg]} ${glZahl[reg] === 1 ? "Merkmal stimmt" : "Merkmale stimmen"} bei allen Arten überein – anzeigen</button></td></tr>`
+          : offen.has(reg) && g ? `<tr class="av-klapp"><td colspan="${SP_}"><button type="button" data-zu="${reg}">▾ übereinstimmende Merkmale wieder einklappen</button></td></tr>` : "");
     };
     const regNamen = Object.fromEntries([["allg", "Überblick"], ["masse", "Körpermaße"], ...MM.regionen]);
     if (klapp) for (const reg of Object.keys(glZahl)) if (!sicht.some((z) => z.reg === reg)) sicht.push({ nurKopf: true, reg, regName: regNamen[reg] || reg });
@@ -237,7 +238,7 @@
     for (const z of sicht) {
       if (st.sort === "region" && z.reg !== letzteReg) {
         letzteReg = z.reg;
-        if (z.reg !== "allg" && !masseHinweis && ohneMasse) { masseHinweis = true; körper += `<tr class="av-reg"><th colspan="${arten.length + 1}">Körpermaße <small>für diese Arten sind in den ausgewerteten Quellen keine Maße dokumentiert</small></th></tr>`; }
+        if (z.reg !== "allg" && !masseHinweis && ohneMasse) { masseHinweis = true; körper += `<tr class="av-reg"><th colspan="${SP_}">Körpermaße <small>für diese Arten sind in den ausgewerteten Quellen keine Maße dokumentiert</small></th></tr>`; }
         körper += regKopf(z.reg, z.regName);
       }
       if (z.nurKopf) continue;
@@ -245,7 +246,10 @@
       const B = z.opts ? beschrift(z) : null;
       const lab = B ? B.lab : z.lab;
       const kurz = (t) => B.wert(t, " – oder – ");
-      körper += `<tr class="av-z st-${z.status}${z.wichtig ? " w" + z.wichtig : ""}"><th class="av-lab" title="${esc(z.q ? "Quelle: " + z.q : "")}"><span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.wichtig === 2 ? ` <span class="av-key k2" title="Wichtig für die Artbestimmung: In diesem Merkmal unterscheiden sich die gewählten Arten">🔑 trennt diese Arten</span>` : z.wichtig === 1 ? ` <span class="av-key k1" title="Die Fachliteratur nutzt dieses Merkmal, um Arten zu bestimmen (aus einem Artenschlüssel)">🔑 Bestimmungsmerkmal</span>` : ""}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}</th>${z.zellen.map((c) => c
+      const labHtml = `<span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.wichtig === 2 ? ` <span class="av-key k2" title="Wichtig für die Artbestimmung: In diesem Merkmal unterscheiden sich die gewählten Arten">🔑 trennt diese Arten</span>` : z.wichtig === 1 ? ` <span class="av-key k1" title="Die Fachliteratur nutzt dieses Merkmal, um Arten zu bestimmen (aus einem Artenschlüssel)">🔑 Bestimmungsmerkmal</span>` : ""}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}`;
+      const zk = `st-${z.status}${z.wichtig ? " w" + z.wichtig : ""}`, qt = esc(z.q ? "Quelle: " + z.q : "");
+      körper += (MOB ? `<tr class="av-lrow ${zk}"><th colspan="${SP_}" class="av-lab-m" title="${qt}"><span class="av-lab-in">${labHtml}</span></th></tr><tr class="av-z ${zk}">`
+        : `<tr class="av-z ${zk}"><th class="av-lab" title="${qt}">${labHtml}</th>`) + `${z.zellen.map((c) => c
         ? `<td class="${z.status === "info" ? "" : z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
         : `<td class="nd">nicht dokumentiert</td>`).join("")}</tr>`;
     }
@@ -273,7 +277,7 @@
     const regOrd = ["masse", ...MM.regionen.map((r) => r[0])];
     const ds = zeilen.filter((z) => z.reg !== "allg" && z.status === "verschieden")
       .sort((a, b) => lvlRang(a) - lvlRang(b) || regOrd.indexOf(a.reg) - regOrd.indexOf(b.reg));
-    const name = (i) => `<i>${esc(arten[i].n)}</i>`;
+    const name = (i) => `<span class="av-artpunkt" style="--ac:${ARTFARBE[i % ARTFARBE.length]}"></span><i>${esc(arten[i].n)}</i>`;
     const fam = new Set(arten.map((s) => s.f)), gat = new Set(arten.map((s) => s.g));
     const kopf = `<p class="av-kz-satz">${arten.length} Arten aus ${gat.size === 1 ? `derselben Gattung <i>${esc([...gat][0])}</i>` : fam.size === 1 ? `${gat.size} Gattungen derselben Familie ${esc([...fam][0])}` : `${fam.size} Familien`}. ${ds.length ? `Sie unterscheiden sich in <b>${ds.length}</b> dokumentierten ${ds.length === 1 ? "Merkmal" : "Merkmalen"}${ds.length > 6 ? "; die wichtigsten:" : ":"}` : "In den ausgewerteten Quellen sind keine eindeutigen Unterschiede zwischen diesen Arten dokumentiert."}</p>`;
     const li = ds.slice(0, 6).map((z) => {
@@ -288,8 +292,9 @@
   }
 
   // ---------- Auswahl
+  const ARTFARBE = ["#2f6b3a", "#2b5fa8", "#c27a12", "#8e44ad", "#c0392b", "#16857c", "#8a7a10", "#555b57"];
   function chips() {
-    $("av-chips").innerHTML = st.arten.map((k) => { const s = BYK.get(k); return `<span class="av-chip"><i>${esc(s.n)}</i><button type="button" data-weg="${esc(k)}" aria-label="entfernen">✕</button></span>`; }).join("")
+    $("av-chips").innerHTML = st.arten.map((k, i) => { const s = BYK.get(k); return `<span class="av-chip" style="--ac:${ARTFARBE[i % ARTFARBE.length]}"><i>${esc(s.n)}</i><button type="button" data-weg="${esc(k)}" aria-label="entfernen">✕</button></span>`; }).join("")
       + (st.arten.length ? `<button type="button" class="av-chip leeren" id="av-alle-weg">Auswahl leeren</button>` : "");
   }
   function schnell() {
@@ -351,6 +356,8 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("av-vorschlag").hidden) an({ t: "zu" }); });
     document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); an({ t: "art", k: decodeURIComponent(a.href.split("#art=")[1]) }); } }, true);
   }
+  // beim Wechsel zwischen Handy- und Breitansicht neu aufbauen
+  matchMedia("(max-width: 700px)").addEventListener("change", () => zeichnen());
   lesen(); zeichnen();
   window.__avTest = { vergleich, profil, BYK, st, zeichnen };
 })();

@@ -117,3 +117,41 @@ body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; ove
 .av-t tr.w1 > th.av-lab { box-shadow: inset 4px 0 0 #d9c98a; }
 .av-kurz summary small { font-weight: 400; font-size: 13px; }
 .av-t { table-layout: fixed; }
+
+/* Jede Art hat eine eigene Kennfarbe (Kopf, Auswahl, Kurzfassung) */
+.av-t thead th.av-art { border-top: 4px solid var(--ac, var(--rand)); }
+.av-chip { border-left: 4px solid var(--ac, #cfe0ca); }
+.av-artpunkt { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ac); margin: 0 4px 0 2px; vertical-align: 0; }
+
+/* Smartphone: Merkmal als eigene Zeile über den Werten, volle Breite für die Arten */
+.av-lrow th.av-lab-m { padding: 6px 8px 2px; background: #fbfbf7; border-bottom: 0; font-weight: 600; text-align: left; }
+.av-lab-in { position: sticky; left: 8px; display: inline-block; max-width: calc(100vw - 30px); }
+.av-lrow.w2 th.av-lab-m { box-shadow: inset 4px 0 0 var(--rot); }
+.av-lrow.w1 th.av-lab-m { box-shadow: inset 4px 0 0 #d9c98a; }
+.av-lrow .av-opts { display: inline; margin-left: 4px; }
+@media (max-width: 700px) {
+  .av-t { min-width: 0; width: max(100%, calc(var(--n) * 118px)); table-layout: fixed; }
+  .av-t th, .av-t td { font-size: 13px; padding: 5px 6px; }
+  .av-t thead th.av-art { padding: 5px 5px 6px; }
+  .av-artkopf { flex-direction: column; align-items: stretch; gap: 3px; padding-right: 0; }
+  .av-artkopf img { width: 100%; height: 64px; }
+  .av-artkopf .av-ak-t small { display: none; }
+  .av-name { font-size: 12.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .av-aehn { font-size: 10px; padding: 1px 4px; }
+  .av-weg { top: -2px; right: -2px; width: 26px; height: 26px; background: rgba(255,255,255,.85); border-radius: 50%; }
+  .av-t tr.av-z td { border-bottom: 1px solid #e4e4da; }
+  .av-reg th { font-size: 13px; }
+  .av-klapp button { font-size: 13px; padding: 6px 0; }
+  .av-kurz { margin: 6px; padding: 6px 10px; font-size: 13px; }
+  .av-kz { padding-left: 18px; }
+  #av-suche { font-size: 16px; padding: 7px 10px; }
+  .av-vorschlag li { padding: 10px 12px; font-size: 15px; }
+  .av-chip { font-size: 13px; padding: 3px 3px 3px 9px; }
+  .av-chip button { width: 24px; height: 24px; font-size: 12px; }
+  .av-btn { height: 34px; }
+}
+@media (max-width: 700px) {
+  .av-l2 { display: none; }
+  .av-lrow .av-opts { display: none; }
+  .av-key { font-size: 10px; }
+}
