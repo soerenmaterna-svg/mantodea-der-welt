@@ -1,0 +1,6 @@
+Svenson & Whiting 2009 (Cladistics 25: 468-514), Abb. 3a-e (ML-Baum) -> data/stammbaeume.js
+1. tree2.py/leaves.py: Äste aus den Vektorzeichnungen der PDF (PyMuPDF), Spitzen über freie Astenden mit Beschriftung
+2. labels.py: von Hand abgelesene Namen je Seite; '+' = im Vektorbild nicht erkannte Spitze, per Hand ergänzt (PATCH)
+3. assemble.py: Seiten an den Markierungen (Quadrat, Kreis, Sechseck, Raute) verbinden; 10 Mehrfachverzweigungen nach der Abbildung aufgelöst
+4. to_site.py: auf heutige Familien übertragen (größter geschlossener Ast je Familie), Gattungen/Arten nach Katalog
+Ergebnis: 329 Mantodea-Spitzen wie im Artikel.

@@ -45,7 +45,8 @@
   const THEME = { katalog: { line: "#2e5d27", bg: "#fbfdf7", mark: "Katalog · Klassifikation" },
     schwarzroy2019: { line: "#a24e1c", bg: "#fdf8f2", mark: "Morphologie · Schwarz & Roy 2019" },
     wieland2013: { line: "#6a3d9a", bg: "#f8f5fc", mark: "Morphologie · Wieland 2013" },
-    casadei2026: { line: "#1f5f97", bg: "#f4f8fd", mark: "Genetik · Casadei-Ferreira u. a. 2026" } };
+    casadei2026: { line: "#1f5f97", bg: "#f4f8fd", mark: "Genetik · Casadei-Ferreira u. a. 2026" },
+    svensonwhiting2009: { line: "#0f766e", bg: "#f3fbfa", mark: "Genetik · Svenson & Whiting 2009" } };
   const TH = () => THEME[curTree] || THEME.katalog;
   let curTree = "katalog", diffCount = 0, diffWith = "";
   try { curTree = localStorage.getItem("mantodea-tree") || "katalog"; } catch (e) { /* egal */ }
@@ -88,7 +89,7 @@
     visit(rootNode);
   }
   function build() {
-    const meta = PHYLOS().find((p) => p.id === curTree) || PHYLOS()[0];
+    const meta = PHYLOS().find((p) => p.id === curTree) || PHYLOS().find((p) => p.id === "katalog") || PHYLOS()[0];
     curTree = meta.id; dlg.dataset.tree = curTree;
     const PH = meta.tree || window.MANTODEA_PHYLO;
     // in der Studie untersuchte Arten (bzw. Gattungen bei Proben, die nur bis zur Gattung bestimmt sind)
@@ -299,7 +300,7 @@
   const xOf = (n) => (n.rank === "species" ? spX : colX(n.ri));
   const padOf = (n) => 34 + Math.min(6, n.ri) * 3;
 
-  let raf = 0;
+  let raf = 0, pathKey = "", pathNodes = [];
   function draw() { if (!raf) raf = requestAnimationFrame(render); }
   function render() {
     raf = 0;
@@ -384,7 +385,7 @@
       if (lastY[lk] !== undefined && Math.abs(y - lastY[lk]) < fs * 2) continue;
       if (n.rank === "genus" && span < 9 && rh < 6) continue;
       const mid = n.ri > RI.family && n.ri < RI.genus;
-      if (mid && (span < (narrow ? 34 : 22) || colX(n.ri + 1) - x < (narrow ? 16 : 10))) continue;
+      if (mid && (span < (narrow ? 18 : 14) || colX(n.ri + 1) - x < (narrow ? 12 : 8))) continue;
       const lx = x + (famPhoto ? Math.min(span * 0.4, 15) + 4 : 6);
       // Platz: Gattung bis zu den Arten, sonst bis zur Spalte der Gattungen (Namen dürfen über Äste laufen)
       const limit = n.rank === "genus" ? (rh >= 7 ? spX - 6 : W + view.x - 6) : Math.max(colX(n.ri + 2), colX(RI.genus) - 8);
@@ -412,9 +413,31 @@
       if (!k || k.rank === "species" || (k.rank === "genus" && kOf(k) < 4)) break;
       cur = k;
     }
-    const lin = lineage(cur).map((n) => n.rank === "genus" ? `<i>${esc(n.name)}</i>${n.auth ? ` <span class="muted">${esc(n.auth)}, ${n.year}</span>` : ""}` : n.rank === "family" ? `<b>${esc(n.name)}</b>` : esc(n.name));
-    document.getElementById("tr-path").innerHTML = cur === rootNode || view.rh <= homeRH * 1.05 ? `Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten`
-      : (narrow && lin.length > 4 ? "… › " + lin.slice(-4).join(" › ") : lin.join(" › "));
+    const named = lineage(cur).filter((n) => n.name);
+    const key = curTree + "|" + named.map((n) => n.name).join("/") + (view.rh <= homeRH * 1.05 ? "|home" : "");
+    if (key !== pathKey) {
+      pathKey = key; pathNodes = named;
+      const item = (n, i) => `<button type="button" class="tp-i tp-${n.rank}" data-pi="${i}" title="${esc((RDE[n.rank] || "Gruppe") + " " + n.name)} – antippen zum Heranholen"><small>${esc(RDE[n.rank] || "Gruppe")}</small><span>${n.rank === "genus" ? `<i>${esc(n.name)}</i>` : esc(n.name)}</span></button>`;
+      document.getElementById("tr-path").innerHTML = view.rh <= homeRH * 1.05 || named.length <= 1
+        ? `<span class="tp-sum">Mantodea · ${fmt.format(FAMS.length)} Familien · ${fmt.format(nodes.filter((n) => n.rank === "genus").length)} Gattungen · ${fmt.format(nodes.filter((n) => n.rank === "species").length)} Arten – zum Erkunden hineinzoomen oder eine Familie antippen</span>`
+        : named.map(item).join('<span class="tp-sep" aria-hidden="true">›</span>');
+    }
+    // Spaltenköpfe: welcher Rang in welcher Spalte steht (sobald die Spalten auseinandergezogen sind)
+    const heads = [["family", "Familie"], ["subfamily", "Unterfamilie"], ["tribe", "Tribus"], ["genus", "Gattung"]];
+    const hy = (document.getElementById("tr-path").offsetHeight || 26) + 4;
+    let lastHX = -1e9;
+    ctx.save(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (view.rh > homeRH * 2) {
+      ctx.fillStyle = "rgba(251,253,247,.88)"; ctx.fillRect(0, hy - 2, W, 18);
+      for (const [r, t] of [...heads, ["species", "Art"]]) {
+        const x = (r === "species" ? spX : colX(RI[r])) - view.x;
+        if (x < 4 || x > W - 20 || x - lastHX < 62) continue;
+        lastHX = x;
+        ctx.font = "700 10.5px system-ui, sans-serif"; ctx.fillStyle = "#5b6b55"; ctx.textAlign = "left"; ctx.textBaseline = "top";
+        ctx.fillText(t.toUpperCase(), x, hy + 1);
+      }
+    }
+    ctx.restore();
     document.getElementById("tr-hint").style.opacity = view.rh > homeRH * 3 ? "0" : "1";
   }
 
@@ -498,6 +521,10 @@
     if (b.dataset.z === "info") { const i = document.getElementById("tr-info"); i.hidden = !i.hidden; setTimeout(resize, 20); }
     if (b.classList.contains("tr-close")) dlg.close();
   });
+  document.getElementById("tr-path").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pi]"); if (!b) return;
+    const n = pathNodes[+b.dataset.pi]; if (n) focus(n);
+  });
   document.getElementById("tr-q").addEventListener("change", (e) => {
     const n = byName.get(e.target.value.trim().toLowerCase());
     if (n) { focus(n); e.target.blur(); }
@@ -505,12 +532,12 @@
   new ResizeObserver(() => { if (dlg.open) resize(); }).observe(cv.parentElement);
 
   function drawPick() {
-    const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P[0];
+    const P = PHYLOS(), m = P.find((p) => p.id === curTree) || P.find((p) => p.id === "katalog") || P[0];
     const cls = (p) => (p.id === "wieland2013" ? "wie" : p.art === "genetisch" ? "gen" : p.art === "morphologisch" ? "mor" : "kat");
-    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life" : p.titel)}</span></button>`).join("");
+    document.getElementById("tr-pick").innerHTML = P.map((p) => `<button type="button" role="tab" class="${cls(p)}" data-tree="${esc(p.id)}" aria-selected="${p.id === curTree}"><span class="lg">${esc(p.titel === "Katalog" ? "Catalogue of Life (aktuell)" : p.titel)}</span></button>`).join("");
     const src = document.getElementById("tr-src"), wasOpen = src.open;
     const SHORT = { Klassifikation: "offizielle Einteilung aller Gruppen", morphologisch: "nach dem Körperbau, vor allem den Genitalien", genetisch: "nach dem Erbgut, 1.160 Gene, mit Altersangaben" };
-    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.id === "wieland2013" ? "nach dem äußeren Körperbau, 152 Merkmale" : SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
+    src.innerHTML = m.zitat ? `<summary><span class="tag ${cls(m)}">${esc(m.art)}</span><span class="short">${esc(m.kurztext || SHORT[m.art] || "")}</span><span class="ibtn" role="button" aria-label="Information zu diesem Stammbaum" title="Information zu diesem Stammbaum">i</span></summary>
       <div class="src-body"><p>${esc(m.text || "")}</p><p class="cite">${esc(m.zitat)}</p><p class="links"><a href="${esc(m.url)}" target="_blank" rel="noopener">📄 Zur Veröffentlichung ↗</a>${m.daten ? `<a href="${esc(m.daten)}" target="_blank" rel="noopener">🧬 Originaldaten ↗</a>` : ""}</p></div>` : "";
     src.open = wasOpen;
   }
