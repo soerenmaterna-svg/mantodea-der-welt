@@ -1135,8 +1135,12 @@ details.d-zeile.ung-art { background: transparent; border-color: var(--line); }
 /* Einstieg in den Artenvergleich */
 .d-actions a.d-av { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card, #fff); color: var(--ink); text-decoration: none; }
 
-/* Reiter Bestimmen: Umschalter Bestimmen / Arten vergleichen */
-.k-sub { display: flex; gap: 6px; margin: 4px 0 8px; position: sticky; top: 0; z-index: 5; }
-.k-sub button { flex: 1; font: inherit; font-weight: 600; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card, #fff); color: var(--ink); cursor: pointer; }
-.k-sub button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-.k-vgl iframe { display: block; width: 100%; height: calc(100vh - 64px); height: calc(100dvh - 64px); min-height: 420px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+/* Arten vergleichen: Einstieg im Reiter, kleiner Knopf am Artnamen, Vollbild-Fenster */
+.k-sub { margin: 4px 0 10px; }
+.k-vgl-auf { width: 100%; font: inherit; font-weight: 600; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; text-align: left; }
+.k-vgl-auf small { font-weight: 400; opacity: .9; }
+.d-vgl-k { font: 600 .78rem/1 system-ui, sans-serif; vertical-align: middle; margin-left: 6px; padding: 4px 8px; border: 1px solid var(--accent); border-radius: 999px; background: transparent; color: var(--accent); cursor: pointer; white-space: nowrap; }
+.d-vgl-k:hover { background: var(--accent); color: #fff; }
+dialog.vgl-dlg { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #fff; }
+dialog.vgl-dlg::backdrop { background: rgba(0,0,0,.5); }
+dialog.vgl-dlg iframe { display: block; width: 100%; height: 100%; border: 0; }

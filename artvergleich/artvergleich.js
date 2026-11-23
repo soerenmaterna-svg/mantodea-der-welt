@@ -45,7 +45,7 @@
   const ERD = { NORTH_AMERICA: "Nordamerika", SOUTH_AMERICA: "Südamerika", EUROPE: "Europa", AFRICA: "Afrika", ASIA: "Asien", OCEANIA: "Australien/Ozeanien", ANTARCTICA: "Antarktis" };
   let landName = (c) => c;
   try { const dn = new Intl.DisplayNames(["de"], { type: "region" }); landName = (c) => dn.of(c) || c; } catch (e) { /* alter Browser */ }
-  const typKurz = (k) => { const t = TY[k]; if (!t) return ""; return [...new Set(t.map((r) => (r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s) + " " + (r.c || (r.m || "").split(",")[0])))].slice(0, 3).join(" · "); };
+  const typKurz = (k) => { const t = TY[k]; if (!t) return ""; return [...new Set(t.map((r) => (r.n > 1 && !/en$/.test(r.s) ? r.s.replace(/us$/, "en") : r.s) + ": " + ((r.m || "").split(",")[0] || r.c)))].slice(0, 3).join(" · "); };
   const ALLG = [
     ["Familie", (s) => s.f],
     ["Unterfamilie", (s) => (s.sf && !s.sf.startsWith("(") ? s.sf : "")],
@@ -73,7 +73,8 @@
     for (const [feld, lab] of MASSE) {
       const zellen = arten.map((s) => {
         const m = MM.masse[s.k]; const w = m && m.w[feld]; if (!w) return null;
-        const t = [w.m && "♂ " + w.m, w.w && "♀ " + w.w, w["?"] && w["?"]].filter(Boolean).join(" · ") + " mm";
+        const de = (x) => x.replace(/\./g, ",").replace(/-/g, "–");
+        const t = [w.m && "Männchen " + de(w.m), w.w && "Weibchen " + de(w.w), w["?"] && de(w["?"])].filter(Boolean).join(" · ") + " mm";
         return { t, key: t, q: m.q, u: m.u, mass: w };
       });
       zeilen.push(bewerte({ reg: "masse", regName: "Körpermaße", lab, zellen, mass: true, immer: ["koerper", "pronotum_l", "vfl", "profemur"].includes(feld) }));
@@ -175,7 +176,7 @@
     const ae = aehnlichkeit(zeilen, arten.length);
     const zaehl = { verschieden: 0, teilweise: 0, gleich: 0, einzeln: 0 };
     zeilen.forEach((z) => zaehl[z.status]++);
-    $("av-bilanz").innerHTML = arten.length < 2 ? "" : `<b class="st-verschieden">≠ ${zaehl.verschieden}</b> <b class="st-teilweise">≈ ${zaehl.teilweise}</b> <b class="st-gleich">= ${zaehl.gleich}</b> <span class="av-grau">von ${zeilen.filter((z) => z.status !== "einzeln").length} vergleichbaren Merkmalen</span>`;
+    $("av-bilanz").innerHTML = arten.length < 2 ? "" : `<b class="st-verschieden">${zaehl.verschieden} unterschiedlich</b> · <b class="st-teilweise">${zaehl.teilweise} teilweise</b> · <b class="st-gleich">${zaehl.gleich} gleich</b> <span class="av-grau">von ${zeilen.filter((z) => z.status !== "einzeln").length} vergleichbaren Merkmalen</span>`;
     // Filtern
     let sicht = zeilen.filter((z) => {
       if (z.reg === "allg") return true;
@@ -206,11 +207,12 @@
         körper += `<tr class="av-reg"><th colspan="${arten.length + 1}">${esc(z.regName)}${z.reg !== "allg" ? ` <small>${c.length} verglichen${v ? ` · ${v} unterschiedlich` : ""}</small>` : ""}</th></tr>`;
       }
       const [stName, stZ] = STATUS[z.status];
-      const lab = z.lab || (z.opts ? z.opts[0].split(/[:,(]| mit | ohne /)[0] : "");
       const pre = z.lab && z.lab.endsWith(" …") ? z.lab.slice(0, -2) : "";
-      const kurz = (t) => pre ? t.split(" / oder: ").map((x) => (x.startsWith(pre + " ") ? "… " + x.slice(pre.length + 1) : x)).join(" / ") : t.replace(/ \/ oder: /g, " / ");
+      const lab = pre || z.lab || (z.opts ? z.opts[0].split(/[:,(]| mit | ohne /)[0] : "");
+      const gross = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+      const kurz = (t) => t.split(" / oder: ").map((x) => (pre && x.startsWith(pre + " ") ? gross(x.slice(pre.length + 1)) : x)).join(" – oder – ");
       körper += `<tr class="av-z st-${z.status}"><th class="av-lab" title="${esc(z.q ? "Quelle: " + z.q : "")}"><span class="av-st" title="${stName}">${stZ}</span> ${esc(lab)}${z.opts ? `<small class="av-opts" title="${esc("Mögliche Ausprägungen: " + z.opts.join(" | "))}">${esc(z.regName)}</small>` : ""}</th>${z.zellen.map((c) => c
-        ? `<td class="${z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Schlüssel nur möglicherweise">?</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
+        ? `<td class="${z.status === "verschieden" || z.status === "teilweise" ? "f" + (c.farbe % FARBEN.length) : z.status === "gleich" ? "gl" : ""}${c.vm ? " vm" : ""}"${c.q ? ` title="${esc(c.q)}"` : c.lvl && c.lvl !== "Art" ? ` title="gilt laut Schlüssel für die ganze ${c.lvl}"` : ""}>${esc(c.opts === undefined && z.opts ? kurz(c.t) : c.t)}${c.var ? ' <span class="av-tag">variabel</span>' : ""}${c.vm ? ' <span class="av-tag" title="laut Bestimmungsschlüssel nur möglicherweise">vermutlich</span>' : ""}${c.lvl && c.lvl !== "Art" ? ` <span class="av-lvl">für die ganze ${c.lvl}</span>` : ""}${c.u ? ` <a href="${esc(c.u)}" target="_blank" rel="noopener" class="av-q">Quelle ↗</a>` : ""}</td>`
         : `<td class="nd">nicht dokumentiert</td>`).join("")}</tr>`;
     }
     box.innerHTML = `<div class="av-scroll"><table class="av-t" style="--n:${arten.length}"><thead>${kopf}</thead><tbody>${körper}</tbody></table></div>`;
@@ -272,7 +274,11 @@
   const EIN = new URLSearchParams(location.search).get("eingebettet") === "1" && window.top !== window;
   if (EIN) {
     document.documentElement.classList.add("eingebettet");
-    document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); window.top.location.hash = "art=" + a.href.split("#art=")[1]; } }, true);
+    const an = (m) => window.parent.postMessage(Object.assign({ mantodeaVgl: m.t }, m), location.origin);
+    $("av-zurueck").textContent = "✕ Schließen"; $("av-zurueck").title = "Vergleich schließen";
+    $("av-zurueck").onclick = () => an({ t: "zu" });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("av-vorschlag").hidden) an({ t: "zu" }); });
+    document.addEventListener("click", (e) => { const a = e.target.closest("a.av-name"); if (a) { e.preventDefault(); an({ t: "art", k: decodeURIComponent(a.href.split("#art=")[1]) }); } }, true);
   }
   lesen(); zeichnen();
   window.__avTest = { vergleich, profil, BYK, st, zeichnen };

@@ -53,8 +53,7 @@
   const st = { conts: new Set(), land: "", sel: {}, fam: "", gen: "", shown: 48, focus: null };
   const root = $("v-bestimmen");
   root.innerHTML = `
-    <div class="k-sub" role="tablist"><button type="button" class="on" data-ksub="best" role="tab">🔍 Bestimmen</button><button type="button" data-ksub="vgl" role="tab">⚖️ Arten vergleichen</button></div>
-    <div id="k-vgl" class="k-vgl" hidden></div>
+    <div class="k-sub"><button type="button" class="k-vgl-auf" data-vgl="">⚖️ Arten vergleichen <small>– Merkmale mehrerer Arten nebeneinander, im Vollbild</small></button></div>
     <div id="k-best">
     <div class="intro">
       <h2>Bestimmen</h2>
@@ -79,19 +78,7 @@
     </div>
     <div class="panel" id="k-lit"><h3>📖 Fachliteratur mit Bestimmungsschlüssel</h3><p class="muted">Lade …</p></div>
     </div>`;
-  // ---------- Unterbereich "Arten vergleichen": eingebettete Vergleichsseite, füllt den Reiter
-  const vgl = (arten) => {
-    root.querySelectorAll("[data-ksub]").forEach((b) => b.classList.toggle("on", b.dataset.ksub === (arten === null ? "best" : "vgl")));
-    $("k-best").hidden = arten !== null; $("k-vgl").hidden = arten === null;
-    if (arten === null) return;
-    let fr = $("k-vgl").querySelector("iframe");
-    const ziel = "artvergleich.html?eingebettet=1#" + (arten && arten.length ? "a=" + arten.join(",") : "");
-    if (!fr) { $("k-vgl").innerHTML = `<iframe title="Arten vergleichen" src="${ziel}"></iframe>`; }
-    else if (arten && arten.length) fr.contentWindow.location.replace(new URL(ziel, location.href).href);
-    root.scrollIntoView({ block: "start" });
-  };
-  window.MANTODEA_VGL = vgl;
-  root.querySelector(".k-sub").addEventListener("click", (e) => { const b = e.target.closest("[data-ksub]"); if (b) vgl(b.dataset.ksub === "vgl" ? [] : null); });
+  // "Arten vergleichen" öffnet das bildschirmfüllende Vergleichsfenster (app.js)
 
   const coll = new Intl.Collator("de");
   const LIVE = DATA.filter((s) => !s.x);

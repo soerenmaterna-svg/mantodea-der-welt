@@ -1139,7 +1139,7 @@
         ${s.p ? `<p class="credit full">${credit(s.p, false)}</p>` : ufOf(s) ? `<p class="credit full uf">${ufCredit(ufOf(s)[0])}</p>` : ""}
       </div>
       <section class="d-card d-head">
-        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)}</h2>
+        <h2 id="d-title"><i>${esc(s.n)}</i>${flags(s)} <button type="button" class="d-vgl-k" data-vgl="${esc(s.k)}" title="Diese Art mit anderen Arten vergleichen">⚖️ Vergleichen</button></h2>
         <p class="d-auth">${esc(s.a)}${s.de || s.en ? ` · <span class="d-common">${esc([s.de, s.en].filter(Boolean).join(" · "))}</span>` : ""}</p>
         <div id="d-erst"></div>
         <div id="d-typ"></div>
@@ -1160,7 +1160,7 @@
       <section class="d-card" id="d-syn-card"><div id="d-syn"></div></section>
       ${window.MANTODEA_GBK && window.MANTODEA_GBK.has(s.g) ? `<section class="d-card"><button type="button" class="gb-auf" data-gbk="${esc(s.g)}" data-gbart="${esc(s.n)}" aria-expanded="false"><span class="gb-auf-t"><b>Bestimmungsschlüssel</b><small>Arten der Gattung <i>${esc(s.g)}</i> unterscheiden</small></span><span class="gb-pfeil" aria-hidden="true">▾</span></button><div class="gb-platz" hidden></div></section>` : ""}
       <section class="d-card"><h3 class="d-h" id="d-key-h">Bestimmung</h3>
-        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button><a class="ghost d-av" href="#vergleich=${encodeURIComponent(s.k)}">⚖️ Merkmale mit anderen Arten vergleichen</a></p>
+        <p class="d-actions"><button type="button" class="ghost" data-key="${esc(s.k)}">🖼️ Ähnliche Arten nach Fotos vergleichen</button><button type="button" class="ghost" data-vgl="${esc(s.k)}">⚖️ Merkmale mit anderen Arten vergleichen</button></p>
         <h4 class="d-sub">📖 Bestimmungsschlüssel in der Fachliteratur</h4><div id="d-key"><p class="muted">Lade Bestimmungsliteratur …</p></div></section>
       <section class="d-card"><h3 class="d-h">Literatur</h3><div id="d-lit"><p class="muted">Lade Literatur …</p></div></section>
       <p class="links d-sources"><span class="muted">Datenquellen:</span> ${srcs.join("")}</p>
@@ -1355,18 +1355,40 @@
       ${NEW.size ? `<details><summary>Neu gefundene Namen anzeigen (${fmt.format(NEW.size)})</summary><p class="newlist">${[...NEW].map((n) => `<i>${esc(n)}</i>`).join(", ")}</p></details>` : ""}`;
   }
 
+  // ---------- Arten vergleichen: bildschirmfüllendes Fenster über allem (auch über dem Steckbrief)
+  function openVgl(arten) {
+    let d = $("vgl-dlg");
+    if (!d) {
+      d = document.createElement("dialog"); d.id = "vgl-dlg"; d.className = "vgl-dlg";
+      document.body.appendChild(d);
+      d.addEventListener("close", () => { d.innerHTML = ""; });
+    }
+    d.innerHTML = `<iframe title="Arten vergleichen" src="${vq("artvergleich.html?eingebettet=1")}#${arten && arten.length ? "a=" + arten.join(",") : ""}"></iframe>`;
+    if (!d.open) d.showModal();
+  }
+  window.MANTODEA_VGL = (arten) => openVgl(arten || []);
+  // Nachrichten aus dem Vergleichsfenster: schließen bzw. Steckbrief einer Art öffnen
+  window.addEventListener("message", (e) => {
+    if (e.origin !== location.origin || !e.data || !e.data.mantodeaVgl) return;
+    const d = $("vgl-dlg");
+    if (d && d.open) d.close();
+    if (e.data.mantodeaVgl === "art" && BYKEY.get(String(e.data.k))) detail(String(e.data.k));
+  });
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-vgl]"); if (!b) return;
+    e.preventDefault(); openVgl(b.dataset.vgl ? [b.dataset.vgl] : []);
+  });
+
   // ---------- Bereiche (Tabs)
   const TABS = ["arten", "bestimmen", "mitmachen"];
   let lastTab = "arten";
   function route() {
     const h = location.hash.replace("#", "");
-    if (h === "vergleich" || h.startsWith("vergleich=")) { // Arten vergleichen (im Reiter Bestimmen)
+    if (h === "vergleich" || h.startsWith("vergleich=")) { // Arten vergleichen (eigenes Vollbild-Fenster)
       const arten = decodeURIComponent(h.slice(10)).split(",").filter((k) => BYKEY.get(k));
-      if ($("detail").open) $("detail").close();
-      history.replaceState(null, "", "#bestimmen");
-      route();
-      if (window.MANTODEA_VGL) window.MANTODEA_VGL(arten);
-      return;
+      history.replaceState(null, "", "#" + lastTab);
+      openVgl(arten);
+      return route();
     }
     if (h.startsWith("art=")) { // Sprung aus dem Bestimmungsschlüssel
       const k = decodeURIComponent(h.slice(4));
