@@ -1229,3 +1229,8 @@ dialog.vgl-dlg iframe { display: block; width: 100%; height: 100%; border: 0; }
 /* Stammbaum: Zurück statt Kreuz */
 .tree-btns .tr-zurueck { width: auto !important; padding: 0 12px !important; border-radius: 999px !important; font: 700 .85rem system-ui, sans-serif !important; background: #2e5d27 !important; color: #fff !important; white-space: nowrap; }
 .tr-lesen { font: inherit; font-size: .85rem; border: 1px solid #c9d6c2; background: #fff; border-radius: 8px; padding: 4px 10px; cursor: pointer; color: #1b3a12; }
+/* Stammbaum: Suchfeld und Knöpfe immer gemeinsam in einer Zeile */
+.tree-such { display: flex !important; flex-wrap: nowrap !important; align-items: center; gap: 6px; flex: 1 1 360px; min-width: 0; margin-left: auto; max-width: 560px; }
+.tree-such input { flex: 1 1 auto !important; min-width: 0 !important; max-width: none !important; order: 0 !important; }
+.tree-such .tree-btns { flex: none; margin-left: 0 !important; order: 0 !important; }
+@media (max-width: 700px) { .tree-such { order: 1; flex: 1 1 100%; max-width: none; margin-left: 0; } }

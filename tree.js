@@ -14,9 +14,9 @@
     <div class="tree-head">
       <h2 id="tr-title">🌳 Stammbaum</h2>
       <div class="tree-pick" id="tr-pick" role="tablist" aria-label="Stammbaum nach Autor"></div>
-      <input type="search" id="tr-q" list="tr-names" placeholder="🔍 Gruppe, Gattung, Art" autocomplete="off">
+      <div class="tree-such"><input type="search" id="tr-q" list="tr-names" placeholder="🔍 Gruppe, Gattung, Art" autocomplete="off">
       <datalist id="tr-names"></datalist>
-      <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" class="tr-close tr-zurueck" aria-label="Zurück">← Zurück</button></span>
+      <span class="tree-btns"><button type="button" data-z="in" aria-label="Hineinzoomen">＋</button><button type="button" data-z="out" aria-label="Herauszoomen">－</button><button type="button" data-z="home" aria-label="Ganzer Baum">⌂</button><button type="button" class="tr-close tr-zurueck" aria-label="Zurück">← Zurück</button></span></div>
     </div>
     <details class="tree-src" id="tr-src"></details>
     <div class="tree-info" id="tr-info" hidden>
