@@ -155,7 +155,7 @@
     const L = LIT(s.k);
     const pts = cells(s.k), lp = litPts(L).map(([x, y]) => [x, y]);
     if (!pts.length && !lp.length && !(s.ct || []).length && !(s.cq || []).length && !(L && (L.c.length || L.h))) {
-      box.innerHTML = `<p class="muted">Für diese Art sind keine Fundorte mit Koordinaten oder Länderangaben bekannt.</p>`; return;
+      box.innerHTML = `<p class="muted"><b>Nicht verzeichnet:</b> Für diese Art sind auf dieser Seite keine Fundorte oder Länder bekannt. Geprüft wurden GBIF-Belege (mit und ohne Koordinaten), Verbreitungsangaben im Catalogue of Life und die Fundorte aus der Fachliteratur, die sich dieser Seite zuordnen lassen. Die Angaben sind nicht vollständig – die Fachliteratur (Erstbeschreibung, Revisionen) enthält oft mehr.</p>`; return;
     }
     const aspect = box.clientWidth < 520 ? 1.25 : 1.75;
     const sx = Object.assign({}, s, { ct: [...new Set([...(s.ct || []), ...((L && L.c) || []), ...Object.values((L && L.h) || {}).flat()])] });
