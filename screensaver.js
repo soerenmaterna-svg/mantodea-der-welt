@@ -168,7 +168,7 @@
       const c = it.url ? { by: it.by, l: it.l, src: it.q } : s.p;
       if (it.uf) { document.getElementById("ss-credit").textContent = `© ${c.by || "Fotograf"} · alle Rechte vorbehalten · ${c.src}`; }
       else
-      document.getElementById("ss-credit").textContent = `Foto: ${c.by || "siehe Quelle"} · ${LIC[c.l] || c.l} · ${c.src || "iNaturalist"}`;
+      document.getElementById("ss-credit").textContent = `Foto: ${c.by || "siehe Quelle"} · ${LIC[c.l] || c.l || "Lizenz unbekannt"} · ${c.src || "iNaturalist"}`;
       // nächstes Foto schon vorladen
       const nx = order[(pos + 1) % order.length]; if (nx) (nx.url ? Promise.resolve(nx.url) : UI.bigSrc(nx.s)).then((u) => { if (u) { const p = new Image(); p.src = u; } }).catch(() => {});
       schedule((+F.speed || 8) * 1000);
@@ -227,8 +227,13 @@
       <ul class="tv-list">
         <li class="tv-best"><b>Am einfachsten – Browser des Fernsehers</b> (vorinstalliert, geht mit jedem Smart-TV): diese kurze Adresse eintippen und als Lesezeichen speichern – die Diashow startet von selbst:<br><a href="${UI.esc(TV_URL)}tv" target="_blank" rel="noopener" class="tv-url">${UI.esc(TV_URL.replace("https://", ""))}tv</a></li>
         <li><b>Chromecast eingebaut</b> (Google TV, Android TV, viele Sony, Philips, TCL, Hisense): in Chrome oder Edge ⋮ → <i>Streamen…</i> → Fernseher wählen.</li>
-        <li><b>AirPlay eingebaut</b> (Apple TV, viele Samsung, LG, Sony, Philips ab 2019): iPhone/iPad/Mac → Kontrollzentrum → <i>Bildschirmsynchronisierung</i>.</li>
-        <li><b>Bildschirmspiegelung / Miracast</b> (fast alle Smart-TVs, z. B. Samsung „Smart View“, LG „Screen Share“): Android → <i>Bildschirm übertragen</i>, Windows → <kbd>Win</kbd> + <kbd>K</kbd>.</li>
+        <li><b>Vom Handy auf den Fernseher spiegeln</b> (ohne Eintippen, ohne Passwort). Vorher: Handy und Fernseher im selben WLAN. Die Diashow auf dem Handy starten, dann:
+          <ol class="tv-steps">
+            <li><b>iPhone oder iPad:</b> vom oberen rechten Bildschirmrand nach unten wischen (bei älteren Geräten vom unteren Rand nach oben) → <i>Bildschirmsynchronisierung</i> antippen → Fernseher wählen.</li>
+            <li><b>Android:</b> vom oberen Rand zweimal nach unten wischen → <i>Bildschirm übertragen</i> oder <i>Smart View</i> antippen → Fernseher wählen.</li>
+            <li><b>Windows-Computer:</b> <kbd>Win</kbd> + <kbd>K</kbd> drücken → Fernseher wählen. Im Chrome-Browser auch ⋮ → <i>Streamen…</i>.</li>
+          </ol>
+          Am Fernseher kann man vorher die Eingangsquelle auf „Bildschirmspiegelung“ oder „Screen Mirroring“ stellen. Welche Geräte das unterstützen: AirPlay bei iPhone und Mac (viele Fernseher ab etwa 2019), Miracast bei Android und Windows (fast alle Smart-TVs).</li>
 
       </ul>`;
     tvPanel.hidden = false;
