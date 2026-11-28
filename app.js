@@ -1577,3 +1577,37 @@
   else render();
   route();
 })();
+
+// ---------- Menü oben rechts: Anmeldestatus und Links (Anmelden und Abmelden laufen über claude.ai)
+(async () => {
+  const btn = document.getElementById("more-btn"), menu = document.getElementById("more-menu");
+  if (!btn || !menu) return;
+  const LINK = "https://claude.ai/artifact/RKGNiBi8KevB2sjg3HsSF6";
+  const GH = "https://soerenmaterna-svg.github.io/mantodea-der-welt/";
+  const use = (n) => (window.claude && window.claude.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null));
+  const user = await use("user");
+  const info = { user: !!user, owner: false, edit: false, write: false };
+  if (user) {
+    try { info.owner = !!(await user.isOwner()); } catch (e) { /* egal */ }
+    try { info.edit = !!(await user.canEdit()); } catch (e) { /* egal */ }
+    try { info.write = (await user.can("data.write")) !== false; } catch (e) { /* egal */ }
+  }
+  const rolle = !info.user ? "nicht angemeldet" : info.owner ? "Besitzer/in" : info.edit ? "Editor/in" : info.write ? "Mitwirkende/r" : "Besucher/in";
+  const el = (tag, cls, text) => { const x = document.createElement(tag); if (cls) x.className = cls; if (text != null) x.textContent = text; return x; };
+  const add = (...xs) => xs.forEach((x) => menu.appendChild(x));
+  add(el("div", "mm-h", info.user ? `Angemeldet · ${rolle}` : "Nicht angemeldet"));
+  add(el("div", "mm-t", info.user
+    ? (info.write ? "Du kannst Fotos anderen Arten zuordnen und als „Art falsch“ markieren." : "Zum Zuordnen und Markieren braucht es das Bearbeitungsrecht. Die Besitzerin oder der Besitzer kann es dir geben.")
+    : "Ansehen ist ohne Anmeldung möglich. Zum Zuordnen und Markieren von Fotos bei claude.ai anmelden."));
+  const a1 = el("a", "mm-i", info.user ? "Konto auf claude.ai öffnen ↗" : "Bei claude.ai anmelden ↗");
+  a1.href = LINK; a1.target = "_blank"; a1.rel = "noopener";
+  const a2 = el("a", "mm-i", "Zur GitHub-Fassung ↗");
+  a2.href = GH; a2.target = "_blank"; a2.rel = "noopener";
+  add(a1, a2);
+  add(el("div", "mm-t", "Abmelden geht über das Konto-Menü auf claude.ai. Diese Seite kann sich selbst nicht an- oder abmelden."));
+  const close = () => { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+  btn.addEventListener("click", (e) => { e.stopPropagation(); const open = menu.hidden; menu.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+  menu.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();
