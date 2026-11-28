@@ -660,6 +660,8 @@ img.mantis-ico { width: 1.5em; height: 1.5em; object-fit: contain; vertical-alig
 .ss-set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
 .ss-set-grid label { display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: rgba(255,255,255,.75); }
 .ss-set-grid label.chk { flex-direction: row; align-items: center; gap: 8px; font-size: .9rem; color: #fff; grid-column: 1 / -1; }
+.ss-set-grid label.wide { grid-column: 1 / -1; }
+.ss-set-grid label.chk:has(input:disabled) { opacity: .5; }
 .ss-set-grid select { font: inherit; font-size: .9rem; padding: 7px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; }
 .ss-set-grid select option { color: #000; }
 .ss-set-foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }

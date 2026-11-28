@@ -26,6 +26,7 @@
 <script src="../data/remote.js"></script>
 <script src="../data/netzfotos.js"></script>
 <script src="../data/unfrei.js"></script>
+<script src="../data/unbestimmt.js"></script>
 <script>
 // Bewusst sehr einfacher, alter JavaScript-Stil (ES5): läuft auch in den Browsern älterer Fernseher.
 (function () {
@@ -55,19 +56,51 @@
       liste.push({ n: s.n, a: s.a || "", u: g[j][0], by: g[j][1] || "", l: LIZ[g[j][2]] || g[j][2] || "", q: g[j][3] || "", w: Math.random() * 2 });
     }
   }
-  // gemischt, schöne Titelbilder (adulte Weibchen) bevorzugt
-  for (i = 0; i < liste.length; i++) liste[i].z = liste[i].w * Math.random();
-  liste.sort(function (x, y) { return y.z - x.z; });
+  // unbestimmte Funde (nur bis Gattung oder Familie bestimmt)
+  var U = window.MANTODEA_UNBESTIMMT || [], RU = R.u || {};
+  for (i = 0; i < U.length; i++) {
+    var uu = RU[U[i].k]; if (!uu || /artificially-generated/.test(uu)) continue;
+    var up = U[i].p || {};
+    liste.push({ n: (U[i].t || "Mantodea") + " · unbestimmter Fund", a: U[i].pl || "", u: uu, by: up.by || "", l: LIZ[up.l] || up.l || "", q: up.src || "iNaturalist", w: Math.random() * 2 });
+  }
+  // jedes Foto nur einmal (gleiches iNaturalist-Foto in anderer Größe zählt als dasselbe)
+  function schluessel(u) {
+    var m = String(u).match(/inaturalist[^\/]*\/photos\/(\d+)\//);
+    return m ? "i" + m[1] : String(u).replace(/^https?:\/\//, "").replace(/\/full\/\^?\d+,\//, "/full/").replace(/[?#].*$/, "");
+  }
+  function hash(str) { var h = 0x811c9dc5, c; for (c = 0; c < str.length; c++) { h ^= str.charCodeAt(c); h = (h * 16777619) >>> 0; } return h.toString(36); }
+  var doppelt = {}, eins = [];
+  for (i = 0; i < liste.length; i++) { var sk = schluessel(liste[i].u); if (doppelt[sk]) continue; doppelt[sk] = 1; liste[i].h = hash(sk); eins.push(liste[i]); }
+  liste = eins;
+  // schon gezeigte Fotos merken: zuerst kommen alle noch nicht gezeigten, danach beginnt die Runde von vorn
+  var gesehen = {}, gespeichert = "";
+  try { gespeichert = localStorage.getItem("mantodea-ss-gesehen") || ""; } catch (e) {}
+  var gl = gespeichert.split(" "); for (i = 0; i < gl.length; i++) if (gl[i]) gesehen[gl[i]] = 1;
+  function speichern() { var a = [], key; for (key in gesehen) if (gesehen.hasOwnProperty(key)) a.push(key); try { localStorage.setItem("mantodea-ss-gesehen", a.join(" ")); } catch (e) {} }
+  function mischen() {
+    var neu = [], alt = [], j2;
+    for (j2 = 0; j2 < liste.length; j2++) (gesehen[liste[j2].h] ? alt : neu).push(liste[j2]);
+    if (!neu.length) { for (j2 = 0; j2 < liste.length; j2++) delete gesehen[liste[j2].h]; speichern(); neu = alt; alt = []; }
+    // gemischt, schöne Titelbilder (adulte Weibchen) bevorzugt
+    for (j2 = 0; j2 < neu.length; j2++) neu[j2].z = neu[j2].w * Math.random();
+    neu.sort(function (x, y) { return y.z - x.z; });
+    for (j2 = 0; j2 < alt.length; j2++) alt[j2].z = alt[j2].w * Math.random();
+    alt.sort(function (x, y) { return y.z - x.z; });
+    liste = neu.concat(alt);
   // nicht zweimal hintereinander dieselbe Art
   for (i = 1; i < liste.length; i++) {
     if (liste[i].n !== liste[i - 1].n) continue;
     for (var k = i + 1; k < Math.min(liste.length, i + 60); k++) if (liste[k].n !== liste[i - 1].n) { var t = liste[i]; liste[i] = liste[k]; liste[k] = t; break; }
   }
+  }
+  mischen();
+  var zaehler = 0;
   var pos = -1, cur = 0, dauer = 9000;
   var b = [document.getElementById("b0"), document.getElementById("b1")];
   function zeige() {
     if (!liste.length) { document.getElementById("start").innerHTML = "Keine Fotos gefunden."; return; }
-    pos = (pos + 1) % liste.length;
+    pos = pos + 1;
+    if (pos >= liste.length) { mischen(); pos = 0; }   // Runde zu Ende: neu mischen, Ungezeigtes zuerst
     var e = liste[pos], img = new Image(), fertig = false;
     var weiter = function () { if (fertig) return; fertig = true; setTimeout(zeige, 300); };
     img.onload = function () {
@@ -77,6 +110,7 @@
       b[cur].className = "bild an"; b[1 - cur].className = "bild";
       document.getElementById("start").style.display = "none";
       document.getElementById("unten").style.display = "block";
+      if (!gesehen[e.h]) { gesehen[e.h] = 1; if (++zaehler % 5 === 0) speichern(); }
       document.getElementById("name").innerHTML = e.n;
       document.getElementById("auth").innerHTML = e.a;
       document.getElementById("credit").innerHTML = "Foto: " + e.by + " · " + e.l + " · " + e.q + " · Mantodea der Welt";
