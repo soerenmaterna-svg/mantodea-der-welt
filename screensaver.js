@@ -113,10 +113,10 @@
     panel.innerHTML = `<div class="ss-set-head"><b>⚙ Welche Fotos sollen gezeigt werden?</b><button type="button" data-set="close" aria-label="Schließen">×</button></div>
       <div class="ss-set-grid">
         <label>Kontinent<select data-f="cont">${opts(UI.CONT_ORDER.filter((c) => c !== "NONE").map((c) => [c, UI.CONT[c]]), F.cont, "alle Kontinente")}</select></label>
-        <label>Land<select data-f="land">${opts(Object.keys(landC).sort((a, b) => coll.compare(UI.cname(a), UI.cname(b))).map((c) => [c, `${UI.cname(c)} (${landC[c]})`]), F.land, "alle Länder")}</select></label>
-        <label>Familie<select data-f="fam">${opts(Object.keys(famC).sort(coll.compare).map((f) => [f, `${f} (${famC[f]})`]), F.fam, "alle Familien")}</select></label>
-        <label>Gattung<select data-f="gen">${opts(Object.keys(genC).sort(coll.compare).map((g) => [g, `${g} (${genC[g]})`]), F.gen, "alle Gattungen")}</select></label>
-        <label>Anfangsbuchstabe<select data-f="abc">${opts(Object.keys(abcC).sort().map((l) => [l, `${l} (${abcC[l]})`]), F.abc, "alle Buchstaben")}</select></label>
+        <label>Land<select data-f="land">${opts(Object.keys(landC).sort((a, b) => coll.compare(UI.cname(a), UI.cname(b))).map((c) => [c, UI.cname(c)]), F.land, "alle Länder")}</select></label>
+        <label>Familie<select data-f="fam">${opts(Object.keys(famC).sort(coll.compare).map((f) => [f, f]), F.fam, "alle Familien")}</select></label>
+        <label>Gattung<select data-f="gen">${opts(Object.keys(genC).sort(coll.compare).map((g) => [g, g]), F.gen, "alle Gattungen")}</select></label>
+        <label>Anfangsbuchstabe<select data-f="abc">${opts(Object.keys(abcC).sort().map((l) => [l, l]), F.abc, "alle Buchstaben")}</select></label>
         <label>Reihenfolge<select data-f="order">${[["zufall", "zufällig (schönste zuerst)"], ["abc", "Artname A–Z"], ["gattung", "nach Familie und Gattung"]].map(([v, t]) => `<option value="${v}"${v === F.order ? " selected" : ""}>${t}</option>`).join("")}</select></label>
         <label>Anzeigedauer<select data-f="speed">${[5, 8, 12, 20, 30].map((v) => `<option value="${v}"${v == F.speed ? " selected" : ""}>${v} Sekunden</option>`).join("")}</select></label>
         <label class="wide">Bilder<select data-f="bilder">${[["alle", "alle Fotos (Titelbilder, Galerien, Netzfotos)"], ["titel", "nur Titelbilder (eins je Art)"], ["weibchen", "nur Titelbilder adulter Weibchen"]].map(([v, t]) => `<option value="${v}"${v === F.bilder ? " selected" : ""}>${t}</option>`).join("")}</select></label>
