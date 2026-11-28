@@ -919,6 +919,7 @@
       + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "") + ufHtml();
     if (can) enableDrag(box, s, items);
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
+    if (!moveDb && lokal.length) box.insertAdjacentHTML("afterbegin", lokalBanner());
     applyTitle(s);
   }
   // ---------- Fotos einer anderen Art zuordnen oder als „Art falsch“ markieren (Datenbank "fotozuordnungen", nur Mitwirkende)
@@ -930,6 +931,41 @@
   const mvColl = new Intl.Collator("de");
   let mvCtx = null;
   function refreshMoves() { const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (s && $("detail").open) fillGallery(s); }
+  // Ohne Datenbank (GitHub-Fassung): Änderungen bleiben im Browser, bis sie per E-Mail geschickt und von uns übernommen sind
+  const LOKAL_KEY = "mantodea-zuordnungen-lokal", MAIL = "soerenmaterna@gmx.de";
+  const lokalLoad = () => { try { const v = JSON.parse(localStorage.getItem(LOKAL_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+  const lokalSave = () => { try { localStorage.setItem(LOKAL_KEY, JSON.stringify(lokal)); } catch (e) { /* Speicher voll: egal */ } };
+  let lokal = lokalLoad(), festFromFile = [], dbMoves = [];
+  function rebuildMoves() {
+    liveMoves.length = 0;
+    [...festFromFile, ...dbMoves, ...lokal].sort((a, b) => String(a.zeit).localeCompare(String(b.zeit))).forEach((m) => liveMoves.push(m));
+    refreshMoves();
+  }
+  // Übernommene Zuordnungen (von uns in data/zuordnungen.json eingetragen) für alle Besucher
+  fetch("data/zuordnungen.json?t=" + Date.now(), { cache: "no-store" }).then((r) => (r.ok ? r.json() : [])).then((list) => { festFromFile = Array.isArray(list) ? list : []; rebuildMoves(); }).catch(() => {});
+  const lokalText = () => {
+    const zeilen = lokal.map((m, i) => (m.typ === "falsch"
+      ? `${i + 1}. Art falsch: Foto aus „${m.von_n}“ (${m.u || m.ref})`
+      : `${i + 1}. Foto aus „${m.von_n}“ in „${m.nach_n}“ verschieben (${m.u || m.ref})`));
+    const daten = lokal.map(({ id, ...rest }) => rest);
+    return `Bitte übernimm diese Zuordnungen in die Seite Mantodea der Welt (Datei data/zuordnungen.json). Jede Zeile ist eine Änderung, die jemand im Browser gemacht hat.\n\n${zeilen.join("\n")}\n\nDaten zum Einfügen:\n${JSON.stringify(daten, null, 1)}`;
+  };
+  const lokalBanner = () => `<div class="lokal-warn" role="status"><b>Achtung: Diese Änderungen sind noch nicht gespeichert.</b>
+    Sie gelten nur in diesem Browser. Fest übernommen werden sie erst, wenn du sie kopierst und per E-Mail an ${MAIL} schickst.
+    <span class="lokal-n">${lokal.length} ${lokal.length === 1 ? "Änderung" : "Änderungen"}</span>
+    <div class="lokal-btns"><button type="button" data-lk="kopieren">Text kopieren</button>
+      <a class="lokal-mail" href="mailto:${MAIL}?subject=${encodeURIComponent("Mantodea: Zuordnungen (" + lokal.length + ")")}&body=${encodeURIComponent(lokalText())}">Per E-Mail senden</a>
+      <button type="button" data-lk="verwerfen">Verwerfen</button></div></div>`;
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-lk]"); if (!b) return;
+    if (b.dataset.lk === "kopieren") {
+      const t = lokalText();
+      try { await navigator.clipboard.writeText(t); b.textContent = "✓ kopiert"; }
+      catch (err) { window.prompt("Text zum Kopieren:", t); }
+    } else if (b.dataset.lk === "verwerfen") {
+      if (confirm("Alle noch nicht gesendeten Änderungen in diesem Browser löschen?")) { lokal = []; lokalSave(); rebuildMoves(); }
+    }
+  });
   function moveBadge(g, s) {
     if (g.von) return `<span class="mv-tag">verschoben von ${esc(g.von)}</span>`;
     const lm = latestMove(moveKey(g));
@@ -960,7 +996,7 @@
   }
   function openMovePicker(s, g) {
     mvCtx = { s, g }; const d = moveDialog();
-    $("mv-q").value = ""; $("mv-msg").textContent = "";
+    $("mv-q").value = ""; $("mv-msg").textContent = moveDb ? "" : "Achtung: Diese Änderung wird erst fest übernommen, wenn du sie per E-Mail schickst.";
     $("mv-hint").textContent = `Foto aus „${s.n}“ – welche Art ist es?`;
     drawMove();
     if (d.showModal) d.showModal(); else d.setAttribute("open", "");
@@ -971,11 +1007,15 @@
     await saveMove(mvCtx.s, mvCtx.g, "verschoben", n);
   }
   async function saveMove(s, g, typ, n) {
-    if (!moveDb) return;
     const web = /^https?:/.test(g.u || "");
     if (typ === "verschoben" && !web) { alert("Dieses Foto kann nicht verschoben werden."); return; }
     const rec = { foto: moveKey(g), u: web ? g.u : "", by: g.by || "", l: g.l || "", src: g.src || "", ref: g.ref || "", a: g.a || "",
       von: s.k, von_n: s.n, nach: n ? n.k : "", nach_n: n ? n.n : "", typ, zeit: new Date().toISOString() };
+    if (!moveDb) {
+      lokal.push({ ...rec, id: "lokal-" + Date.now() }); lokalSave(); rebuildMoves();
+      if ($("mv-dlg")) $("mv-dlg").close();
+      return;
+    }
     try {
       await moveDb.collection("fotozuordnungen").add(rec);
       if ($("mv-dlg")) $("mv-dlg").close();
@@ -995,8 +1035,8 @@
     { const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (titleWritable && s && $("detail").open) fillGallery(s); }
     moveDb = db;
     db.collection("fotozuordnungen").orderBy("zeit", "asc").limit(20000).onSnapshot((snap) => {
-      liveMoves.length = 0; snap.docs.forEach((d) => liveMoves.push({ id: d.id, ...d.data() }));
-      refreshMoves();
+      dbMoves = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      rebuildMoves();
     }, () => {});
     db.collection("fotogruppen").orderBy("zeit", "asc").limit(20000).onSnapshot((snap) => {
       let ch = false;
@@ -1138,7 +1178,7 @@
       const fo = ortOf(it.ref);
       lb.querySelector(".zcap").innerHTML = `${fo ? `<b class="zfo">📍 ${esc(fo)}</b><br>` : ""}${it.a ? `<b>${esc(it.a)}</b> · ` : ""}${it.cap}${it.ref ? ` · <a href="${esc(it.ref)}" target="_blank" rel="noopener">Original in voller Größe ↗</a>` : ""}`;
       const c = lb.querySelector(".zcount"); if (c) c.textContent = list.length > 1 ? `${idx + 1} / ${list.length}` : "";
-      const mv = lb.querySelector(".zmv"); if (mv) mv.hidden = it.gi === undefined || !titleWritable || !moveDb;
+      const mv = lb.querySelector(".zmv"); if (mv) mv.hidden = it.gi === undefined || (!!moveDb && !titleWritable);
       const zs = lb.querySelector(".zset");
       if (zs) { const isT = it.ref && it.ref === (titleRef(s.k) || (s.p && s.p.ref)); zs.hidden = it.gi === undefined; zs.disabled = isT; zs.textContent = isT ? "✓ Ist das Hauptbild" : "🖼️ Als Hauptbild verwenden"; }
     };
