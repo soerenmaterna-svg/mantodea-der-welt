@@ -249,11 +249,8 @@
     if (window.PresentationRequest) {
       try {
         const req = new PresentationRequest([tvUrl()]);
-        // erst prüfen, ob überhaupt ein Fernseher erreichbar ist – sonst nicht das leere Chrome-Fenster zeigen
-        let avail = null;
-        try { avail = await Promise.race([req.getAvailability(), new Promise((r) => setTimeout(() => r(null), 2500))]); } catch (e) { avail = null; }
-        if (!avail || !avail.value) { setPause(true); tvHelp("In Ihrem WLAN wurde kein Fernseher gefunden, an den der Browser direkt senden kann. So geht es trotzdem – am einfachsten mit dem Browser des Fernsehers:"); return; }
-        conn = await req.start();      // öffnet die Geräteauswahl des Browsers
+        // sofort die Geräteauswahl des Browsers öffnen (keine Vorprüfung: die Suche dauert oft länger als ein paar Sekunden)
+        conn = await req.start();
         setPause(true);
         tvPanel.innerHTML = `<div class="ss-set-head"><b>📺 Läuft auf dem Fernseher</b><button type="button" data-tv="stop">Übertragung beenden</button></div>`;
         tvPanel.hidden = false;
@@ -262,7 +259,7 @@
         return;
       } catch (err) {
         if (err && err.name === "AbortError") return;   // Auswahl abgebrochen
-        setPause(true); tvHelp("Kein Fernseher gefunden oder Übertragung hier nicht möglich. So geht es trotzdem:"); return;
+        setPause(true); tvHelp(err && err.name === "NotFoundError" ? "In Ihrem WLAN wurde kein Fernseher gefunden, an den der Browser senden kann. So geht es trotzdem – am einfachsten mit dem Browser des Fernsehers:" : "Die Übertragung ist hier nicht möglich. So geht es trotzdem – am einfachsten mit dem Browser des Fernsehers:"); return;
       }
     }
     setPause(true); tvHelp("");
