@@ -24,6 +24,8 @@
     "cc-by-nc": ["CC BY-NC", "https://creativecommons.org/licenses/by-nc/4.0/deed.de"],
     "cc-by-nc-sa": ["CC BY-NC-SA", "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"],
     "cc-by-nc-nd": ["CC BY-NC-ND", "https://creativecommons.org/licenses/by-nc-nd/4.0/deed.de"],
+    "gfdl": ["GNU FDL", "https://www.gnu.org/licenses/fdl-1.3.html"],
+    "frei": ["frei (Lizenz siehe Commons)", "https://commons.wikimedia.org/wiki/Commons:Licensing/de"],
   };
   const SRC_LINK = {
     COL: (s) => s.col && `https://www.catalogueoflife.org/data/taxon/${encodeURIComponent(s.col)}`,
