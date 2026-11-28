@@ -1256,3 +1256,13 @@ html.mdw-gast dialog#detail::backdrop { background: #1a2b17; }
 @media (max-width: 700px) { .d-vgl-zeile .d-vgl-k { margin: 0; } }
 .d-typ-zitat { display: inline-block; font-style: italic; overflow-wrap: anywhere; margin-top: 1px; }
 html.mdw-gast dialog#vgl-dlg::backdrop { background: #1a2b17; }
+
+/* Fotos anderer Arten: Vermerke an den Galeriefotos und Buttons in der Vergrößerung */
+.gthumb .mv-tag { top: 4px; bottom: auto; background: rgba(40,80,40,.88); color: #fff; font-size: .62rem; padding: 2px 6px; border-radius: 6px; max-width: calc(100% - 8px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gthumb .mv-tag.mv-out { background: rgba(120,40,40,.88); }
+.gthumb .mv-tag.mv-falsch { background: rgba(160,100,20,.92); }
+.gthumb:has(.mv-out) { opacity: .45; }
+.zmv { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 6px 0; }
+.zmv[hidden] { display: none; }
+.zmv button { font: inherit; font-size: .85rem; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: #fff; cursor: pointer; }
+.zmv button:disabled { opacity: .5; }

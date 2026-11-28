@@ -896,7 +896,7 @@
       <p class="muted small">Zeitschriftenartikel und Bücher, in denen die Art beschrieben oder abgebildet ist. Das Schild zeigt die Lizenz des Artikels: <span class="lic lic-frei">CC BY</span> frei, <span class="lic lic-nc">CC BY-NC</span> frei, aber nicht kommerziell, <span class="lic lic-nc">frei lesbar</span> online frei lesbar, Lizenz nicht angegeben, <span class="lic lic-zu">©</span> Rechte beim Verlag bzw. unbekannt. „Artbeschreibung“: Die Art wird dort taxonomisch bearbeitet (nach Plazi).</p>
       ${litListe(L)}` : ""; };
 
-    if (!(s.gb || s.fb)) { box.innerHTML = ufHtml(); return; }
+    if (!(s.gb || s.fb) && !movedIn(s.k).length) { box.innerHTML = ufHtml(); return; }
     const bundles = [s.gb, s.fb].filter(Boolean);
     let items;
     if (SA) items = ((RM[s.k] || {}).g || []).map((g) => ({ u: g[0], by: g[1], l: g[2], src: g[3], ref: g[4], a: g[5] }));
@@ -904,6 +904,9 @@
       try { await Promise.all(bundles.map((b) => loadScript(`data/img/${b}.js`))); } catch (e) { box.innerHTML = `<p class="muted">Galerie konnte nicht geladen werden.</p>`; return; }
       items = bundles.flatMap((b) => (gals[b] || {})[s.k] || []);
     }
+    // hierher verschobene Fotos aus anderen Arten, am Ende angehängt
+    const have = new Set(items.map(moveKey));
+    for (const m of movedIn(s.k)) if (!have.has(m.foto)) { have.add(m.foto); items.push({ u: m.u, by: m.by, l: m.l, src: m.src, ref: m.ref, a: m.a, von: m.von_n }); }
     const hd = await loadHD(s.k);
     await loadOrte();
     galItems = items.map((g, i) => ({ src: hdSrc(hd && hd.g && hd.g[i]) || (g.d ? "data:image/jpeg;base64," + g.d : g.u), thumb: SA ? smallUrl(g.u) : null, g }));
@@ -912,12 +915,75 @@
     const can = titleWritable;
     box.innerHTML = Object.keys(GRP).filter((k) => groups[k].length || can).map((k) => `<h4 class="g-group">${GRP[k]} <small>${groups[k].length}</small></h4>
       <div class="gallery gdrop" data-grp="${k}">${groups[k].map((i) => { const g = items[i];
-      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + (g.src === "Fachliteratur" ? "Abbildung: " : "Foto: ") + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false"></button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
+      return `<button type="button" class="gthumb" data-gi="${i}" title="${esc((g.a ? g.a + " · " : "") + (g.src === "Fachliteratur" ? "Abbildung: " : "Foto: ") + g.by + (ortOf(g.ref) ? " · " + ortOf(g.ref) : ""))}"><img src="${galItems[i].thumb || galItems[i].src}" alt="${esc(s.n)} Foto ${i + 1}" loading="lazy" draggable="false">${moveBadge(g, s)}</button>`; }).join("")}${can && !groups[k].length ? `<p class="gempty">Fotos hierher ziehen</p>` : ""}</div>`).join("")
       + (can ? `<p class="muted small ghint">Falsch einsortiert? Foto ${matchMedia("(pointer: coarse)").matches ? "kurz gedrückt halten und" : "mit der Maus"} in das richtige Feld ziehen.</p>` : "") + ufHtml();
     if (can) enableDrag(box, s, items);
     box.onclick = (e) => { const b = e.target.closest(".gthumb"); if (b) openZoom(s, +b.dataset.gi + 1); };
     applyTitle(s);
   }
+  // ---------- Fotos einer anderen Art zuordnen oder als „Art falsch“ markieren (Datenbank "fotozuordnungen", nur Mitwirkende)
+  let moveDb = null;
+  const liveMoves = [];                              // {id, foto, u, by, l, src, ref, a, von, von_n, nach, nach_n, typ, zeit}
+  const moveKey = (g) => (g && (g.u || g.ref)) || "";
+  const latestMove = (foto) => liveMoves.filter((m) => m.foto === foto && m.typ === "verschoben").slice(-1)[0] || null;
+  const movedIn = (k) => liveMoves.filter((m) => m.typ === "verschoben" && m.nach === k && latestMove(m.foto) === m);
+  const mvColl = new Intl.Collator("de");
+  let mvCtx = null;
+  function refreshMoves() { const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (s && $("detail").open) fillGallery(s); }
+  function moveBadge(g, s) {
+    if (g.von) return `<span class="mv-tag">verschoben von ${esc(g.von)}</span>`;
+    const lm = latestMove(moveKey(g));
+    if (lm && lm.von === s.k && lm.nach !== s.k) return `<span class="mv-tag mv-out">verschoben nach ${esc(lm.nach_n)}</span>`;
+    const n = liveMoves.filter((m) => m.typ === "falsch" && m.foto === moveKey(g) && m.von === s.k).length;
+    return n ? `<span class="mv-tag mv-falsch">Art falsch? (${n})</span>` : "";
+  }
+  function moveDialog() {
+    if ($("mv-dlg")) return $("mv-dlg");
+    document.body.insertAdjacentHTML("beforeend", `<dialog id="mv-dlg" class="cdlg" aria-labelledby="mv-title">
+      <div class="cdlg-head"><h2 id="mv-title">Foto einer anderen Art zuordnen</h2><button type="button" class="close" id="mv-close" aria-label="Schließen">×</button></div>
+      <div class="cdlg-tools"><input type="search" id="mv-q" placeholder="Art oder Gattung suchen, z. B. Ameles decolor …" autocomplete="off"><p class="muted small" id="mv-hint"></p></div>
+      <div id="mv-list" class="cdlg-list"></div><p class="msg" id="mv-msg" aria-live="polite"></p></dialog>`);
+    $("mv-close").addEventListener("click", () => $("mv-dlg").close());
+    $("mv-q").addEventListener("input", drawMove);
+    $("mv-list").addEventListener("click", (e) => { const b = e.target.closest("[data-mv]"); if (b) pickMove(b.dataset.mv); });
+    return $("mv-dlg");
+  }
+  function drawMove() {
+    const q = $("mv-q").value.trim().toLowerCase(), cur = mvCtx && mvCtx.s;
+    let list = q ? DATA.filter((x) => x.hay && x.hay.includes(q)) : DATA.filter((x) => cur && x.g === cur.g);
+    if (!q && list.length < 5 && cur) list = list.concat(DATA.filter((x) => x.f === cur.f && x.g !== cur.g));
+    list = list.filter((x) => !x.x && cur && x.k !== cur.k).sort((a, b) => (b.p ? 1 : 0) - (a.p ? 1 : 0) || mvColl.compare(a.n, b.n)).slice(0, 40);
+    $("mv-hint").textContent = q ? `${list.length} Treffer` : cur ? `Arten der Gattung ${cur.g} – oder oben suchen` : "";
+    $("mv-list").innerHTML = list.map((x) => `<div class="as-item"><div class="as-tx"><b><i>${esc(x.n)}</i></b>
+      <span class="muted small">${esc([x.de || x.en, x.f].filter(Boolean).join(" · "))}</span>
+      <span class="as-ib"><button type="button" class="primary small" data-mv="${esc(x.k)}">Hierher verschieben</button></span></div></div>`).join("") || `<p class="muted">Keine Art gefunden.</p>`;
+  }
+  function openMovePicker(s, g) {
+    mvCtx = { s, g }; const d = moveDialog();
+    $("mv-q").value = ""; $("mv-msg").textContent = "";
+    $("mv-hint").textContent = `Foto aus „${s.n}“ – welche Art ist es?`;
+    drawMove();
+    if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+  }
+  async function pickMove(k) {
+    const n = DATA.find((x) => x.k === k);
+    if (!n || !mvCtx || !confirm(`Foto nach „${n.n}“ verschieben?`)) return;
+    await saveMove(mvCtx.s, mvCtx.g, "verschoben", n);
+  }
+  async function saveMove(s, g, typ, n) {
+    if (!moveDb) return;
+    const web = /^https?:/.test(g.u || "");
+    if (typ === "verschoben" && !web) { alert("Dieses Foto kann nicht verschoben werden."); return; }
+    const rec = { foto: moveKey(g), u: web ? g.u : "", by: g.by || "", l: g.l || "", src: g.src || "", ref: g.ref || "", a: g.a || "",
+      von: s.k, von_n: s.n, nach: n ? n.k : "", nach_n: n ? n.n : "", typ, zeit: new Date().toISOString() };
+    try {
+      await moveDb.collection("fotozuordnungen").add(rec);
+      if ($("mv-dlg")) $("mv-dlg").close();
+    } catch (err) {
+      alert(err && err.code === "invalid_argument" ? "Keine Berechtigung zum Speichern." : "Speichern fehlgeschlagen, bitte später erneut versuchen.");
+    }
+  }
+
   // ---------- Hauptbild wählen (gespeichert in der Datenbank "titelbilder"; nächtlicher Lauf übernimmt es fest)
   let titleDb = null, titleWritable = false;
   (async () => {
@@ -927,6 +993,11 @@
     titleDb = db;
     try { titleWritable = user && user.can ? (await user.can("data.write")) !== false : true; } catch (e) { titleWritable = false; }
     { const k = $("d-body") && $("d-body").dataset.k; const s = k && BYKEY.get(k); if (titleWritable && s && $("detail").open) fillGallery(s); }
+    moveDb = db;
+    db.collection("fotozuordnungen").orderBy("zeit", "asc").limit(20000).onSnapshot((snap) => {
+      liveMoves.length = 0; snap.docs.forEach((d) => liveMoves.push({ id: d.id, ...d.data() }));
+      refreshMoves();
+    }, () => {});
     db.collection("fotogruppen").orderBy("zeit", "asc").limit(20000).onSnapshot((snap) => {
       let ch = false;
       snap.docs.forEach((d) => { const v = d.data(); if (v.ref && liveGroup[v.ref] !== v.gruppe) { liveGroup[v.ref] = v.gruppe; ch = true; } });
@@ -1035,9 +1106,16 @@
       <div class="zstage"><a class="zlink" target="_blank" rel="noopener"><img alt="${esc(s.n)}" draggable="false"></a></div>
       ${list.length > 1 ? `<button type="button" class="znav prev" aria-label="Vorheriges Foto">‹</button><button type="button" class="znav next" aria-label="Nächstes Foto">›</button>` : ""}
       <div class="ztools"><button type="button" data-zz="out" aria-label="Verkleinern">－</button><button type="button" data-zz="reset" aria-label="Zurücksetzen">1:1</button><button type="button" data-zz="in" aria-label="Vergrößern">＋</button><span class="zcount"></span>${titleWritable ? `<button type="button" class="zset" hidden>🖼️ Als Hauptbild verwenden</button>` : ""}</div>
+      <div class="zmv" hidden><button type="button" data-zm="falsch">⚠️ Art falsch</button><button type="button" data-zm="anders">➡️ Andere Art zuordnen</button></div>
       <p class="zhint">Foto antippen: Original in voller Auflösung öffnen · zwei Finger oder ＋/－: zoomen</p>
       <p class="zcap"></p>`;
     lb.hidden = false;
+    lb.querySelector(".zmv").addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-zm]"); if (!b) return;
+      const it = list[idx], g = it && it.gi !== undefined && galItems[it.gi] && galItems[it.gi].g; if (!g) return;
+      if (b.dataset.zm === "falsch") { b.disabled = true; await saveMove(s, g, "falsch", null); b.disabled = false; }
+      else openMovePicker(s, g);
+    });
     const stage = lb.querySelector(".zstage"), img = stage.querySelector("img");
     const z = { k: 1, x: 0, y: 0 };
     const apply = () => { img.style.transform = `translate(${z.x}px, ${z.y}px) scale(${z.k})`; stage.classList.toggle("zoomed", z.k > 1.01); };
@@ -1060,6 +1138,7 @@
       const fo = ortOf(it.ref);
       lb.querySelector(".zcap").innerHTML = `${fo ? `<b class="zfo">📍 ${esc(fo)}</b><br>` : ""}${it.a ? `<b>${esc(it.a)}</b> · ` : ""}${it.cap}${it.ref ? ` · <a href="${esc(it.ref)}" target="_blank" rel="noopener">Original in voller Größe ↗</a>` : ""}`;
       const c = lb.querySelector(".zcount"); if (c) c.textContent = list.length > 1 ? `${idx + 1} / ${list.length}` : "";
+      const mv = lb.querySelector(".zmv"); if (mv) mv.hidden = it.gi === undefined || !titleWritable || !moveDb;
       const zs = lb.querySelector(".zset");
       if (zs) { const isT = it.ref && it.ref === (titleRef(s.k) || (s.p && s.p.ref)); zs.hidden = it.gi === undefined; zs.disabled = isT; zs.textContent = isT ? "✓ Ist das Hauptbild" : "🖼️ Als Hauptbild verwenden"; }
     };
